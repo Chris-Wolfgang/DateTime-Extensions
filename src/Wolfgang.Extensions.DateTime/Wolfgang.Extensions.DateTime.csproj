@@ -14,7 +14,7 @@
 		<Authors>Chris Wolfgang</Authors>
 		<Description>A collection of extension methods for DateTime</Description>
 		<Copyright>Copyright 2026 Chris Wolfgang </Copyright>
-		<PackageProjectUrl>https://github.com/Chris-Wolfgang/Try-Pattern</PackageProjectUrl>
+		<PackageProjectUrl>https://github.com/Chris-Wolfgang/Wolfgang.Extensions.DateTime</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<AssemblyVersion>1.0.0</AssemblyVersion>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
