@@ -112,7 +112,7 @@ public static class DateTimeExtensions
     /// CurrentCulture FirstDayOfWeek 
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
-    /// <returns>A new DateTime representing the end of the month.</returns>
+    /// <returns>A new DateTime representing the end of the week.</returns>
     public static System.DateTime EndOfWeek(this System.DateTime dateTime)
         => EndOfWeek(dateTime, CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek);
 
@@ -125,7 +125,7 @@ public static class DateTimeExtensions
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
     /// <param name="firstDayOfWeek">Specifies the first day of the week. Default is Sunday.</param>
-    /// <returns>A new DateTime representing the end of the month.</returns>
+    /// <returns>A new DateTime representing the end of the week.</returns>
     public static System.DateTime EndOfWeek(this System.DateTime dateTime, DayOfWeek firstDayOfWeek)
         => dateTime.FirstOfWeek(firstDayOfWeek).AddDays(7).AddTicks(-1);
 }
