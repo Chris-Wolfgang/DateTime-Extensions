@@ -277,7 +277,7 @@ jobs:
     name: "Stage 2b: macOS Tests (.NET 6.0-10.0)"
     runs-on: macos-latest
     needs: test-linux-core
-    if: github. repository != 'Chris-Wolfgang/repo-template'
+    if: github.repository != 'Chris-Wolfgang/repo-template'
     
     steps:
       - name:  Checkout code
