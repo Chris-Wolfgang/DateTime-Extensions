@@ -12,5 +12,5 @@ A collection of extension methods for the `DateTime` struct in C#.
 - `FirstOfWeek()`: Uses the current culture’s first day of the week to locate the week’s starting `DateTime`.
 - `FirstOfWeek(DayOfWeek firstDayOfWeek)`: Uses the specified first day of the week to locate the week’s starting `DateTime`.
 - `EndOfWeek()`: Uses the current culture’s first day, calculates the final tick of the week.
-- `EndOfWeek(DayOfWeek firstDayOfWeek)`: Uses the specfied first day, calculates the final tick of the week.
+- `EndOfWeek(DayOfWeek firstDayOfWeek)`: Uses the specified first day, calculates the final tick of the week.
 
