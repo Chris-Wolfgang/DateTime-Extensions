@@ -15,10 +15,6 @@
 
 	<Copyright>Copyright 2026 Chris Wolfgang</Copyright>
 
-  </PropertyGroup>
-
-
-
 	<!-- .NET Framework 4.6.2 -->
 	<ItemGroup Condition="'$(TargetFramework)' == 'net462'">
 		<PackageReference Include="coverlet.collector" Version="6.0.4">
