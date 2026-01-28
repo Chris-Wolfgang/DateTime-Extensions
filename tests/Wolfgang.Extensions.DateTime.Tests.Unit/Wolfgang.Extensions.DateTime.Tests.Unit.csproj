@@ -296,7 +296,7 @@
 
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\src\Wolfgang.Extensions.Mail\Wolfgang.Extensions.Mail.csproj" />
+	  <ProjectReference Include="..\..\src\Wolfgang.Extensions.DateTime\Wolfgang.Extensions.DateTime.csproj" />
 	</ItemGroup>
 
 </Project>
