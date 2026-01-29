@@ -1,8 +1,10 @@
-- name: Index
-  href: Index.md
+- name: Documentation Home
+  href: readme.md
 - name: Introduction
   href: introduction.md
 - name: Getting Started
   href: getting-started.md
-- name: Project website
-  href: https://github.com/Chris-Wolfgang/DbContextBuilder
+- name: Setup Guide
+  href: setup.md
+- name: Project Website
+  href: https://github.com/Chris-Wolfgang/DateTime-Extensions
