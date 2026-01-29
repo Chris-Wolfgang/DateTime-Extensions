@@ -20,7 +20,7 @@ Easily truncate time components to achieve the precision you need:
 ### 📅 Boundary Navigation
 Navigate effortlessly to the beginning or end of time periods:
 - **Monthly boundaries**: First and last day of any month
-- **Yearly boundaries**: First and last day of any year  
+- **Yearly boundaries**: First and last day of any year
 - **Weekly boundaries**: First and last day of any week (culture-aware)
 
 ### 🌍 Culture-Aware

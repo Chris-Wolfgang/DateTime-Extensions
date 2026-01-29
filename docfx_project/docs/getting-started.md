@@ -140,7 +140,7 @@ The library automatically adapts to your target framework, ensuring optimal comp
 ## Next Steps
 
 - Explore the [API Reference](../api/Wolfgang.Extensions.DateTime.DateTimeExtensions.yml) for detailed method documentation
-- Review the [Examples](../examples) for more advanced usage patterns
+- Review the [Examples](../../examples) for more advanced usage patterns
 - Check the [README](readme.md) for additional information
 
 ## Need Help?

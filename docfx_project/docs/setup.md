@@ -66,7 +66,7 @@ DateTime-Extensions/
 ├── src/                              # Source code
 │   └── Wolfgang.Extensions.DateTime/ # Main library project
 ├── tests/                            # Test projects
-│   └── Wolfgang.Extensions.DateTime.Tests/
+│   └── Wolfgang.Extensions.DateTime.Tests.Unit/
 ├── benchmarks/                       # Performance benchmarks (if any)
 ├── examples/                         # Example projects
 ├── docs/                             # Additional documentation
