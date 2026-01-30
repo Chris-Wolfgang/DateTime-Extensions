@@ -206,7 +206,7 @@ git checkout -b feature/your-feature-name
 ### 2. Make Changes
 
 - Edit code in `src/Wolfgang.Extensions.DateTime/`
-- Add/update tests in `tests/`
+- Add/update tests in `tests/Wolfgang.Extensions.DateTime.Tests.Unit/`
 - Update documentation if needed
 
 ### 3. Test Your Changes
