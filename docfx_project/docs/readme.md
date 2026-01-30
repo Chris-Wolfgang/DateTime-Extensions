@@ -100,8 +100,8 @@ A: The current version provides extensions for DateTime only. DateTimeOffset sup
 We welcome contributions! If you'd like to contribute to Wolfgang.Extensions.DateTime:
 
 1. Read the [Setup Guide](setup.md) to prepare your development environment
-2. Check the [Contributing Guidelines](../../CONTRIBUTING.md)
-3. Follow the [Code of Conduct](../../CODE_OF_CONDUCT.md)
+2. Check the [Contributing Guidelines](https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/main/CONTRIBUTING.md)
+3. Follow the [Code of Conduct](https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/main/CODE_OF_CONDUCT.md)
 4. Submit your pull request
 
 ## Version History
