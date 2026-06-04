@@ -375,6 +375,38 @@ public class DateTimeExtensionsTests
 
 
     [Fact]
+    public void EndOfWeek_seven_day_boundary_returns_firstOfWeek_plus_7_minus_1_tick()
+    {
+        // Documents the invariant used by the boundary check in EndOfWeek:
+        // firstOfWeek (produced by FirstOfWeek) is always midnight, so
+        // firstOfWeek.Ticks is a multiple of TimeSpan.TicksPerDay; meanwhile
+        // DateTime.MaxValue.Ticks ≡ -1 (mod TicksPerDay). So
+        // (maxTicks - firstOfWeek.Ticks) always equals n * TicksPerDay - 1
+        // for some integer n ≥ 0 — never an exact multiple of TicksPerDay,
+        // and in particular never equal to exactly 7 * TicksPerDay. The
+        // equality boundary of the clamp check is therefore unreachable,
+        // and any input whose firstOfWeek is at least 7 days before
+        // MaxValue should return firstOfWeek + 7 days - 1 tick (not the
+        // MaxValue clamp).
+
+        // 7 days + 1 day of headroom before MaxValue keeps us well clear of
+        // the clamp branch and exercises the AddDays(7).AddTicks(-1) path.
+        var input = System.DateTime.MaxValue.AddDays(-8);
+        var firstOfWeek = input.FirstOfWeek(System.DayOfWeek.Monday);
+
+        // Sanity-check the invariant the production code relies on.
+        Assert.Equal(0, firstOfWeek.Ticks % TimeSpan.TicksPerDay);
+        Assert.Equal(TimeSpan.TicksPerDay - 1, System.DateTime.MaxValue.Ticks % TimeSpan.TicksPerDay);
+
+        var result = input.EndOfWeek(System.DayOfWeek.Monday);
+
+        Assert.Equal(firstOfWeek.AddDays(7).AddTicks(-1), result);
+        Assert.NotEqual(System.DateTime.MaxValue, result);
+    }
+
+
+
+    [Fact]
     public void FirstOfWeek_when_time_is_nonzero_returns_midnight()
     {
         var input = new System.DateTime(2024, 6, 12, 15, 30, 45, System.DateTimeKind.Utc);

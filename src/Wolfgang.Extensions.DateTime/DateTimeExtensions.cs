@@ -186,6 +186,17 @@ public static class DateTimeExtensions
         var maxTicks = System.DateTime.MaxValue.Ticks;
         var sevenDaysTicks = TimeSpan.FromDays(7).Ticks;
 
+        // Stryker disable once Equality : equivalent mutant. firstOfWeek is
+        // always midnight (firstOfWeek.Ticks is a multiple of TicksPerDay),
+        // while MaxValue.Ticks ≡ -1 (mod TicksPerDay). The difference
+        // (maxTicks - firstOfWeek.Ticks) therefore always equals
+        // n * TicksPerDay - 1 for some integer n ≥ 0 — never an exact
+        // multiple of TicksPerDay, and in particular never equal to
+        // sevenDaysTicks (= 7 * TicksPerDay). The equality boundary
+        // `< sevenDaysTicks` vs `<= sevenDaysTicks` is therefore
+        // unreachable through the public API and both forms produce
+        // identical output. The invariant is asserted by
+        // EndOfWeek_seven_day_boundary_returns_firstOfWeek_plus_7_minus_1_tick.
         return maxTicks - firstOfWeek.Ticks < sevenDaysTicks
             ? new System.DateTime(maxTicks, dateTime.Kind)
             : firstOfWeek.AddDays(7).AddTicks(-1);
