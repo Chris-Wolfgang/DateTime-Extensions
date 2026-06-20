@@ -5,11 +5,17 @@ using Wolfgang.Extensions.DateTime;
 namespace Wolfgang.Extensions.DateTime.Benchmarks;
 
 /// <summary>
-/// Microbenchmarks for the public extension methods. All eight methods
-/// allocate a small number of DateTime structs and short loops; they should
-/// be well under a microsecond apiece. The MemoryDiagnoser is enabled so any
-/// future refactor that introduces allocation surfaces in the gh-pages
-/// benchmark chart immediately.
+/// Microbenchmarks for the public extension methods. Every public method
+/// on <see cref="DateTimeExtensions"/> has a corresponding [Benchmark]
+/// here — fourteen methods at present (<c>TruncateMilliseconds</c>,
+/// <c>TruncateSeconds</c>, <c>FirstOfMonth</c> / <c>EndOfMonth</c>,
+/// <c>FirstOfYear</c> / <c>EndOfYear</c>, <c>FirstOfQuarter</c> /
+/// <c>EndOfQuarter</c>, <c>FirstOfHalf</c> / <c>EndOfHalf</c>, plus
+/// both overloads of <c>FirstOfWeek</c> and <c>EndOfWeek</c>). They
+/// allocate a small number of DateTime structs and short loops; each
+/// should be well under a microsecond. The MemoryDiagnoser is enabled
+/// so any future refactor that introduces allocation surfaces in the
+/// gh-pages benchmark chart immediately.
 /// </summary>
 [MemoryDiagnoser]
 public class DateTimeExtensionsBenchmarks
