@@ -365,6 +365,46 @@ public class DateTimeExtensionsTests
 
 
     [Fact]
+    public void FirstOfMonth_when_DateTime_MinValue_does_not_throw()
+    {
+        var result = System.DateTime.MinValue.FirstOfMonth();
+
+        Assert.Equal(System.DateTime.MinValue.Ticks, result.Ticks);
+    }
+
+
+
+    [Fact]
+    public void FirstOfYear_when_DateTime_MinValue_does_not_throw()
+    {
+        var result = System.DateTime.MinValue.FirstOfYear();
+
+        Assert.Equal(System.DateTime.MinValue.Ticks, result.Ticks);
+    }
+
+
+
+    [Fact]
+    public void FirstOfQuarter_when_DateTime_MinValue_does_not_throw()
+    {
+        var result = System.DateTime.MinValue.FirstOfQuarter();
+
+        Assert.Equal(System.DateTime.MinValue.Ticks, result.Ticks);
+    }
+
+
+
+    [Fact]
+    public void FirstOfHalf_when_DateTime_MinValue_does_not_throw()
+    {
+        var result = System.DateTime.MinValue.FirstOfHalf();
+
+        Assert.Equal(System.DateTime.MinValue.Ticks, result.Ticks);
+    }
+
+
+
+    [Fact]
     public void EndOfWeek_when_DateTime_MaxValue_returns_max_ticks()
     {
         var result = System.DateTime.MaxValue.EndOfWeek(System.DayOfWeek.Monday);
