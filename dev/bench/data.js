@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1781918200813,
+  "lastUpdate": 1782664264032,
   "repoUrl": "https://github.com/Chris-Wolfgang/DateTime-Extensions",
   "entries": {
     "BenchmarkDotNet": [
@@ -540,6 +540,114 @@ window.BENCHMARK_DATA = {
             "value": 28.547299305597942,
             "unit": "ns",
             "range": "± 0.008999555979333086"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9d6e6082869ac026e8d667f451b49ecaa1c5cddd",
+          "message": "Merge pull request #258 from Chris-Wolfgang/dependabot/github_actions/github-actions-39b8605068\n\nbuild(deps): bump the github-actions group across 1 directory with 2 updates",
+          "timestamp": "2026-06-28T12:27:13-04:00",
+          "tree_id": "d3be4ceee9fc3f4bfa6743f782712c9a4afa02a8",
+          "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/9d6e6082869ac026e8d667f451b49ecaa1c5cddd"
+        },
+        "date": 1782664261958,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateMilliseconds",
+            "value": 0.003157778332630793,
+            "unit": "ns",
+            "range": "± 0.005078653920422387"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateSeconds",
+            "value": 0.00012340148289998373,
+            "unit": "ns",
+            "range": "± 0.00010746327311468321"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfMonth",
+            "value": 0.00025445595383644104,
+            "unit": "ns",
+            "range": "± 0.00039512595406574044"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfMonth",
+            "value": 27.253007223208744,
+            "unit": "ns",
+            "range": "± 0.08767843987344617"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfYear",
+            "value": 0.00023783370852470398,
+            "unit": "ns",
+            "range": "± 0.00030384413810635936"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfYear",
+            "value": 0.00001043205459912618,
+            "unit": "ns",
+            "range": "± 0.00001806884859301912"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_Sunday",
+            "value": 10.811633949478468,
+            "unit": "ns",
+            "range": "± 0.015057591915255021"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_Sunday",
+            "value": 13.221366693576178,
+            "unit": "ns",
+            "range": "± 0.006235644636654302"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_CurrentCulture",
+            "value": 15.434136271476746,
+            "unit": "ns",
+            "range": "± 0.009823521176231984"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_CurrentCulture",
+            "value": 17.605282584826153,
+            "unit": "ns",
+            "range": "± 0.028491280106029235"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfQuarter",
+            "value": 0.0004635552565256755,
+            "unit": "ns",
+            "range": "± 0.0004960280275200197"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfQuarter",
+            "value": 29.84800140062968,
+            "unit": "ns",
+            "range": "± 0.05817479626280545"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfHalf",
+            "value": 0.00022261962294578552,
+            "unit": "ns",
+            "range": "± 0.0002350505945109116"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfHalf",
+            "value": 28.58639148871104,
+            "unit": "ns",
+            "range": "± 0.0624521249725532"
           }
         ]
       }
