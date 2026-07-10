@@ -24,19 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `EndOfWeek`: kill equivalent Stryker mutant on the 7-day boundary (#217).
-
-### Added
-
-### Changed
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
-
 ## [1.3.1] - 2026-05-28
 
 ### Added
