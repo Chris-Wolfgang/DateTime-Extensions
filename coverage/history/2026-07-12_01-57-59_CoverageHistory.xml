@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<coverage version="1.0" date="2026-07-12_01-57-59" tag="">
+  <assembly name="Wolfgang.Extensions.DateTime">
+    <class name="Wolfgang.Extensions.DateTime.DateTimeExtensions" coveredlines="59" coverablelines="59" totallines="272" coveredbranches="22" totalbranches="22" coveredcodeelements="15" fullcoveredcodeelements="15" totalcodeelements="15" />
+  </assembly>
+</coverage>

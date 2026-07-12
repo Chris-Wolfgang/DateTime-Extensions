@@ -290,7 +290,7 @@ var assemblies = [
   {
     "name": "Wolfgang.Extensions.DateTime",
     "classes": [
-      { "name": "Wolfgang.Extensions.DateTime.DateTimeExtensions", "rp": "Wolfgang.Extensions.DateTime_DateTimeExtensions.html", "cl": 59, "ucl": 0, "cal": 59, "tl": 272, "cb": 22, "tb": 22, "cm": 0, "fcm": 0, "tm": 0, "lch": [], "bch": [], "mch": [], "mfch": [], "hc": [], "metrics": { } },
+      { "name": "Wolfgang.Extensions.DateTime.DateTimeExtensions", "rp": "Wolfgang.Extensions.DateTime_DateTimeExtensions.html", "cl": 59, "ucl": 0, "cal": 59, "tl": 272, "cb": 22, "tb": 22, "cm": 0, "fcm": 0, "tm": 0, "lch": [100], "bch": [100], "mch": [], "mfch": [], "hc": [{ "et": "7/12/2026 - 1:57:59 AM", "cl": 59, "ucl": 0, "cal": 59, "tl": 272, "lcq": 100, "cb": 22, "tb": 22, "bcq": 100, "cm": 0, "fcm": 0, "tm": 0, "mcq": 0, "mfcq": 0 }], "metrics": { } },
     ]},
 ];
 
