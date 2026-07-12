@@ -19,6 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [1.3.2] - 2026-07-06
+
+### Fixed
+
+- `EndOfWeek`: kill equivalent Stryker mutant on the 7-day boundary (#217).
 ## [1.3.1] - 2026-05-28
 
 ### Added
@@ -168,7 +173,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multi-framework targeting: `net462`, `netstandard2.0`,
   `netcoreapp3.1`, `net8.0`, `net10.0`.
 
-[Unreleased]: https://github.com/Chris-Wolfgang/DateTime-Extensions/compare/v1.3.1...HEAD
+[Unreleased]: https://github.com/Chris-Wolfgang/DateTime-Extensions/compare/v1.3.2...HEAD
+[1.3.2]: https://github.com/Chris-Wolfgang/DateTime-Extensions/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/Chris-Wolfgang/DateTime-Extensions/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/Chris-Wolfgang/DateTime-Extensions/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/Chris-Wolfgang/DateTime-Extensions/compare/v1.1.0...v1.2.0
