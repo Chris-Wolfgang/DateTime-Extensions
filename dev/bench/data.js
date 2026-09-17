@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784920110691,
+  "lastUpdate": 1789613115140,
   "repoUrl": "https://github.com/Chris-Wolfgang/DateTime-Extensions",
   "entries": {
     "BenchmarkDotNet": [
@@ -864,6 +864,114 @@ window.BENCHMARK_DATA = {
             "value": 29.64665608604749,
             "unit": "ns",
             "range": "± 0.09280938575218785"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "10cee3d79609f7542fb381a6cc003b812b7ac5a3",
+          "message": "ci: pin every workflow action to a commit SHA with an exact # vX.Y.Z comment (#298)\n\nRan repo-template's scripts/pin-actions.ps1 -PinTags on current main (rebuilt\nafter Dependabot's github-actions bump landed): tag references become SHA pins\nand major-only comments (# v7) become the exact tag on the pinned commit\n(# v7.0.1). Only the ref/comment text changed.\n\n4 already exact, 43 line(s) rewritten, 42 tag reference(s), 0 pinned SHA(s) with no tag\n\nRefs Chris-Wolfgang/repo-template#447\n\nCo-authored-by: Chris Wolfgang <cwolfgan@ptd.net>\nCo-authored-by: Claude Opus 5 <noreply@anthropic.com>",
+          "timestamp": "2026-09-16T22:40:18-04:00",
+          "tree_id": "b148adf51d32ae847a050b2ff70f08e7e0a05db8",
+          "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/10cee3d79609f7542fb381a6cc003b812b7ac5a3"
+        },
+        "date": 1789613112743,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateMilliseconds",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateSeconds",
+            "value": 0.0002543572336435318,
+            "unit": "ns",
+            "range": "± 0.00044055965194326487"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfMonth",
+            "value": 0.0007584076374769211,
+            "unit": "ns",
+            "range": "± 0.0004172258303530923"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfMonth",
+            "value": 28.281569282213848,
+            "unit": "ns",
+            "range": "± 0.03028858359749199"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfYear",
+            "value": 0.0007548239082098007,
+            "unit": "ns",
+            "range": "± 0.0004135182958568699"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfYear",
+            "value": 0.001356068377693494,
+            "unit": "ns",
+            "range": "± 0.0023048755781040144"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_Sunday",
+            "value": 14.32719960808754,
+            "unit": "ns",
+            "range": "± 0.18549248995162984"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_Sunday",
+            "value": 14.564332803090414,
+            "unit": "ns",
+            "range": "± 0.09803448743292546"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_CurrentCulture",
+            "value": 17.76371223727862,
+            "unit": "ns",
+            "range": "± 0.2933626813307623"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_CurrentCulture",
+            "value": 20.62632484237353,
+            "unit": "ns",
+            "range": "± 0.03618548081675035"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfQuarter",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfQuarter",
+            "value": 30.988311568895977,
+            "unit": "ns",
+            "range": "± 0.49480374892572754"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfHalf",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfHalf",
+            "value": 29.05868544181188,
+            "unit": "ns",
+            "range": "± 0.06982488055729172"
           }
         ]
       }
