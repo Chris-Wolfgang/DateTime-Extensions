@@ -337,9 +337,9 @@ public class DateTimeExtensionsTests
     [Fact]
     public void EndOfMonth_when_DateTime_MaxValue_returns_max_ticks()
     {
-        var result = System.DateTime.MaxValue.EndOfMonth();
+        var result = DateTime.MaxValue.EndOfMonth();
 
-        Assert.Equal(System.DateTime.MaxValue.Ticks, result.Ticks);
+        Assert.Equal(DateTime.MaxValue.Ticks, result.Ticks);
     }
 
 
@@ -347,9 +347,9 @@ public class DateTimeExtensionsTests
     [Fact]
     public void EndOfYear_when_DateTime_MaxValue_returns_max_ticks()
     {
-        var result = System.DateTime.MaxValue.EndOfYear();
+        var result = DateTime.MaxValue.EndOfYear();
 
-        Assert.Equal(System.DateTime.MaxValue.Ticks, result.Ticks);
+        Assert.Equal(DateTime.MaxValue.Ticks, result.Ticks);
     }
 
 
@@ -357,9 +357,9 @@ public class DateTimeExtensionsTests
     [Fact]
     public void FirstOfWeek_when_DateTime_MinValue_does_not_throw()
     {
-        var result = System.DateTime.MinValue.FirstOfWeek(System.DayOfWeek.Sunday);
+        var result = DateTime.MinValue.FirstOfWeek(DayOfWeek.Sunday);
 
-        Assert.Equal(System.DateTime.MinValue.Ticks, result.Ticks);
+        Assert.Equal(DateTime.MinValue.Ticks, result.Ticks);
     }
 
 
@@ -367,9 +367,9 @@ public class DateTimeExtensionsTests
     [Fact]
     public void FirstOfMonth_when_DateTime_MinValue_does_not_throw()
     {
-        var result = System.DateTime.MinValue.FirstOfMonth();
+        var result = DateTime.MinValue.FirstOfMonth();
 
-        Assert.Equal(System.DateTime.MinValue.Ticks, result.Ticks);
+        Assert.Equal(DateTime.MinValue.Ticks, result.Ticks);
     }
 
 
@@ -377,9 +377,9 @@ public class DateTimeExtensionsTests
     [Fact]
     public void FirstOfYear_when_DateTime_MinValue_does_not_throw()
     {
-        var result = System.DateTime.MinValue.FirstOfYear();
+        var result = DateTime.MinValue.FirstOfYear();
 
-        Assert.Equal(System.DateTime.MinValue.Ticks, result.Ticks);
+        Assert.Equal(DateTime.MinValue.Ticks, result.Ticks);
     }
 
 
@@ -387,9 +387,9 @@ public class DateTimeExtensionsTests
     [Fact]
     public void FirstOfQuarter_when_DateTime_MinValue_does_not_throw()
     {
-        var result = System.DateTime.MinValue.FirstOfQuarter();
+        var result = DateTime.MinValue.FirstOfQuarter();
 
-        Assert.Equal(System.DateTime.MinValue.Ticks, result.Ticks);
+        Assert.Equal(DateTime.MinValue.Ticks, result.Ticks);
     }
 
 
@@ -397,9 +397,9 @@ public class DateTimeExtensionsTests
     [Fact]
     public void FirstOfHalf_when_DateTime_MinValue_does_not_throw()
     {
-        var result = System.DateTime.MinValue.FirstOfHalf();
+        var result = DateTime.MinValue.FirstOfHalf();
 
-        Assert.Equal(System.DateTime.MinValue.Ticks, result.Ticks);
+        Assert.Equal(DateTime.MinValue.Ticks, result.Ticks);
     }
 
 
@@ -407,9 +407,9 @@ public class DateTimeExtensionsTests
     [Fact]
     public void EndOfWeek_when_DateTime_MaxValue_returns_max_ticks()
     {
-        var result = System.DateTime.MaxValue.EndOfWeek(System.DayOfWeek.Monday);
+        var result = DateTime.MaxValue.EndOfWeek(DayOfWeek.Monday);
 
-        Assert.Equal(System.DateTime.MaxValue.Ticks, result.Ticks);
+        Assert.Equal(DateTime.MaxValue.Ticks, result.Ticks);
     }
 
 
@@ -431,17 +431,17 @@ public class DateTimeExtensionsTests
 
         // 7 days + 1 day of headroom before MaxValue keeps us well clear of
         // the clamp branch and exercises the AddDays(7).AddTicks(-1) path.
-        var input = System.DateTime.MaxValue.AddDays(-8);
-        var firstOfWeek = input.FirstOfWeek(System.DayOfWeek.Monday);
+        var input = DateTime.MaxValue.AddDays(-8);
+        var firstOfWeek = input.FirstOfWeek(DayOfWeek.Monday);
 
         // Sanity-check the invariant the production code relies on.
         Assert.Equal(0, firstOfWeek.Ticks % TimeSpan.TicksPerDay);
-        Assert.Equal(TimeSpan.TicksPerDay - 1, System.DateTime.MaxValue.Ticks % TimeSpan.TicksPerDay);
+        Assert.Equal(TimeSpan.TicksPerDay - 1, DateTime.MaxValue.Ticks % TimeSpan.TicksPerDay);
 
-        var result = input.EndOfWeek(System.DayOfWeek.Monday);
+        var result = input.EndOfWeek(DayOfWeek.Monday);
 
         Assert.Equal(firstOfWeek.AddDays(7).AddTicks(-1), result);
-        Assert.NotEqual(System.DateTime.MaxValue, result);
+        Assert.NotEqual(DateTime.MaxValue, result);
     }
 
 
@@ -449,9 +449,9 @@ public class DateTimeExtensionsTests
     [Fact]
     public void FirstOfWeek_when_time_is_nonzero_returns_midnight()
     {
-        var input = new System.DateTime(2024, 6, 12, 15, 30, 45, System.DateTimeKind.Utc);
+        var input = new DateTime(2024, 6, 12, 15, 30, 45, DateTimeKind.Utc);
 
-        var result = input.FirstOfWeek(System.DayOfWeek.Monday);
+        var result = input.FirstOfWeek(DayOfWeek.Monday);
 
         Assert.Equal(0, result.Hour);
         Assert.Equal(0, result.Minute);
@@ -464,11 +464,11 @@ public class DateTimeExtensionsTests
     [Fact]
     public void EndOfMonth_when_DateTime_MaxValue_preserves_Kind()
     {
-        var input = new System.DateTime(9999, 12, 15, 10, 0, 0, System.DateTimeKind.Local);
+        var input = new DateTime(9999, 12, 15, 10, 0, 0, DateTimeKind.Local);
 
         var result = input.EndOfMonth();
 
-        Assert.Equal(System.DateTimeKind.Local, result.Kind);
+        Assert.Equal(DateTimeKind.Local, result.Kind);
     }
 
 
