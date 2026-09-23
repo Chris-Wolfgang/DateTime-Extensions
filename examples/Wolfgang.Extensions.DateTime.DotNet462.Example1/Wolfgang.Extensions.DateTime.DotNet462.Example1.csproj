@@ -1,7 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <ImplicitUsings>disable</ImplicitUsings>
     <TargetFramework>net462</TargetFramework>
   </PropertyGroup>
 
