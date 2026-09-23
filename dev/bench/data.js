@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790175011823,
+  "lastUpdate": 1790183098931,
   "repoUrl": "https://github.com/Chris-Wolfgang/DateTime-Extensions",
   "entries": {
     "BenchmarkDotNet": [
@@ -1188,6 +1188,114 @@ window.BENCHMARK_DATA = {
             "value": 29.027355134487152,
             "unit": "ns",
             "range": "± 0.02027396921536715"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "01ac498347f887b324c3f4cc92898f0328892c30",
+          "message": "chore: disable implicit usings so every using is explicit on every TFM (#414)\n\n* chore: disable implicit usings so every using is explicit on every TFM\n\nImplicit usings were enabled on src, tests and the net8.0 example, and disabled\non benchmarks - so a file's required usings differed by target framework. That\nis what makes InspectCode's RedundantUsingDirective untrustworthy here: it\nanalyses ONE framework slice, and a directive that is genuinely redundant on\nnet8.0/net10.0 is load-bearing on net462 and netstandard2.0. Acting on alert #80\nwould have broken two of the four shipped frameworks.\n\nWith implicit usings off everywhere, the compiler needs the same set of\ndirectives on every framework, so \"redundant\" means the same thing in every\nslice and the analyser can be believed.\n\nOnly one file actually depended on them: the net8.0 example's Program.cs, which\nused Console, ConsoleColor, DayOfWeek and DateTimeKind without importing System.\nIt now imports it, like every other file already did.\n\nThe net462 example had no setting at all - it inherited the SDK default rather\nthan stating a choice - so it is now explicit too.\n\nVerified: full solution builds Release with 0 errors, and the unit tests pass on\nboth extremes of the matrix - net462 and net10.0, 105 passed / 0 failed on each.\nAlso checked against the pending qualifier change in #413: that branch's bare\n`DateTime` still compiles with implicit usings off, because the test file has its\nown `using System;`. The two are independent and can merge in either order.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\n\n* chore: make the implicit-usings setting unconditional in the source project\n\nReview caught that this PR did not actually deliver what it claimed for the\nsource project. Its ImplicitUsings lived in a PropertyGroup conditioned on\nnet8.0 OR net10.0 - I replaced the value in place without noticing the condition\naround it - so net462 and netstandard2.0 had no project-level setting at all and\nfell back to the SDK default. The build passed only because that default happens\nto be off for those frameworks today.\n\nThat is exactly the situation this PR exists to remove: a setting that differs by\ntarget framework, which is why \"redundant using\" meant different things in\ndifferent slices in the first place. A future SDK default or a central property\nchange would have silently reopened the gap.\n\nThe conditional group is gone and the property sits in the project's\nunconditional PropertyGroup. The condition had a reason when the value was\n`enable` - implicit usings only exist on the modern frameworks - but `disable` is\nmeaningful everywhere.\n\nVerified per framework with `dotnet msbuild -getProperty:ImplicitUsings`:\nnet462, netstandard2.0, net8.0 and net10.0 all evaluate to `disable`. Full\nsolution builds Release with 0 errors; tests pass on net462 and net10.0,\n105 passed / 0 failed on each.\n\nThe other four projects were already unconditional; only the source project had\nthis shape.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\n\n* docs(changelog): add the internal fragment for the implicit-usings change\n\nThe Changelog Fragment Check failed this PR: \"src/ files changed: 1; fragments\nadded: 0\". The one src/ file is the project's .csproj, and a .csproj is not in\nthe check's config-only exemption (that list covers a nested .editorconfig,\n.globalconfig, .ruleset, .DotSettings and the PublicAPI baselines).\n\nTyped `internal` rather than waived with no-changelog: disabling implicit usings\nchanges nothing a consumer can observe, but it is a deliberate build-policy\nchange worth a line in the release notes, and no-changelog is for changes not\nworth an entry at all.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Claude Opus 5 <noreply@anthropic.com>",
+          "timestamp": "2026-09-23T13:00:44-04:00",
+          "tree_id": "33bbdc0790d8c8d384034f77b9c5c797334e3031",
+          "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/01ac498347f887b324c3f4cc92898f0328892c30"
+        },
+        "date": 1790183097193,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateMilliseconds",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateSeconds",
+            "value": 0.000055382649103800453,
+            "unit": "ns",
+            "range": "± 0.00009592556210554134"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfMonth",
+            "value": 0.000014254202445348104,
+            "unit": "ns",
+            "range": "± 0.000024689002856715448"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfMonth",
+            "value": 17.767230073610943,
+            "unit": "ns",
+            "range": "± 0.017792714628151855"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfYear",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfYear",
+            "value": 0.000240242729584376,
+            "unit": "ns",
+            "range": "± 0.00041611261378916994"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_Sunday",
+            "value": 7.8000414570172625,
+            "unit": "ns",
+            "range": "± 0.03497845931910718"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_Sunday",
+            "value": 10.130209922790527,
+            "unit": "ns",
+            "range": "± 0.013581163743882536"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_CurrentCulture",
+            "value": 11.646529575188955,
+            "unit": "ns",
+            "range": "± 0.019338200131917716"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_CurrentCulture",
+            "value": 14.012748142083487,
+            "unit": "ns",
+            "range": "± 0.15531793137084804"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfQuarter",
+            "value": 0.001714751124382019,
+            "unit": "ns",
+            "range": "± 0.0023234297714717087"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfQuarter",
+            "value": 19.506756742795307,
+            "unit": "ns",
+            "range": "± 0.03945813313927587"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfHalf",
+            "value": 0.012317152072985968,
+            "unit": "ns",
+            "range": "± 0.002228669212070512"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfHalf",
+            "value": 18.219260195891064,
+            "unit": "ns",
+            "range": "± 0.03868628136581042"
           }
         ]
       }
