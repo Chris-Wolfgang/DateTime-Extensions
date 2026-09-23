@@ -1,6 +1,5 @@
 using System;
 using BenchmarkDotNet.Attributes;
-using Wolfgang.Extensions.DateTime;
 
 namespace Wolfgang.Extensions.DateTime.Benchmarks;
 
