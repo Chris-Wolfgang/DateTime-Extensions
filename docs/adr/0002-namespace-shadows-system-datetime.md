@@ -12,14 +12,19 @@ before it consults `using` directives. So `DateTime.MaxValue` does not compile i
 
 ## Decision
 
-Keep the namespace, and write `System.DateTime`, `System.DateTimeKind` and `System.DayOfWeek` in
-full inside `src/`. Do not rename the namespace to dodge the collision, and do not introduce a
-`using` alias - an alias moves the surprise somewhere less obvious.
+Keep the namespace. Inside `src/`, write **`System.DateTime`** in full and let `using System;` supply
+everything else. Do not rename the namespace to dodge the collision, and do not introduce a `using`
+alias - an alias moves the surprise somewhere less obvious.
+
+Only `DateTime` itself needs the qualifier, because only `DateTime` collides with a namespace
+segment. `DateTimeKind`, `DayOfWeek`, `TimeSpan` and `CultureInfo` are written unqualified, and the
+file's `using System;` is what makes them resolve - which is why deleting that directive breaks the
+build on net462 and netstandard2.0 (ADR-0003).
 
 ## Consequences
 
-- `src/` reads more verbosely than a normal extensions library. That verbosity is load-bearing;
-  removing it does not compile.
+- `src/` reads more verbosely than a normal extensions library wherever `DateTime` appears. That
+  verbosity is load-bearing; removing it does not compile.
 - It does **not** follow that the qualifier is needed everywhere. In
   `tests/Wolfgang.Extensions.DateTime.Tests.Unit` the bare name resolves, because that namespace's
   own `using System;` wins there - which is why the qualifiers were removed from the test project
