@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790183098931,
+  "lastUpdate": 1790214644683,
   "repoUrl": "https://github.com/Chris-Wolfgang/DateTime-Extensions",
   "entries": {
     "BenchmarkDotNet": [
@@ -1296,6 +1296,114 @@ window.BENCHMARK_DATA = {
             "value": 18.219260195891064,
             "unit": "ns",
             "range": "± 0.03868628136581042"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "1b3b6cb0736118205ece7a4a158b35172fef8df2",
+          "message": "feat(build): gate the package on binary compatibility and declare trim/AOT support (#415)\n\n* feat(build): gate the package on binary compatibility and declare trim/AOT support\n\nCloses two long-open maintenance items in one csproj change.\n\nPackageValidation (#277): EnablePackageValidation with the baseline pinned to\n1.3.2, the last version published to NuGet. The build now downloads that package\nand compares the compiled surface against it, so an unintentional binary break\nfails before release rather than after. Keep the baseline at the last PUBLISHED\nversion on each release, never at the version being prepared, and waive a\ndeliberate break with CompatibilitySuppressions.xml naming the rule and target.\n\nVerified it actually runs rather than assuming: `RunPackageValidation` executes,\nthe log reports \"APICompat ran successfully without finding any breaking\nchanges\", and the 1.3.2 baseline package is fetched into the NuGet cache. A first\nattempt to prove it by making a public method internal proved the wrong gate -\nthe PublicAPI analyser caught that at compile time (RS0017) before validation\nran.\n\nIsTrimmable / IsAotCompatible (#295): set for net8.0 and net10.0 only. Both are\nnet8.0+ concepts - they enable the trim and AOT analysers and stamp the assembly\nso a consumer's own trimmed or native-AOT publish trusts it. netstandard2.0 and\nnet462 have neither, so the condition states a capability rather than the kind of\nper-framework policy drift the unconditional ImplicitUsings setting above exists\nto prevent.\n\nChecked the claim is real: .editorconfig line 43 sets\n`dotnet_analyzer_diagnostic.severity = suggestion`, which demotes the IL2xxx and\nIL3xxx trim/AOT diagnostics, so a clean build proves little on its own. Building\nwith the Trimming, SingleFile and AOT categories temporarily raised to warning\nproduces zero IL findings - the library really is trim and AOT clean. Raising\nthose categories permanently is a .editorconfig change, which the protected-files\nguard will not accept alongside this one; it follows separately.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\n\n* docs(changelog): split the fragment - the trim/AOT half is a feature, not internal\n\nReview was right, and the consequence is larger than the wording. The single\n`internal` fragment covered two different kinds of change:\n\n  EnablePackageValidation   a build-time gate; nothing a consumer can observe\n  IsTrimmable/IsAotCompatible  stamped into the net8.0/net10.0 assemblies, so a\n                               consumer's own trimmed or native-AOT publish\n                               changes behaviour - the trimmer trusts this\n                               library and stops warning about it\n\nThis repository derives the next version from fragment types: feature -> minor,\ninternal -> patch. Typed `internal`, the AOT capability would have shipped in a\nPATCH release. Split, `changelog.ps1 bump` now derives 1.4.0 rather than 1.3.3.\n\nchangelog/unreleased/README.md explicitly allows this: \"A PR that makes two\nindependently notable changes may add two.\"\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Claude Opus 5 <noreply@anthropic.com>",
+          "timestamp": "2026-09-23T21:45:49-04:00",
+          "tree_id": "13e37df4ef54076f2ec65453d2c0682ca8a47086",
+          "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/1b3b6cb0736118205ece7a4a158b35172fef8df2"
+        },
+        "date": 1790214642411,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateMilliseconds",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateSeconds",
+            "value": 0.011315001795689264,
+            "unit": "ns",
+            "range": "± 0.01729827659608398"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfMonth",
+            "value": 0.00014186153809229532,
+            "unit": "ns",
+            "range": "± 0.00017065298738913427"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfMonth",
+            "value": 28.256460587183636,
+            "unit": "ns",
+            "range": "± 0.008164642253713527"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfYear",
+            "value": 0.009023048604528109,
+            "unit": "ns",
+            "range": "± 0.014445961183956397"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfYear",
+            "value": 0.0013764531662066777,
+            "unit": "ns",
+            "range": "± 0.0023840868181090142"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_Sunday",
+            "value": 14.319488277037939,
+            "unit": "ns",
+            "range": "± 0.06398085655201072"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_Sunday",
+            "value": 14.62179085612297,
+            "unit": "ns",
+            "range": "± 0.05580946398095"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_CurrentCulture",
+            "value": 17.747514764467876,
+            "unit": "ns",
+            "range": "± 0.11494526908184266"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_CurrentCulture",
+            "value": 20.775258312622707,
+            "unit": "ns",
+            "range": "± 0.09896849859355066"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfQuarter",
+            "value": 0.0001344351718823115,
+            "unit": "ns",
+            "range": "± 0.00023284854802441848"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfQuarter",
+            "value": 30.428087611993153,
+            "unit": "ns",
+            "range": "± 0.024899805140308696"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfHalf",
+            "value": 0.004819304371873538,
+            "unit": "ns",
+            "range": "± 0.0082496261567536"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfHalf",
+            "value": 29.044956664244335,
+            "unit": "ns",
+            "range": "± 0.03970087710956397"
           }
         ]
       }
