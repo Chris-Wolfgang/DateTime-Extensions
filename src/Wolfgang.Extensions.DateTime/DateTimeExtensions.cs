@@ -30,6 +30,13 @@ public static class DateTimeExtensions
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
     /// <returns>A new DateTime equal to the passed in value without milliseconds</returns>
+    /// <example>
+    /// <code>
+    /// var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+    /// var truncated = moment.TruncateMilliseconds();
+    /// // 2026-09-24 14:30:45.0000000
+    /// </code>
+    /// </example>
     public static System.DateTime TruncateMilliseconds(this System.DateTime dateTime)
         => new
             (
@@ -50,6 +57,13 @@ public static class DateTimeExtensions
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
     /// <returns>A new DateTime equal to the passed in value without seconds and milliseconds</returns>
+    /// <example>
+    /// <code>
+    /// var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+    /// var truncated = moment.TruncateSeconds();
+    /// // 2026-09-24 14:30:00.0000000
+    /// </code>
+    /// </example>
     public static System.DateTime TruncateSeconds(this System.DateTime dateTime)
         => new
             (
@@ -71,6 +85,13 @@ public static class DateTimeExtensions
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
     /// <returns>A new DateTime representing the first of the month.</returns>
+    /// <example>
+    /// <code>
+    /// var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+    /// var first = moment.FirstOfMonth();
+    /// // 2026-09-01 00:00:00.0000000
+    /// </code>
+    /// </example>
     public static System.DateTime FirstOfMonth(this System.DateTime dateTime)
         => MidnightOf(dateTime.Year, dateTime.Month, 1, dateTime.Kind);
 
@@ -82,6 +103,13 @@ public static class DateTimeExtensions
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
     /// <returns>A new DateTime representing the end of the month.</returns>
+    /// <example>
+    /// <code>
+    /// var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+    /// var end = moment.EndOfMonth();
+    /// // 2026-09-30 23:59:59.9999999 - the last tick of the month, not midnight
+    /// </code>
+    /// </example>
     public static System.DateTime EndOfMonth(this System.DateTime dateTime)
     {
         var firstOfMonth = dateTime.FirstOfMonth();
@@ -100,6 +128,13 @@ public static class DateTimeExtensions
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
     /// <returns>A new DateTime representing the first of the year.</returns>
+    /// <example>
+    /// <code>
+    /// var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+    /// var first = moment.FirstOfYear();
+    /// // 2026-01-01 00:00:00.0000000
+    /// </code>
+    /// </example>
     public static System.DateTime FirstOfYear(this System.DateTime dateTime)
         => MidnightOf(dateTime.Year, 1, 1, dateTime.Kind);
 
@@ -111,6 +146,13 @@ public static class DateTimeExtensions
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
     /// <returns>A new DateTime representing the end of the year.</returns>
+    /// <example>
+    /// <code>
+    /// var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+    /// var end = moment.EndOfYear();
+    /// // 2026-12-31 23:59:59.9999999
+    /// </code>
+    /// </example>
     public static System.DateTime EndOfYear(this System.DateTime dateTime)
     {
         var firstOfYear = dateTime.FirstOfYear();
@@ -129,6 +171,15 @@ public static class DateTimeExtensions
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
     /// <returns>A new DateTime representing the first of the week.</returns>
+    /// <example>
+    /// <code>
+    /// var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+    /// var first = moment.FirstOfWeek();
+    /// // The current culture decides which day starts the week, so this value is
+    /// // machine-dependent. Under an invariant culture the week starts on Sunday
+    /// // and the result is 2026-09-20. Use the overload below to be explicit.
+    /// </code>
+    /// </example>
     public static System.DateTime FirstOfWeek(this System.DateTime dateTime)
         => FirstOfWeek(dateTime, CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek);
 
@@ -142,6 +193,13 @@ public static class DateTimeExtensions
     /// <param name="dateTime">The value to process.</param>
     /// <param name="firstDayOfWeek">Specifies the first day of the week.</param>
     /// <returns>A new DateTime representing the first of the week.</returns>
+    /// <example>
+    /// <code>
+    /// var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+    /// var first = moment.FirstOfWeek(DayOfWeek.Monday);
+    /// // 2026-09-21 00:00:00.0000000 - the Monday before Thursday 24 September
+    /// </code>
+    /// </example>
     public static System.DateTime FirstOfWeek(this System.DateTime dateTime, DayOfWeek firstDayOfWeek)
     {
         var firstOfWeek = dateTime.Date;
@@ -167,6 +225,14 @@ public static class DateTimeExtensions
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
     /// <returns>A new DateTime representing the end of the week.</returns>
+    /// <example>
+    /// <code>
+    /// var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+    /// var end = moment.EndOfWeek();
+    /// // Culture-dependent, like FirstOfWeek(). Prefer the overload below when the
+    /// // result has to be the same on every machine.
+    /// </code>
+    /// </example>
     public static System.DateTime EndOfWeek(this System.DateTime dateTime)
         => EndOfWeek(dateTime, CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek);
 
@@ -180,6 +246,13 @@ public static class DateTimeExtensions
     /// <param name="dateTime">The value to process.</param>
     /// <param name="firstDayOfWeek">Specifies the first day of the week. Use the parameterless overload to pick up <see cref="CultureInfo.CurrentCulture"/>'s value automatically.</param>
     /// <returns>A new DateTime representing the end of the week.</returns>
+    /// <example>
+    /// <code>
+    /// var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+    /// var end = moment.EndOfWeek(DayOfWeek.Monday);
+    /// // 2026-09-27 23:59:59.9999999 - the last tick of the Sunday that ends that week
+    /// </code>
+    /// </example>
     public static System.DateTime EndOfWeek(this System.DateTime dateTime, DayOfWeek firstDayOfWeek)
     {
         var firstOfWeek = dateTime.FirstOfWeek(firstDayOfWeek);
@@ -211,6 +284,13 @@ public static class DateTimeExtensions
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
     /// <returns>A new DateTime representing the first of the quarter at 00:00:00.</returns>
+    /// <example>
+    /// <code>
+    /// var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+    /// var first = moment.FirstOfQuarter();
+    /// // 2026-07-01 00:00:00.0000000 - September is in Q3
+    /// </code>
+    /// </example>
     public static System.DateTime FirstOfQuarter(this System.DateTime dateTime)
     {
         var quarterStartMonth = (((dateTime.Month - 1) / 3) * 3) + 1;
@@ -227,6 +307,13 @@ public static class DateTimeExtensions
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
     /// <returns>A new DateTime representing the end of the quarter.</returns>
+    /// <example>
+    /// <code>
+    /// var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+    /// var end = moment.EndOfQuarter();
+    /// // 2026-09-30 23:59:59.9999999
+    /// </code>
+    /// </example>
     public static System.DateTime EndOfQuarter(this System.DateTime dateTime)
     {
         var firstOfQuarter = dateTime.FirstOfQuarter();
@@ -245,6 +332,13 @@ public static class DateTimeExtensions
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
     /// <returns>A new DateTime representing the first of the half-year at 00:00:00.</returns>
+    /// <example>
+    /// <code>
+    /// var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+    /// var first = moment.FirstOfHalf();
+    /// // 2026-07-01 00:00:00.0000000 - September is in the second half
+    /// </code>
+    /// </example>
     public static System.DateTime FirstOfHalf(this System.DateTime dateTime)
     {
         var halfStartMonth = dateTime.Month <= 6 ? 1 : 7;
@@ -261,6 +355,13 @@ public static class DateTimeExtensions
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
     /// <returns>A new DateTime representing the end of the half-year.</returns>
+    /// <example>
+    /// <code>
+    /// var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+    /// var end = moment.EndOfHalf();
+    /// // 2026-12-31 23:59:59.9999999
+    /// </code>
+    /// </example>
     public static System.DateTime EndOfHalf(this System.DateTime dateTime)
     {
         var firstOfHalf = dateTime.FirstOfHalf();
