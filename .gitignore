@@ -434,6 +434,12 @@ docfx_project/obj/
 # Generated documentation (built by CI/CD)
 docs/*
 !docs/.gitkeep
+# Hand-written documentation under docs/ is tracked. The rule above predates it and only
+# survives for the already-tracked files (DOCFX-VERSION-PICKER.md, README-FORMATTING.md,
+# RELEASE-WORKFLOW-SETUP.md, WORKFLOW_SECURITY.md), because .gitignore does not affect files
+# git already knows about - a NEW one cannot be added without a negation like this.
+!docs/adr/
+!docs/migrations/
 
 # Claude Code local settings
 .claude/
