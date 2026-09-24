@@ -439,6 +439,7 @@ docs/*
 # RELEASE-WORKFLOW-SETUP.md, WORKFLOW_SECURITY.md), because .gitignore does not affect files
 # git already knows about - a NEW one cannot be added without a negation like this.
 !docs/adr/
+!docs/migrations/
 
 # Claude Code local settings
 .claude/
