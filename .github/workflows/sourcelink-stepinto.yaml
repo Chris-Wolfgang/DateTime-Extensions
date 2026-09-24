@@ -1,6 +1,6 @@
 name: SourceLink Step-Into
 
-# Proves the DEBUGGER half of SourceLink end-to-end (#54): that pressing F11 in a
+# Proves the DEBUGGER half of SourceLink end-to-end (#235): that pressing F11 in a
 # consumer steps into the library's real source (resolved via the SourceLink map in
 # the PDB), not a decompiled placeholder. sourcelink.yaml already proves every PDB
 # document resolves to real GitHub content; this drives an actual debugger step-into.
@@ -40,10 +40,19 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Install netcoredbg
+        # SHA-256 pinned and verified before extraction, matching how pr.yaml bootstraps
+        # gitleaks. A GitHub release asset is mutable: the tag can be moved or the asset
+        # replaced, and this archive is executed in a scheduled runner, so downloading it
+        # unverified would run whatever the release currently points at. When bumping
+        # NETCOREDBG_VERSION, recompute this with
+        #   curl -sSfL <asset-url> | sha256sum
+        env:
+          NETCOREDBG_SHA256: 4f58ae90aacbccdf85dc7d6a0d8893796dd3750d6867fe31396a6b7bee09c9cb
         run: |
           set -euo pipefail
           url="https://github.com/Samsung/netcoredbg/releases/download/${NETCOREDBG_VERSION}/netcoredbg-linux-amd64.tar.gz"
           curl -sSfL -o netcoredbg.tar.gz "$url"
+          echo "${NETCOREDBG_SHA256}  netcoredbg.tar.gz" | sha256sum -c - || { echo "::error::netcoredbg checksum mismatch - refusing to extract"; exit 1; }
           tar -xzf netcoredbg.tar.gz
           echo "NETCOREDBG=$PWD/netcoredbg/netcoredbg" >> "$GITHUB_ENV"
 
