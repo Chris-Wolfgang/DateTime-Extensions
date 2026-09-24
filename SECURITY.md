@@ -60,6 +60,47 @@ Please keep the details private until the advisory is published.
 Reporters are credited in the published advisory and in the release notes, unless you ask not to be.
 Tell us in the report how you would like to be named.
 
+## Verifying a release
+
+Every GitHub Release carries the package, a CycloneDX SBOM per project (`*.bom.json`) and a SLSA
+build-provenance bundle (`*.intoto.jsonl`). Nothing below needs a key from us - verification uses
+GitHub's own transparency log.
+
+**Provenance - did this package come from this repository's release workflow?**
+
+```bash
+gh attestation verify Wolfgang.Extensions.DateTime.1.3.2.nupkg \
+    --repo Chris-Wolfgang/DateTime-Extensions
+```
+
+That checks the artifact's digest against an attestation signed by the workflow that built it, and
+enforces that the signing identity really is this repository. It fetches the attestation from
+GitHub, so it needs network access but no prior download.
+
+If you are verifying offline, or want to check the exact bundle attached to the release rather than
+whatever GitHub currently holds, download the `.intoto.jsonl` asset and point at it:
+
+```bash
+gh attestation verify Wolfgang.Extensions.DateTime.1.3.2.nupkg \
+    --repo Chris-Wolfgang/DateTime-Extensions \
+    --bundle DateTime-Extensions-v1.3.2.intoto.jsonl
+```
+
+A failure here is meaningful: it means the file you hold is not the file that workflow produced.
+
+**Contents - what does the package actually depend on?**
+
+The `*.bom.json` asset is a CycloneDX SBOM listing the transitive closure at build time. It is a
+plain JSON document; read it, or feed it to whatever your organisation uses for dependency review.
+It is covered by the provenance attestation above, so a verified attestation also tells you the
+SBOM is the one this build emitted.
+
+**What this does NOT prove.** The package is not yet author-signed: `nuget verify` checks an author
+signature, and this package does not carry one - that is blocked on a code-signing certificate
+(#280). Provenance answers *"which workflow built this, from which commit"*; an author signature
+would answer *"who vouches for it"*. They are different claims and only the first is available
+today.
+
 ## Release path & compromise scope
 
 Facts a maintainer would need at 2am if the release identity is compromised. Generic
