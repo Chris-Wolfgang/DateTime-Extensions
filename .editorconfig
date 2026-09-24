@@ -42,6 +42,15 @@ dotnet_diagnostic.SA0001.severity = none
 # Enable .NET analyzers with conservative defaults
 dotnet_analyzer_diagnostic.severity = suggestion
 
+# The blanket `suggestion` above also demotes the trim/AOT diagnostics, which makes an
+# IsTrimmable/IsAotCompatible declaration unenforceable: the build stays green while a
+# violation is introduced. These three categories go back to warning so the claim the
+# assemblies make to consumers is actually checked. Verified when added: the library
+# produces zero IL findings with them enforced, so this elevates nothing currently failing.
+dotnet_analyzer_diagnostic.category-Trimming.severity = warning
+dotnet_analyzer_diagnostic.category-SingleFile.severity = warning
+dotnet_analyzer_diagnostic.category-AOT.severity = warning
+
 # IDE (Code Style) Rules
 dotnet_diagnostic.IDE0005.severity = suggestion   # Remove unnecessary usings
 # Allow var usage - modern C# style
