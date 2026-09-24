@@ -33,7 +33,8 @@ proc = subprocess.Popen(
     bufsize=1,
 )
 
-events: "queue.Queue[str]" = queue.Queue()
+# The reader thread enqueues None as an end-of-stream sentinel, so the element type is optional.
+events: "queue.Queue[str | None]" = queue.Queue()
 
 
 def _reader():
@@ -76,7 +77,13 @@ def fail(reason):
 
 
 send("-break-insert " + break_spec)
-wait_for(["^done", "^error"], 15)
+# Check the result: an ^error (bad file:line, symbols not loaded) or a timeout here used to
+# fall through to -exec-run, so the run failed later with a much less obvious reason.
+bp = wait_for(["^done", "^error"], 15)
+if bp is None:
+    fail("-break-insert at %s timed out - no ^done or ^error from the debugger" % break_spec)
+if bp.startswith("^error"):
+    fail("-break-insert at %s failed: %s" % (break_spec, bp))
 send("-exec-run")
 
 # netcoredbg halts at the managed entry point first; continue to the breakpoint.

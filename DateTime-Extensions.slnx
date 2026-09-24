@@ -42,6 +42,9 @@
     <File Path=".github/workflows/docfx.yaml" />
     <File Path=".github/workflows/pr.yaml" />
     <File Path=".github/workflows/release.yaml" />
+    <File Path=".github/workflows/protected-files.yaml" />
+    <File Path=".github/workflows/sourcelink.yaml" />
+    <File Path=".github/workflows/sourcelink-stepinto.yaml" />
     <File Path=".github/workflows/stryker.yaml" />
   </Folder>
   <Folder Name="/.root/assets/">
