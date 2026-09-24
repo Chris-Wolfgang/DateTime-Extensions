@@ -35,7 +35,7 @@ public sealed class DocExampleTests
         (
             errors.Count == 0,
             $"{example} failed to compile:{Environment.NewLine}" +
-            string.Join(Environment.NewLine, errors.Select(error => error.ToString()))
+            string.Join(Environment.NewLine, errors)
         );
     }
 
@@ -44,9 +44,9 @@ public sealed class DocExampleTests
     [Fact]
     public void Example_compiles_when_code_contains_yield_uses_async_iterator_signature()
     {
-        // Exercises BuildWrapperSource's "yield" branch directly — none of
-        // the 8 real XML-doc examples happen to be async iterators, so this
-        // branch is otherwise unreachable through the Theory above.
+        // Exercises BuildWrapperSource's "yield" branch directly. This library is
+        // synchronous DateTime arithmetic, so no real example is an iterator and the
+        // branch is unreachable through the Theory above.
         var example = new DocExample("synthetic.cs", 1, "yield return \"ok\";");
 
         var errors = DocExampleCompiler.Compile(example);
@@ -59,9 +59,9 @@ public sealed class DocExampleTests
     [Fact]
     public void Example_compiles_when_code_has_no_await_or_yield_uses_sync_void_signature()
     {
-        // Exercises BuildWrapperSource's synchronous "void RunAsync()" branch
-        // directly — every real XML-doc example uses await, so this branch is
-        // otherwise unreachable through the Theory above.
+        // The synchronous branch every real example here takes. Kept as a direct
+        // test so a change to the branch order is caught by name rather than by a
+        // confusing failure in the Theory above.
         var example = new DocExample("synthetic.cs", 1, "var x = 1 + 1;");
 
         var errors = DocExampleCompiler.Compile(example);
@@ -98,9 +98,43 @@ public sealed class DocExampleTests
         // running zero cases and reporting a vacuous pass.
         Assert.True
         (
-            Examples.Count >= 8,
-            $"Expected at least 8 <example> blocks, found {Examples.Count}. " +
+            Examples.Count >= 14,
+            $"Expected at least 14 <example> blocks, found {Examples.Count}. " +
             "If this is a real removal, lower the floor deliberately — don't just delete this test."
+        );
+    }
+
+    [Fact]
+    public void Example_compiles_when_code_contains_await_uses_async_task_signature()
+    {
+        // Exercises BuildWrapperSource's "await" branch. Nothing in this library is
+        // asynchronous, so no real example reaches it - but the branch exists and an
+        // untested branch in the harness is a harness nobody can trust.
+        var example = new DocExample("synthetic.cs", 1, "await Task.Yield();");
+
+        var errors = DocExampleCompiler.Compile(example);
+
+        Assert.Empty(errors);
+    }
+
+
+
+    [Fact]
+    public void Compile_when_the_snippet_does_not_compile_reports_the_errors()
+    {
+        // The property that makes this whole project worth having: it must be able to
+        // FAIL. A detector that only ever passes is indistinguishable from one that
+        // checks nothing, which is exactly what this project would have been before
+        // the library had any <example> blocks at all.
+        var example = new DocExample("synthetic.cs", 1, "var x = NoSuchMethodExists();");
+
+        var errors = DocExampleCompiler.Compile(example);
+
+        Assert.NotEmpty(errors);
+        Assert.Contains
+        (
+            errors,
+            error => error.ToString().Contains("NoSuchMethodExists", StringComparison.Ordinal)
         );
     }
 }

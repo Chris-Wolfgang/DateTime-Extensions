@@ -20,6 +20,7 @@ public static class DocExampleCompiler
     private const string HarnessPreamble = """
         using System;
         using System.Globalization;
+        using System.Threading.Tasks;
         using Wolfgang.Extensions.DateTime;
 
         namespace DocExamplesGenerated;
