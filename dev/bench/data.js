@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790214644683,
+  "lastUpdate": 1790280273321,
   "repoUrl": "https://github.com/Chris-Wolfgang/DateTime-Extensions",
   "entries": {
     "BenchmarkDotNet": [
@@ -1404,6 +1404,114 @@ window.BENCHMARK_DATA = {
             "value": 29.044956664244335,
             "unit": "ns",
             "range": "± 0.03970087710956397"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8af304c7328f12ac71bbcdcdc23201613261e442",
+          "message": "docs: give every public method an example, and compile them so they cannot rot (#426)\n\n* docs: give every public method an example, and compile them so they cannot rot\n\nCloses #233. The issue asked for a detector that compiles every XML-doc\n<example> block. This repository had ZERO of them, so porting the detector alone\nwould have added a Roslyn-hosted test project, a Microsoft.CodeAnalysis\ndependency and a CI surface to compile nothing - a permanently green test\nasserting the absence of examples.\n\nSo the examples come first. All fourteen public methods now carry an <example>\nshowing a real call and the value it returns. Every stated result was measured\nby running the method, not written from memory:\n\n    TruncateMilliseconds  2026-09-24 14:30:45.0000000\n    EndOfMonth            2026-09-30 23:59:59.9999999   (last tick, not midnight)\n    FirstOfQuarter        2026-07-01 00:00:00.0000000   (September is Q3)\n    FirstOfWeek(Monday)   2026-09-21 00:00:00.0000000   (24 Sep 2026 is a Thursday)\n\nThe two culture-dependent overloads say so instead of quoting a value that would\nbe wrong on another machine, and point at the explicit-day overload.\n\nThen the detector, ported from IAsyncEnumerable-Extensions and retargeted:\n\n  * the harness compiles examples in namespace DocExamplesGenerated, NOT inside\n    Wolfgang.Extensions.DateTime. That is deliberate: a consumer writes plain\n    `DateTime`, which only resolves outside this library's own namespace\n    (ADR-0002), so compiling there is the same check a consumer gets.\n  * the source walk over a sibling \"Legacy\" package is removed rather than\n    guarded - this repository has one src package, and enumerating a directory\n    that does not exist throws.\n  * the yield-bearing signature branch returned IAsyncEnumerable<string>, which\n    would not compile here; it now returns IEnumerable<string>.\n\nVerified the detector can FAIL, not just pass. Renaming a method inside one\nexample produces, against the real source file and line:\n\n    DateTimeExtensions.cs(36,24): error CS1061: 'DateTime' does not contain a\n    definition for 'TruncateMillisecondsOldName'\n\n18 tests pass with the examples as written; solution builds Release with 0\nerrors.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\n\n* test(docexamples): reach the 100% test-assembly coverage gate, and fix three ported claims\n\nStage 1 failed on this PR. Reproduced locally with the repo's own\ncoverlet.runsettings rather than guessing: the new test assembly measured\n98.54% against CODECOV_TEST_MINIMUM=100, with two uncovered lines.\n\n  DocExampleCompiler.cs:76   the \"await\" branch of BuildWrapperSource\n  DocExampleTests.cs:38      the lambda in the Theory's failure message\n\nNeither was reachable by accident. Nothing in this library is asynchronous, so\nno real example takes the await branch; and the failure message only formats\nwhen an example FAILS to compile, which never happens while they all pass.\n\nFixed the way the gate itself advises - write a test, and refactor what cannot\nbe tested:\n\n  * a direct test of the await branch. It needed Task back in the harness\n    preamble, which I had dropped while retargeting: the branch claimed to\n    support async snippets while the harness could not compile one.\n  * a test that a deliberately broken snippet REPORTS errors. That is the\n    property making this project worth having - a detector that can only pass is\n    indistinguishable from one that checks nothing.\n  * the failure message drops `.Select(error => error.ToString())`.\n    string.Join<T> already calls ToString on each element, so the projection was\n    redundant, and its lambda body could only run on a failure.\n\nThree claims inherited from the port were also false here, which is the same\ntrap as the #54 issue reference in the SourceLink workflow:\n\n  * \"the 8 real XML-doc examples\" - this repository has 14.\n  * \"every real XML-doc example uses await\" - exactly backwards; none do.\n  * the ExtractAll floor guard still asserted >= 8; raised to 14, so removing\n    examples fails loudly instead of quietly passing with fewer.\n\nVerified: 20 tests pass, and the assembly measures 100.00% under\ncoverlet.runsettings.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\n\n* test(docexamples): classify snippets by syntax, scan subdirectories, fix a misleading name\n\nThree review findings, two of them my own errors while retargeting the port.\n\nSignature selection read the raw snippet text for \"yield\" and \"await\". A snippet\nwhose COMMENT or string literal contained either word was handed an iterator or\nasync signature it could not satisfy, and failed to compile for a reason that had\nnothing to do with the example. It now parses the snippet and looks for a real\nYieldStatementSyntax or AwaitExpressionSyntax; Microsoft.CodeAnalysis.CSharp was\nalready referenced, so this costs no new dependency. Added a regression test\nwith \"yield and await\" inside a trailing comment - it fails under the old\nsubstring rule and passes under the new one.\n\nExtractAll's documentation claimed it reads \"every .cs file in the library's src\ndirectory\" while the code passed SearchOption.TopDirectoryOnly. I wrote that\nsentence during the port, so the doc and the code disagreed from the first\ncommit. The scan is now AllDirectories, skipping bin/ and obj/: the library is\none file today, but a subdirectory added later would silently stop being scanned\nand its examples would rot unnoticed - exactly what this project exists to\nprevent. Widening the scan is the honest reading of the promise.\n\nRenamed Example_compiles_when_code_contains_yield_uses_async_iterator_signature:\nI changed that branch from async IAsyncEnumerable<string> to a synchronous\nIEnumerable<string> during the port and left the old name, so the test claimed\nbehaviour the code no longer had.\n\nTwo further findings in the same review are NOT acted on, with reasons in the\nthread: the xunit 2.9.3 + runner 3.1.5 pairing is this repository's established\ncombination on modern framework slots and was settled fleet-wide, and\nXunit.Abstractions is used - DocExample implements IXunitSerializable.\n\n21 tests pass; the assembly still measures 100.00% under coverlet.runsettings.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Claude Opus 5 <noreply@anthropic.com>",
+          "timestamp": "2026-09-24T15:59:40-04:00",
+          "tree_id": "7056c4f75f8511f4027e10b39877e1c9dbde7659",
+          "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/8af304c7328f12ac71bbcdcdc23201613261e442"
+        },
+        "date": 1790280271955,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateMilliseconds",
+            "value": 0.028971079116066296,
+            "unit": "ns",
+            "range": "± 0.018341294130414014"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateSeconds",
+            "value": 0.0020190992703040442,
+            "unit": "ns",
+            "range": "± 0.0018152261423713502"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfMonth",
+            "value": 0.00011417518059412639,
+            "unit": "ns",
+            "range": "± 0.000197757213752379"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfMonth",
+            "value": 27.90703456600507,
+            "unit": "ns",
+            "range": "± 0.05922503920611482"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfYear",
+            "value": 0.0015770097573598225,
+            "unit": "ns",
+            "range": "± 0.00273146102377908"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfYear",
+            "value": 0.0002070938547452291,
+            "unit": "ns",
+            "range": "± 0.00021387142503749676"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_Sunday",
+            "value": 14.208458016316095,
+            "unit": "ns",
+            "range": "± 0.002796409987566013"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_Sunday",
+            "value": 14.574126581350962,
+            "unit": "ns",
+            "range": "± 0.06906336194731727"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_CurrentCulture",
+            "value": 17.73652520775795,
+            "unit": "ns",
+            "range": "± 0.10961256424651027"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_CurrentCulture",
+            "value": 21.20842844247818,
+            "unit": "ns",
+            "range": "± 0.2642137316454936"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfQuarter",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfQuarter",
+            "value": 30.444069663683575,
+            "unit": "ns",
+            "range": "± 0.02856403117170959"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfHalf",
+            "value": 0.00028444888691107434,
+            "unit": "ns",
+            "range": "± 0.0004926799242863945"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfHalf",
+            "value": 29.0883229970932,
+            "unit": "ns",
+            "range": "± 0.10606655047349432"
           }
         ]
       }
