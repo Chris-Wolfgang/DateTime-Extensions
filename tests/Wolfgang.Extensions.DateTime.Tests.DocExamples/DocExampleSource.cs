@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -89,8 +90,19 @@ public static class DocExampleSource
         var mainDir = FindSrcDirectory();
         var examples = new List<DocExample>();
 
-        foreach (var file in Directory.EnumerateFiles(mainDir, "*.cs", SearchOption.TopDirectoryOnly))
+        // AllDirectories, not TopDirectoryOnly: the library is one file today, but a
+        // subdirectory added later would silently stop being scanned, and examples in
+        // it would rot unnoticed - precisely what this project exists to prevent.
+        // bin/ and obj/ are skipped; they hold generated sources with no examples.
+        foreach (var file in Directory.EnumerateFiles(mainDir, "*.cs", SearchOption.AllDirectories))
         {
+            var relative = Path.GetRelativePath(mainDir, file).Replace('\\', '/');
+            if (relative.StartsWith("bin/", StringComparison.Ordinal)
+                || relative.StartsWith("obj/", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
             examples.AddRange(ExtractFromFile(file));
         }
 

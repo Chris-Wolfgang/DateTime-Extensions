@@ -42,7 +42,7 @@ public sealed class DocExampleTests
 
 
     [Fact]
-    public void Example_compiles_when_code_contains_yield_uses_async_iterator_signature()
+    public void Example_compiles_when_code_contains_yield_uses_iterator_signature()
     {
         // Exercises BuildWrapperSource's "yield" branch directly. This library is
         // synchronous DateTime arithmetic, so no real example is an iterator and the
@@ -136,5 +136,20 @@ public sealed class DocExampleTests
             errors,
             error => error.ToString().Contains("NoSuchMethodExists", StringComparison.Ordinal)
         );
+    }
+
+    [Fact]
+    public void Compile_when_yield_appears_only_in_a_comment_uses_the_synchronous_signature()
+    {
+        // Regression guard for substring classification. Deciding the wrapper signature
+        // by searching the raw text gave this snippet an IEnumerable<string> signature it
+        // cannot satisfy - no yield statement, so "not all code paths return a value" -
+        // and the example failed for a reason unrelated to the example. Classifying by
+        // syntax sees no YieldStatementSyntax and picks the synchronous branch.
+        var example = new DocExample("synthetic.cs", 1, "var x = 1; // yield and await, in a comment");
+
+        var errors = DocExampleCompiler.Compile(example);
+
+        Assert.Empty(errors);
     }
 }

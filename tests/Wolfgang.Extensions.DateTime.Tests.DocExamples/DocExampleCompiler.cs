@@ -1,5 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Linq;
 
 namespace Wolfgang.Extensions.DateTime.Tests.DocExamples;
 
@@ -67,12 +69,22 @@ public static class DocExampleCompiler
 
     private static string BuildWrapperSource(DocExample example)
     {
+        // Classified by SYNTAX, not by substring. A snippet whose comment or string
+        // literal happens to contain "yield" or "await" would otherwise be given an
+        // iterator or async signature it cannot satisfy, and fail to compile for a
+        // reason that has nothing to do with the example.
+        var snippet = CSharpSyntaxTree.ParseText
+        (
+            example.Code,
+            new CSharpParseOptions(kind: SourceCodeKind.Script)
+        ).GetRoot();
+
         string signature;
-        if (example.Code.Contains("yield", StringComparison.Ordinal))
+        if (snippet.DescendantNodes().OfType<YieldStatementSyntax>().Any())
         {
             signature = "System.Collections.Generic.IEnumerable<string> RunAsync()";
         }
-        else if (example.Code.Contains("await", StringComparison.Ordinal))
+        else if (snippet.DescendantNodes().OfType<AwaitExpressionSyntax>().Any())
         {
             signature = "async Task RunAsync()";
         }
