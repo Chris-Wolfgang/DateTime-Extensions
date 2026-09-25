@@ -117,6 +117,11 @@ jobs:
           # log. Keep it short enough to read in a notification and point at the artifact for the rest.
           tail -n 60 fuzz-results/fuzz.log > finding.txt
 
+          # Every line with a backtick is DOUBLE-quoted with the backtick escaped, and the log is
+          # indented into a Markdown code block rather than fenced. Backticks inside a single-quoted
+          # echo argument are an expansion that will never happen as far as shellcheck is concerned
+          # (SC2016), and actionlint fails the run on it. A heredoc would read better but its body
+          # cannot be indented inside a YAML block scalar without becoming part of the Markdown.
           {
             echo "A fuzz property failed on the scheduled run."
             echo
@@ -126,14 +131,12 @@ jobs:
             echo
             echo "CsCheck reports the shrunk counterexample and the seed that reproduces it. To"
             echo "replay it deterministically, pass that seed to the property's \`Sample\` call:"
-            echo '`Sample(..., seed: "<the seed from the log>")`, then keep the case as a named unit'
-            echo "test once it is understood - a regression test beats a rerun of the fuzzer."
+            echo "\`Sample(..., seed: \"<the seed from the log>\")\`. Once the case is understood,"
+            echo "keep it as a named unit test - a regression test beats a rerun of the fuzzer."
             echo
-            echo "Last 60 lines:"
+            echo "Last 60 lines of the log:"
             echo
-            echo '```'
-            cat finding.txt
-            echo '```'
+            sed 's/^/    /' finding.txt
           } > body.md
 
           # One thread per finding. `--search` matches the title marker below, so this does not
