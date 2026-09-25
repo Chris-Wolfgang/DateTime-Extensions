@@ -15,13 +15,53 @@ public static class DateTimeExtensions
     /// given Kind. Centralises the 8-parameter <see cref="System.DateTime"/>
     /// constructor pattern used by every <c>FirstOf*</c> boundary method
     /// that returns a midnight value: <see cref="FirstOfMonth"/>,
-    /// <see cref="FirstOfYear"/>, <see cref="FirstOfQuarter"/>,
-    /// <see cref="FirstOfHalf"/>, and the explicit-DayOfWeek overload of
-    /// <c>FirstOfWeek</c> (the parameterless overload just delegates to
-    /// that one via the current culture's <c>FirstDayOfWeek</c>).
+    /// <see cref="FirstOfYear"/>, <see cref="FirstOfQuarter"/> and
+    /// <see cref="FirstOfHalf"/>. The week methods construct from ticks
+    /// instead, because they work in whole days from the instant.
     /// </summary>
     private static System.DateTime MidnightOf(int year, int month, int day, DateTimeKind kind)
         => new(year, month, day, 0, 0, 0, 0, kind);
+
+
+
+    /// <summary>
+    /// Whole days from <paramref name="firstDayOfWeek"/> to <paramref name="dayOfWeek"/>,
+    /// 0 when they are the same day and never more than 6.
+    /// </summary>
+    /// <remarks>
+    /// The <c>+ 7</c> keeps the left operand of <c>%</c> positive: C#'s remainder takes the sign
+    /// of the dividend, so <c>(0 - 6) % 7</c> is -6 rather than 1.
+    /// </remarks>
+    private static int DaysSinceFirstDayOfWeek(DayOfWeek dayOfWeek, DayOfWeek firstDayOfWeek)
+        => ((int)dayOfWeek - (int)firstDayOfWeek + 7) % 7;
+
+
+
+    /// <summary>
+    /// Rejects a <see cref="DayOfWeek"/> that is not one of the seven defined values.
+    /// </summary>
+    /// <remarks>
+    /// An undefined value is a caller mistake rather than a range problem, which is why this
+    /// throws <see cref="ArgumentOutOfRangeException"/> while an unrepresentable week boundary
+    /// throws <see cref="OverflowException"/>: the first is fixed by passing something else, the
+    /// second cannot be fixed by any argument.
+    /// </remarks>
+    /// <param name="firstDayOfWeek">The value to check.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="firstDayOfWeek"/> is not one of the seven <see cref="DayOfWeek"/> values.
+    /// </exception>
+    private static void ValidateFirstDayOfWeek(DayOfWeek firstDayOfWeek)
+    {
+        if (firstDayOfWeek < DayOfWeek.Sunday || firstDayOfWeek > DayOfWeek.Saturday)
+        {
+            throw new ArgumentOutOfRangeException
+            (
+                nameof(firstDayOfWeek),
+                firstDayOfWeek,
+                "Not one of the seven DayOfWeek values."
+            );
+        }
+    }
 
 
 
@@ -171,6 +211,10 @@ public static class DateTimeExtensions
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
     /// <returns>A new DateTime representing the first of the week.</returns>
+    /// <exception cref="OverflowException">
+    /// The week containing <paramref name="dateTime"/> begins before
+    /// <see cref="System.DateTime.MinValue"/>. Only reachable in the first days of year 1.
+    /// </exception>
     /// <example>
     /// <code>
     /// var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
@@ -193,6 +237,14 @@ public static class DateTimeExtensions
     /// <param name="dateTime">The value to process.</param>
     /// <param name="firstDayOfWeek">Specifies the first day of the week.</param>
     /// <returns>A new DateTime representing the first of the week.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="firstDayOfWeek"/> is not one of the seven <see cref="DayOfWeek"/> values.
+    /// </exception>
+    /// <exception cref="OverflowException">
+    /// The week containing <paramref name="dateTime"/> and starting on
+    /// <paramref name="firstDayOfWeek"/> begins before <see cref="System.DateTime.MinValue"/>.
+    /// Only reachable in the first days of year 1.
+    /// </exception>
     /// <example>
     /// <code>
     /// var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
@@ -202,18 +254,26 @@ public static class DateTimeExtensions
     /// </example>
     public static System.DateTime FirstOfWeek(this System.DateTime dateTime, DayOfWeek firstDayOfWeek)
     {
-        var firstOfWeek = dateTime.Date;
-        while (firstOfWeek.DayOfWeek != firstDayOfWeek)
-        {
-            if (firstOfWeek == System.DateTime.MinValue.Date)
-            {
-                return new System.DateTime(System.DateTime.MinValue.Ticks, dateTime.Kind);
-            }
+        ValidateFirstDayOfWeek(firstDayOfWeek);
 
-            firstOfWeek = firstOfWeek.AddDays(-1);
+        var ticks = dateTime.Date.Ticks
+            - (DaysSinceFirstDayOfWeek(dateTime.DayOfWeek, firstDayOfWeek) * TimeSpan.TicksPerDay);
+
+        if (ticks < 0)
+        {
+            throw new OverflowException
+            (
+                string.Format
+                (
+                    CultureInfo.InvariantCulture,
+                    "The week containing {0:O} and starting on {1} begins before DateTime.MinValue.",
+                    dateTime,
+                    firstDayOfWeek
+                )
+            );
         }
 
-        return MidnightOf(firstOfWeek.Year, firstOfWeek.Month, firstOfWeek.Day, dateTime.Kind);
+        return new System.DateTime(ticks, dateTime.Kind);
     }
 
 
@@ -225,6 +285,10 @@ public static class DateTimeExtensions
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
     /// <returns>A new DateTime representing the end of the week.</returns>
+    /// <exception cref="OverflowException">
+    /// The week containing <paramref name="dateTime"/> ends after
+    /// <see cref="System.DateTime.MaxValue"/>. Only reachable in the last days of year 9999.
+    /// </exception>
     /// <example>
     /// <code>
     /// var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
@@ -246,6 +310,14 @@ public static class DateTimeExtensions
     /// <param name="dateTime">The value to process.</param>
     /// <param name="firstDayOfWeek">Specifies the first day of the week. Use the parameterless overload to pick up <see cref="CultureInfo.CurrentCulture"/>'s value automatically.</param>
     /// <returns>A new DateTime representing the end of the week.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="firstDayOfWeek"/> is not one of the seven <see cref="DayOfWeek"/> values.
+    /// </exception>
+    /// <exception cref="OverflowException">
+    /// The week containing <paramref name="dateTime"/> and starting on
+    /// <paramref name="firstDayOfWeek"/> ends after <see cref="System.DateTime.MaxValue"/>.
+    /// Only reachable in the last days of year 9999.
+    /// </exception>
     /// <example>
     /// <code>
     /// var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
@@ -255,24 +327,33 @@ public static class DateTimeExtensions
     /// </example>
     public static System.DateTime EndOfWeek(this System.DateTime dateTime, DayOfWeek firstDayOfWeek)
     {
-        var firstOfWeek = dateTime.FirstOfWeek(firstDayOfWeek);
-        var maxTicks = System.DateTime.MaxValue.Ticks;
-        var sevenDaysTicks = TimeSpan.FromDays(7).Ticks;
+        ValidateFirstDayOfWeek(firstDayOfWeek);
 
-        // Stryker disable once Equality : equivalent mutant. firstOfWeek is
-        // always midnight (firstOfWeek.Ticks is a multiple of TicksPerDay),
-        // while MaxValue.Ticks ≡ -1 (mod TicksPerDay). The difference
-        // (maxTicks - firstOfWeek.Ticks) therefore always equals
-        // n * TicksPerDay - 1 for some integer n ≥ 0 — never an exact
-        // multiple of TicksPerDay, and in particular never equal to
-        // sevenDaysTicks (= 7 * TicksPerDay). The equality boundary
-        // `< sevenDaysTicks` vs `<= sevenDaysTicks` is therefore
-        // unreachable through the public API and both forms produce
-        // identical output. The invariant is asserted by
-        // EndOfWeek_seven_day_boundary_returns_firstOfWeek_plus_7_minus_1_tick.
-        return maxTicks - firstOfWeek.Ticks < sevenDaysTicks
-            ? new System.DateTime(maxTicks, dateTime.Kind)
-            : firstOfWeek.AddDays(7).AddTicks(-1);
+        // Counted FORWARD from the instant, deliberately not as FirstOfWeek() + 7 days. Near
+        // DateTime.MinValue the start of the week can be unrepresentable while its end is
+        // perfectly representable, and routing through FirstOfWeek would either throw or
+        // answer from a week it had to clamp. Each method owns one end of the range.
+        var daysRemaining = 7 - DaysSinceFirstDayOfWeek(dateTime.DayOfWeek, firstDayOfWeek);
+
+        // Cannot overflow Int64: the largest value reachable is MaxValue.Ticks plus seven days,
+        // about 3.16e18 against long.MaxValue of about 9.22e18.
+        var ticks = dateTime.Date.Ticks + (daysRemaining * TimeSpan.TicksPerDay) - 1;
+
+        if (ticks > System.DateTime.MaxValue.Ticks)
+        {
+            throw new OverflowException
+            (
+                string.Format
+                (
+                    CultureInfo.InvariantCulture,
+                    "The week containing {0:O} and starting on {1} ends after DateTime.MaxValue.",
+                    dateTime,
+                    firstDayOfWeek
+                )
+            );
+        }
+
+        return new System.DateTime(ticks, dateTime.Kind);
     }
 
 

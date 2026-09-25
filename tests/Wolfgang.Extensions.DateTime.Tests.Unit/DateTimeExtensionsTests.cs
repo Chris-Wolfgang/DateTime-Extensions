@@ -355,9 +355,27 @@ public class DateTimeExtensionsTests
 
 
     [Fact]
-    public void FirstOfWeek_when_DateTime_MinValue_does_not_throw()
+    public void FirstOfWeek_when_the_week_starts_before_DateTime_MinValue_throws_OverflowException()
     {
-        var result = DateTime.MinValue.FirstOfWeek(DayOfWeek.Sunday);
+        // DateTime.MinValue is a Monday, so the Sunday-aligned week containing it began on
+        // 0000-12-31, which DateTime cannot represent. This used to return MinValue - a value
+        // whose DayOfWeek was not the day that was asked for. See issue #436.
+        var exception = Assert.Throws<OverflowException>
+        (
+            () => DateTime.MinValue.FirstOfWeek(DayOfWeek.Sunday)
+        );
+
+        Assert.Contains("begins before DateTime.MinValue", exception.Message, StringComparison.Ordinal);
+    }
+
+
+
+    [Fact]
+    public void FirstOfWeek_when_DateTime_MinValue_and_the_week_starts_on_Monday_returns_MinValue()
+    {
+        // The one alignment that IS representable at the bottom of the range, because
+        // 0001-01-01 is itself a Monday.
+        var result = DateTime.MinValue.FirstOfWeek(DayOfWeek.Monday);
 
         Assert.Equal(DateTime.MinValue.Ticks, result.Ticks);
     }
@@ -405,9 +423,27 @@ public class DateTimeExtensionsTests
 
 
     [Fact]
-    public void EndOfWeek_when_DateTime_MaxValue_returns_max_ticks()
+    public void EndOfWeek_when_the_week_ends_after_DateTime_MaxValue_throws_OverflowException()
     {
-        var result = DateTime.MaxValue.EndOfWeek(DayOfWeek.Monday);
+        // DateTime.MaxValue is a Friday, so a Monday-aligned week containing it ends on
+        // 10000-01-02, which DateTime cannot represent. This used to return MaxValue, quietly
+        // describing a week under two days long. See issue #436.
+        var exception = Assert.Throws<OverflowException>
+        (
+            () => DateTime.MaxValue.EndOfWeek(DayOfWeek.Monday)
+        );
+
+        Assert.Contains("ends after DateTime.MaxValue", exception.Message, StringComparison.Ordinal);
+    }
+
+
+
+    [Fact]
+    public void EndOfWeek_when_DateTime_MaxValue_and_the_week_starts_on_Saturday_returns_MaxValue()
+    {
+        // The one alignment that IS representable at the top of the range: the Saturday week
+        // 9999-12-25..9999-12-31 ends exactly on the last representable tick.
+        var result = DateTime.MaxValue.EndOfWeek(DayOfWeek.Saturday);
 
         Assert.Equal(DateTime.MaxValue.Ticks, result.Ticks);
     }
@@ -415,33 +451,118 @@ public class DateTimeExtensionsTests
 
 
     [Fact]
-    public void EndOfWeek_seven_day_boundary_returns_firstOfWeek_plus_7_minus_1_tick()
+    public void EndOfWeek_when_the_week_starts_before_DateTime_MinValue_still_returns_the_week_end()
     {
-        // Documents the invariant used by the boundary check in EndOfWeek:
-        // firstOfWeek (produced by FirstOfWeek) is always midnight, so
-        // firstOfWeek.Ticks is a multiple of TimeSpan.TicksPerDay; meanwhile
-        // DateTime.MaxValue.Ticks ≡ -1 (mod TicksPerDay). So
-        // (maxTicks - firstOfWeek.Ticks) always equals n * TicksPerDay - 1
-        // for some integer n ≥ 0 — never an exact multiple of TicksPerDay,
-        // and in particular never equal to exactly 7 * TicksPerDay. The
-        // equality boundary of the clamp check is therefore unreachable,
-        // and any input whose firstOfWeek is at least 7 days before
-        // MaxValue should return firstOfWeek + 7 days - 1 tick (not the
-        // MaxValue clamp).
+        // The regression this split exists for. The Saturday-aligned week containing
+        // 0001-01-03 runs 0000-12-30..0001-01-05: its START is unrepresentable, its END is
+        // not. EndOfWeek used to route through FirstOfWeek, inherit that clamp, and answer
+        // 0001-01-07 - two days into the following week. Counting forward from the instant
+        // instead gives the correct answer and never consults the week's start. Issue #436.
+        var result = new DateTime(1, 1, 3, 6, 0, 0).EndOfWeek(DayOfWeek.Saturday);
 
-        // 7 days + 1 day of headroom before MaxValue keeps us well clear of
-        // the clamp branch and exercises the AddDays(7).AddTicks(-1) path.
+        Assert.Equal
+        (
+            new DateTime(1, 1, 5, 23, 59, 59).AddTicks(TimeSpan.TicksPerSecond - 1),
+            result
+        );
+    }
+
+
+
+    [Fact]
+    public void FirstOfWeek_when_the_week_ends_after_DateTime_MaxValue_still_returns_the_week_start()
+    {
+        // The mirror of the test above: each method owns one end of the range, so the one
+        // that is not at its own limit must keep working.
+        var result = DateTime.MaxValue.FirstOfWeek(DayOfWeek.Monday);
+
+        Assert.Equal(new DateTime(9999, 12, 27), result);
+    }
+
+
+
+    [Fact]
+    public void EndOfWeek_a_week_clear_of_both_limits_is_exactly_seven_days_long()
+    {
+        // Cross-checks the two now-independent implementations against each other: away from
+        // both limits, EndOfWeek must land exactly one tick before FirstOfWeek plus seven days.
         var input = DateTime.MaxValue.AddDays(-8);
         var firstOfWeek = input.FirstOfWeek(DayOfWeek.Monday);
-
-        // Sanity-check the invariant the production code relies on.
-        Assert.Equal(0, firstOfWeek.Ticks % TimeSpan.TicksPerDay);
-        Assert.Equal(TimeSpan.TicksPerDay - 1, DateTime.MaxValue.Ticks % TimeSpan.TicksPerDay);
 
         var result = input.EndOfWeek(DayOfWeek.Monday);
 
         Assert.Equal(firstOfWeek.AddDays(7).AddTicks(-1), result);
         Assert.NotEqual(DateTime.MaxValue, result);
+    }
+
+
+
+    public static TheoryData<DateTime, DayOfWeek> WeeksStartingBeforeMinValue
+    {
+        get
+        {
+            // 0001-01-01 is a Monday, so on the 1st every day except Monday needs an earlier
+            // week start than DateTime can hold; by the 7th (a Sunday) every day has occurred
+            // at least once and nothing is unreachable. Six dates, 21 pairs.
+            var data = new TheoryData<DateTime, DayOfWeek>();
+
+            for (var day = 1; day <= 6; day++)
+            {
+                var date = new DateTime(1, 1, day, 12, 0, 0);
+
+                foreach (DayOfWeek firstDayOfWeek in Enum.GetValues(typeof(DayOfWeek)))
+                {
+                    var daysBack = ((int)date.DayOfWeek - (int)firstDayOfWeek + 7) % 7;
+
+                    // Only (day - 1) days exist before this date, so a larger step back leaves
+                    // the representable range.
+                    if (daysBack > day - 1)
+                    {
+                        data.Add(date, firstDayOfWeek);
+                    }
+                }
+            }
+
+            return data;
+        }
+    }
+
+
+
+    [Theory]
+    [MemberData(nameof(WeeksStartingBeforeMinValue))]
+    public void FirstOfWeek_throws_for_every_week_that_starts_before_MinValue
+    (
+        DateTime dateTime,
+        DayOfWeek firstDayOfWeek
+    )
+    {
+        Assert.Throws<OverflowException>(() => dateTime.FirstOfWeek(firstDayOfWeek));
+
+        // The other method owns the other end of the range, so it must still answer here.
+        var endOfWeek = dateTime.EndOfWeek(firstDayOfWeek);
+
+        Assert.True(endOfWeek >= dateTime, $"EndOfWeek returned {endOfWeek:O} for {dateTime:O}");
+    }
+
+
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(7)]
+    [InlineData(99)]
+    public void Week_methods_throw_for_a_DayOfWeek_that_is_not_one_of_the_seven_values(int value)
+    {
+        var dateTime = new DateTime(2026, 9, 24);
+        var firstDayOfWeek = (DayOfWeek)value;
+
+        // Previously these walked back to year 1 - some 740,000 iterations - and answered
+        // 0001-01-01.
+        var first = Assert.Throws<ArgumentOutOfRangeException>(() => dateTime.FirstOfWeek(firstDayOfWeek));
+        var end = Assert.Throws<ArgumentOutOfRangeException>(() => dateTime.EndOfWeek(firstDayOfWeek));
+
+        Assert.Equal("firstDayOfWeek", first.ParamName);
+        Assert.Equal("firstDayOfWeek", end.ParamName);
     }
 
 

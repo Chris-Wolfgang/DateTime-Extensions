@@ -43,16 +43,79 @@ public sealed class DateTimeProperties
     /// Instants across the whole representable range, with all three <see cref="DateTimeKind"/>
     /// values. Kind matters: every method is supposed to carry it through untouched.
     /// </summary>
-    private static readonly Gen<System.DateTime> AnyInstant =
-        Gen.Long[0, MaxTicks].Select
-        (
-            Gen.Int[0, 2],
-            (ticks, kind) => new System.DateTime(ticks, (DateTimeKind)kind)
-        );
+    /// <remarks>
+    /// Deliberately biased towards the two ends. The interesting behaviour lives in the first and
+    /// last week of the range, and a uniform draw lands there with probability about 4e-6 - so a
+    /// short per-PR run would never exercise a boundary at all, and the branches that handle them
+    /// would go untested while the suite looked thorough.
+    /// </remarks>
+    private static readonly Gen<System.DateTime> AnyInstant = Gen.Frequency
+    (
+        (80, InstantsBetween(0, MaxTicks)),
+        (10, InstantsBetween(0, 14 * TimeSpan.TicksPerDay)),
+        (10, InstantsBetween(MaxTicks - (14 * TimeSpan.TicksPerDay), MaxTicks))
+    );
 
 
 
     private static readonly Gen<DayOfWeek> AnyDayOfWeek = Gen.Int[0, 6].Select(day => (DayOfWeek)day);
+
+
+
+    private static Gen<System.DateTime> InstantsBetween(long fromTicks, long toTicks)
+    {
+        return Gen.Long[fromTicks, toTicks].Select
+        (
+            Gen.Int[0, 2],
+            (ticks, kind) => new System.DateTime(ticks, (DateTimeKind)kind)
+        );
+    }
+
+
+
+    /// <summary>
+    /// The first instant whose week starts inside the representable range for every alignment.
+    /// 0001-01-01 is a Monday, so by 0001-01-08 every day of the week has occurred at least once.
+    /// </summary>
+    private static readonly System.DateTime FirstFullyRepresentableWeek = new(1, 1, 8);
+
+
+
+    /// <summary>
+    /// The mirror: the last instant whose week ends inside the representable range for every
+    /// alignment. Anything later can need up to seven more days than the range holds.
+    /// </summary>
+    private static readonly System.DateTime LastFullyRepresentableWeek = new(9999, 12, 24, 23, 59, 59);
+
+
+
+    /// <summary>
+    /// Both week boundaries for <paramref name="instant"/>, or false when either is
+    /// unrepresentable and the method throws instead of answering.
+    /// </summary>
+    private static bool TryWeek
+    (
+        System.DateTime instant,
+        DayOfWeek day,
+        out System.DateTime first,
+        out System.DateTime end
+    )
+    {
+        first = default;
+        end = default;
+
+        try
+        {
+            first = instant.FirstOfWeek(day);
+            end = instant.EndOfWeek(day);
+
+            return true;
+        }
+        catch (OverflowException)
+        {
+            return false;
+        }
+    }
 
 
 
@@ -206,24 +269,33 @@ public sealed class DateTimeProperties
 
 
     /// <summary>
-    /// The week methods are the only ones with a documented clamp: the earliest representable
-    /// instant has no earlier Sunday to walk back to, so <c>FirstOfWeek</c> returns
-    /// <see cref="System.DateTime.MinValue"/> rather than throwing. The property encodes the clamp
-    /// instead of excluding the range that triggers it.
+    /// A week boundary is unrepresentable only at the very ends of the range, and each method owns
+    /// one end: <c>FirstOfWeek</c> throws <see cref="OverflowException"/> only inside the first
+    /// seven days of year 1, <c>EndOfWeek</c> only inside the last seven of year 9999.
     /// </summary>
+    /// <remarks>
+    /// The window is asserted as a DATE RANGE rather than by recomputing the implementation's own
+    /// arithmetic, which would only prove that the code agrees with itself. The exact boundary
+    /// pairs - 21 at each end - are pinned by name in the unit suite.
+    /// </remarks>
     [Fact]
-    public void FirstOfWeek_lands_on_the_requested_day_unless_it_clamps_to_MinValue()
+    public void FirstOfWeek_lands_on_the_requested_day_or_throws_only_in_the_first_week_of_year_1()
     {
         AnyInstant.Select(AnyDayOfWeek, (instant, day) => (instant, day)).Sample
         (
             generated =>
             {
                 var (instant, day) = generated;
-                var actual = instant.FirstOfWeek(day);
 
-                if (actual.Ticks == 0)
+                System.DateTime actual;
+
+                try
                 {
-                    return actual.Kind == instant.Kind && instant.Ticks < TimeSpan.TicksPerDay * 7;
+                    actual = instant.FirstOfWeek(day);
+                }
+                catch (OverflowException)
+                {
+                    return instant < FirstFullyRepresentableWeek;
                 }
 
                 var daysWalkedBack = (instant.Date - actual).Days;
@@ -242,29 +314,76 @@ public sealed class DateTimeProperties
 
 
 
-    /// <summary>
-    /// The mirror clamp: a week starting within seven days of the end of time cannot be a full
-    /// week long, so <c>EndOfWeek</c> saturates at <see cref="System.DateTime.MaxValue"/>.
-    /// </summary>
     [Fact]
-    public void EndOfWeek_is_one_tick_short_of_seven_days_after_FirstOfWeek_unless_it_clamps()
+    public void EndOfWeek_is_a_full_week_after_FirstOfWeek_or_throws_only_at_the_end_of_time()
     {
         AnyInstant.Select(AnyDayOfWeek, (instant, day) => (instant, day)).Sample
         (
             generated =>
             {
                 var (instant, day) = generated;
-                var first = instant.FirstOfWeek(day);
-                var actual = instant.EndOfWeek(day);
 
-                if (MaxTicks - first.Ticks < TimeSpan.TicksPerDay * 7)
+                System.DateTime actual;
+
+                try
                 {
-                    return actual.Ticks == MaxTicks && actual.Kind == instant.Kind;
+                    actual = instant.EndOfWeek(day);
+                }
+                catch (OverflowException)
+                {
+                    return instant > LastFullyRepresentableWeek;
                 }
 
-                return actual == first.AddDays(7).AddTicks(-1)
-                    && actual.Kind == instant.Kind
-                    && instant <= actual;
+                // Near MinValue a week's START can be unrepresentable while its end is not, and
+                // EndOfWeek must still answer there - that is what the two implementations being
+                // independent buys. So the cross-check against FirstOfWeek is conditional on
+                // FirstOfWeek having an answer, not the other way round.
+                try
+                {
+                    // Ticks, not AddDays(7).AddTicks(-1): for a week ending exactly on
+                    // DateTime.MaxValue the intermediate "+ 7 days" is 10000-01-01 and
+                    // DateTime.AddDays throws before the tick comes back off. Found by this very
+                    // property at 9999-12-25, which is a legitimate input the library answers fine.
+                    return actual.Kind == instant.Kind
+                        && instant <= actual
+                        && actual.Ticks == instant.FirstOfWeek(day).Ticks + (7 * TimeSpan.TicksPerDay) - 1;
+                }
+                catch (OverflowException)
+                {
+                    return instant < FirstFullyRepresentableWeek;
+                }
+            },
+            iter: FuzzIterations,
+            time: FuzzTimeSeconds
+        );
+    }
+
+
+
+    /// <summary>
+    /// An undefined <see cref="DayOfWeek"/> is the caller's mistake at every instant, and is
+    /// reported as one - never as an <see cref="OverflowException"/>, and never answered.
+    /// </summary>
+    [Fact]
+    public void Week_methods_reject_a_DayOfWeek_that_is_not_one_of_the_seven_values()
+    {
+        var undefinedDays = Gen.Int[-500, 500].Where(value => value < 0 || value > 6);
+
+        AnyInstant.Select(undefinedDays, (instant, value) => (instant, value)).Sample
+        (
+            generated =>
+            {
+                var (instant, value) = generated;
+                var day = (DayOfWeek)value;
+
+                // Assert.Throws rather than try/catch: a property that passes never executes its
+                // own `return false`, and an unexecutable line cannot meet the 100% coverage bar
+                // this repository holds test assemblies to.
+                var first = Assert.Throws<ArgumentOutOfRangeException>(() => instant.FirstOfWeek(day));
+                var end = Assert.Throws<ArgumentOutOfRangeException>(() => instant.EndOfWeek(day));
+
+                return string.Equals(first.ParamName, "firstDayOfWeek", StringComparison.Ordinal)
+                    && string.Equals(end.ParamName, "firstDayOfWeek", StringComparison.Ordinal);
             },
             iter: FuzzIterations,
             time: FuzzTimeSeconds
@@ -309,13 +428,11 @@ public sealed class DateTimeProperties
     /// An off-by-one at a boundary usually shows up here first.
     /// </summary>
     /// <remarks>
-    /// One documented exception, and this property is how it was found. Inside the first week of
-    /// year 1 there is no earlier occurrence of <c>firstDayOfWeek</c> to walk back to, so
-    /// <c>FirstOfWeek</c> clamps to <see cref="System.DateTime.MinValue"/> - which is a Monday. The
-    /// clamped week is therefore not aligned to the requested day, and <c>EndOfWeek</c>'s
-    /// "first + 7 days - 1 tick" lands in the next aligned week, so applying it again moves. See
-    /// issue #436: this states the behaviour as it is rather than asserting what it ought to be, so
-    /// the weekly run does not re-report a known finding.
+    /// This property found issue #436: <c>EndOfWeek</c> used to be built on <c>FirstOfWeek</c> and
+    /// inherited a clamp that misaligned the week, so applying it twice moved. With the two
+    /// implementations independent there is no exception to carve out - the week methods are
+    /// idempotent wherever they answer at all, and the <c>TryWeek</c> guard below only skips the
+    /// inputs for which a boundary is unrepresentable and an exception is the answer.
     /// </remarks>
     [Fact]
     public void Every_method_is_idempotent()
@@ -325,9 +442,12 @@ public sealed class DateTimeProperties
             generated =>
             {
                 var (instant, day) = generated;
-                var weekWasClamped = instant.FirstOfWeek(day).Ticks == 0;
 
-                return instant.FirstOfMonth().FirstOfMonth() == instant.FirstOfMonth()
+                var weekIsRepresentable = TryWeek(instant, day, out var first, out var end);
+
+                return (!weekIsRepresentable
+                        || (first.FirstOfWeek(day) == first && end.EndOfWeek(day) == end))
+                    && instant.FirstOfMonth().FirstOfMonth() == instant.FirstOfMonth()
                     && instant.EndOfMonth().EndOfMonth() == instant.EndOfMonth()
                     && instant.FirstOfQuarter().FirstOfQuarter() == instant.FirstOfQuarter()
                     && instant.EndOfQuarter().EndOfQuarter() == instant.EndOfQuarter()
@@ -335,8 +455,6 @@ public sealed class DateTimeProperties
                     && instant.EndOfHalf().EndOfHalf() == instant.EndOfHalf()
                     && instant.FirstOfYear().FirstOfYear() == instant.FirstOfYear()
                     && instant.EndOfYear().EndOfYear() == instant.EndOfYear()
-                    && instant.FirstOfWeek(day).FirstOfWeek(day) == instant.FirstOfWeek(day)
-                    && (weekWasClamped || instant.EndOfWeek(day).EndOfWeek(day) == instant.EndOfWeek(day))
                     && instant.TruncateMilliseconds().TruncateMilliseconds() == instant.TruncateMilliseconds()
                     && instant.TruncateSeconds().TruncateSeconds() == instant.TruncateSeconds();
             },
@@ -362,7 +480,17 @@ public sealed class DateTimeProperties
                 var earlier = left <= right ? left : right;
                 var later = left <= right ? right : left;
 
-                return earlier.FirstOfMonth() <= later.FirstOfMonth()
+                // Only comparable when both instants have both boundaries; at the ends of the
+                // range one of them throws instead, which the two properties above cover.
+                // Both calls run unconditionally: short-circuiting the second would leave its
+                // out parameters unassigned as far as the compiler is concerned.
+                var earlierIsRepresentable = TryWeek(earlier, day, out var earlierFirst, out var earlierEnd);
+                var laterIsRepresentable = TryWeek(later, day, out var laterFirst, out var laterEnd);
+                var bothRepresentable = earlierIsRepresentable && laterIsRepresentable;
+
+                return (!bothRepresentable
+                        || (earlierFirst <= laterFirst && earlierEnd <= laterEnd))
+                    && earlier.FirstOfMonth() <= later.FirstOfMonth()
                     && earlier.EndOfMonth() <= later.EndOfMonth()
                     && earlier.FirstOfQuarter() <= later.FirstOfQuarter()
                     && earlier.EndOfQuarter() <= later.EndOfQuarter()
@@ -370,8 +498,6 @@ public sealed class DateTimeProperties
                     && earlier.EndOfHalf() <= later.EndOfHalf()
                     && earlier.FirstOfYear() <= later.FirstOfYear()
                     && earlier.EndOfYear() <= later.EndOfYear()
-                    && earlier.FirstOfWeek(day) <= later.FirstOfWeek(day)
-                    && earlier.EndOfWeek(day) <= later.EndOfWeek(day)
                     && earlier.TruncateMilliseconds() <= later.TruncateMilliseconds()
                     && earlier.TruncateSeconds() <= later.TruncateSeconds();
             },
