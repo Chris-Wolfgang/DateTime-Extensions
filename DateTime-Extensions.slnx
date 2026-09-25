@@ -84,5 +84,6 @@
   <Folder Name="/tests/">
     <Project Path="tests/Wolfgang.Extensions.DateTime.Tests.Unit/Wolfgang.Extensions.DateTime.Tests.Unit.csproj" />
     <Project Path="tests/Wolfgang.Extensions.DateTime.Tests.DocExamples/Wolfgang.Extensions.DateTime.Tests.DocExamples.csproj" />
+    <Project Path="tests/Wolfgang.Extensions.DateTime.Tests.Fuzz/Wolfgang.Extensions.DateTime.Tests.Fuzz.csproj" />
   </Folder>
 </Solution>
