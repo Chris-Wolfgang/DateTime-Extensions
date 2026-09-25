@@ -167,6 +167,15 @@ The guarantee also holds in a trimmed or native-AOT publish: the AOT smoke test 
 still starts its week on Monday, so a published binary that lost its culture data fails CI instead of
 quietly answering as though every culture were invariant.
 
+### Allocation
+
+**Every method allocates zero bytes.** There is no opt-in hot-path subset: all fourteen take a
+`DateTime`, do integer arithmetic, and return a `DateTime`, so none of them has a reason to allocate.
+A test measures `GC.GetAllocatedBytesForCurrentThread()` around each call and fails with the byte
+count and the call site if that ever stops being true. The measurement needs .NET Core 3.0 or later —
+there is no .NET Framework equivalent — so it runs on those slices and is compiled out on `net4x`
+rather than asserting something weaker there.
+
 ---
 
 ## 🔍 Code Quality & Static Analysis
