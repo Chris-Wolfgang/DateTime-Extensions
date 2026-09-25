@@ -141,6 +141,34 @@ This library targets:
 
 See the [NuGet package page](https://www.nuget.org/packages/Wolfgang.Extensions.DateTime/) for the authoritative per-TFM compatibility matrix.
 
+---
+
+## 🌍 Culture sensitivity
+
+**Exactly two methods depend on the current culture**, and they are the two that have to:
+
+| Method | What it reads | For a fixed answer |
+|---|---|---|
+| `FirstOfWeek()` | `CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek` | `FirstOfWeek(DayOfWeek)` |
+| `EndOfWeek()` | `CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek` | `EndOfWeek(DayOfWeek)` |
+
+The same instant therefore starts its week on Sunday under `en-US` and on Monday under `de-DE`. If
+that matters, use the explicit-`DayOfWeek` overload rather than relying on whatever culture the
+thread happens to be carrying.
+
+**Every other method is culture-invariant by contract**, not by accident. The test suite invokes all
+of them under `en-US`, `tr-TR`, `de-DE`, `zh-CN`, `ar-SA` and `ja-JP` — swapping both
+`CurrentCulture` and `CurrentUICulture` — and fails if any answer differs from the invariant-culture
+one. `ar-SA` is on that list because its default calendar is not Gregorian, which is the plausible
+way a date library breaks under a culture even when it formats nothing. A method that starts reading
+the culture without being added to the table above fails the suite.
+
+The guarantee also holds in a trimmed or native-AOT publish: the AOT smoke test asserts that `de-DE`
+still starts its week on Monday, so a published binary that lost its culture data fails CI instead of
+quietly answering as though every culture were invariant.
+
+---
+
 ## 🔍 Code Quality & Static Analysis
 
 This project enforces **strict code quality standards** through **8 specialized analyzers**, an `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>` Release gate, and custom async-first rules:
