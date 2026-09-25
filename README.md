@@ -39,6 +39,7 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 - **DocFX Version Picker Troubleshooting:** [docs/DOCFX-VERSION-PICKER.md](docs/DOCFX-VERSION-PICKER.md)
 - **Release Workflow Setup:** [docs/RELEASE-WORKFLOW-SETUP.md](docs/RELEASE-WORKFLOW-SETUP.md)
 - **Workflow Security:** [docs/WORKFLOW_SECURITY.md](docs/WORKFLOW_SECURITY.md)
+- **Reproducible Builds:** [REPRODUCIBLE-BUILD.md](REPRODUCIBLE-BUILD.md)
 
 ---
 
@@ -140,6 +141,21 @@ This library targets:
 - **.NET:** 8.0, 10.0
 
 See the [NuGet package page](https://www.nuget.org/packages/Wolfgang.Extensions.DateTime/) for the authoritative per-TFM compatibility matrix.
+
+## 🔐 Verify the build
+
+You do not have to take our word for what is in a published package.
+
+- **Rebuild it yourself.** Every commit is verified to be *reproducible*, not merely deterministic:
+  CI builds it on Windows in two different directories and on Linux, and fails if any assembly, PDB
+  or package entry differs. [REPRODUCIBLE-BUILD.md](REPRODUCIBLE-BUILD.md) has the step-by-step
+  procedure for checking a released package against its tag, including which differences are
+  expected and which are worth reporting.
+- **Check where it came from.** Each release carries a SLSA build-provenance bundle you can verify
+  with `gh attestation verify`. See
+  [Verifying a release](SECURITY.md#verifying-a-release) in the security policy.
+
+---
 
 ## 🔍 Code Quality & Static Analysis
 
