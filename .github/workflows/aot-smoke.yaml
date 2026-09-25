@@ -1,0 +1,88 @@
+name: AOT/Trim Smoke Test
+
+# Publishes tests/AotSmoke as a native-AOT, trimmed, self-contained binary and RUNS it.
+#
+# The point is the run, not the publish. A trimmed or AOT-published library rarely fails
+# to link - it fails by keeping a method that now returns the wrong answer, or by losing
+# the culture data that the parameterless FirstOfWeek/EndOfWeek depend on. The harness
+# compares every one of the library's public methods against a measured value and exits
+# non-zero on the first mismatch, so this job only passes if the published binary behaves.
+#
+# Linux-only and separate from pr.yaml for two reasons: native AOT cannot cross-publish
+# (a Windows runner cannot produce a linux-x64 AOT binary), and it needs clang plus
+# zlib, which the rest of the CI has no use for.
+#
+# Not a required check yet - that needs a ruleset change.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aot-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  aot-smoke:
+    name: Native AOT publish + run (linux-x64, ${{ matrix.tfm }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        # Both AOT-annotated slices of the library. Trimming behaviour genuinely differs
+        # between runtimes, so passing on net10.0 does not vouch for net8.0 consumers.
+        tfm: [net8.0, net10.0]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68  # v6.0.0
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Install the native AOT prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes clang zlib1g-dev
+
+      # PublishAot and PublishTrimmed are deliberately NOT passed here. On the command line
+      # they become global properties, flow into the referenced library, and fail NETSDK1124
+      # on its net462 slice. They live in AotSmoke.csproj, which does not propagate them.
+      - name: Publish the smoke consumer (AOT + trimmed)
+        env:
+          TFM: ${{ matrix.tfm }}
+        run: |
+          dotnet publish tests/AotSmoke/AotSmoke.csproj \
+            --configuration Release \
+            --framework "$TFM" \
+            --runtime linux-x64 \
+            --self-contained true \
+            --output ./aot-smoke-publish
+
+      - name: Confirm the binary really is native
+        # A configuration slip that silently produced a managed apphost would still run and
+        # still pass the run below, proving nothing about AOT. A native AOT binary has its
+        # configuration compiled in and ships no runtimeconfig.json; a managed publish
+        # always writes one.
+        run: |
+          ls -l ./aot-smoke-publish
+          file ./aot-smoke-publish/AotSmoke
+          if [ -f ./aot-smoke-publish/AotSmoke.runtimeconfig.json ]; then
+            echo "::error::AotSmoke.runtimeconfig.json is present - this publish was managed, not native AOT."
+            exit 1
+          fi
+
+      - name: Run the published binary
+        run: ./aot-smoke-publish/AotSmoke
