@@ -60,6 +60,54 @@ Please keep the details private until the advisory is published.
 Reporters are credited in the published advisory and in the release notes, unless you ask not to be.
 Tell us in the report how you would like to be named.
 
+## Verifying a release
+
+A GitHub Release carries the package, a SLSA build-provenance bundle (`*.intoto.jsonl`) and,
+normally, a CycloneDX SBOM per project (`*.bom.json`). The SBOM is best-effort: `release.yaml`
+warns and continues if CycloneDX fails, and the artifact upload does not treat a missing file as
+an error, so a release can complete without one. Its absence is not evidence of tampering.
+Nothing below needs a key from us - verification uses GitHub's own transparency log.
+
+**Provenance - did this package come from this repository's release workflow?**
+
+```bash
+gh attestation verify Wolfgang.Extensions.DateTime.1.3.2.nupkg \
+    --repo Chris-Wolfgang/DateTime-Extensions \
+    --signer-workflow Chris-Wolfgang/DateTime-Extensions/.github/workflows/release.yaml
+```
+
+`--repo` alone only proves *some* workflow in this repository attested the artifact.
+`--signer-workflow` is what pins it to the release workflow, which is what the heading above
+actually claims - keep both.
+
+If you are verifying offline, or want to check the exact bundle attached to the release rather than
+whatever GitHub currently holds, download the `.intoto.jsonl` asset and point at it:
+
+```bash
+gh attestation verify Wolfgang.Extensions.DateTime.1.3.2.nupkg \
+    --repo Chris-Wolfgang/DateTime-Extensions \
+    --signer-workflow Chris-Wolfgang/DateTime-Extensions/.github/workflows/release.yaml \
+    --bundle DateTime-Extensions-v1.3.2.intoto.jsonl
+```
+
+A failure here is meaningful: it means the file you hold is not the file that workflow produced.
+
+**Contents - what does the package actually depend on?**
+
+The `*.bom.json` asset is a CycloneDX SBOM listing the transitive closure at build time. It is a
+plain JSON document; read it, or feed it to whatever your organisation uses for dependency review.
+
+Note what it is **not**: the attestation's subjects are the `.nupkg` files only, so the SBOM is
+co-published alongside the package rather than covered by its provenance. Verifying the package
+does not authenticate the SBOM. If that distinction matters to you, read the SBOM as a
+convenience and derive the dependency set from the verified package itself.
+
+**What this does NOT prove.** The package is not author-signed: `nuget verify` checks an author
+signature, and this package does not carry one - that is blocked on a code-signing certificate
+(#280). Provenance answers *"which workflow built this, from which commit"*; an author signature
+would answer *"who vouches for it"*. They are different claims and only the first is available
+today.
+
 ## Release path & compromise scope
 
 Facts a maintainer would need at 2am if the release identity is compromised. Generic
