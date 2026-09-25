@@ -1,0 +1,323 @@
+name: Reproducible Build
+
+# Supply-chain hardening — build reproducibility. Determinism and reproducibility are
+# not the same claim:
+#
+#  - deterministic: the same inputs on the same machine produce the same outputs.
+#    Directory.Build.props already buys this (Roslyn is deterministic by default, and
+#    ContinuousIntegrationBuild normalises embedded source paths when CI=true).
+#  - reproducible: the same commit produces the same outputs in a DIFFERENT
+#    environment — another OS, another checkout path, a cold machine.
+#
+# Only the second one supports a supply-chain claim ("this .nupkg really was built from
+# this commit"), and only the second one can regress silently. This workflow builds the
+# same commit three ways and compares SHA-256 fingerprints:
+#
+#   windows-a vs windows-b   same OS, two different checkout paths -> must match exactly
+#   linux     vs windows-a   different OS -> every slice built by both must match
+#
+# The .NET Framework slices (net4*) are built on Windows only, matching how the rest of
+# this repo's CI treats them (build-all-versions.yaml is windows-latest for the same
+# reason), so they are covered by the windows-a/windows-b pair rather than cross-OS.
+#
+# What is deliberately NOT asserted: byte-identical .nupkg *container* bytes. A .nupkg is
+# a zip and NuGet stamps every entry with its file mtime, so two packs of the same commit
+# on the same machine seconds apart differ in the container while every entry inside is
+# identical (measured 2026-09-24: 19/19 entries matched, containers did not). This
+# workflow therefore fingerprints every entry inside the package, which is the part that
+# carries the code. See REPRODUCIBLE-BUILD.md.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reproducible-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ============================================================================
+  # FINGERPRINT: build the same commit in three environments and record hashes.
+  # fail-fast is off so one environment's build failure still leaves the other
+  # fingerprints to compare.
+  # ============================================================================
+  fingerprint:
+    name: Fingerprint (${{ matrix.id }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # windows-a and windows-b differ ONLY in where the repo is checked out. An
+          # absolute path leaking into a .dll or .pdb shows up here and nowhere else.
+          - id: windows-a
+            os: windows-latest
+            path: checkout
+          - id: windows-b
+            os: windows-latest
+            path: a/deliberately/much/deeper/checkout/path
+          - id: linux
+            os: ubuntu-latest
+            path: checkout
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          path: ${{ matrix.path }}
+          persist-credentials: false
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68  # v6.0.0
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Fingerprint the build
+        shell: pwsh
+        working-directory: ${{ matrix.path }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          # Not a belt-and-braces check: with CI unset, ContinuousIntegrationBuild is off
+          # and the checkout path is embedded verbatim, so windows-a and windows-b would
+          # differ for a reason that says nothing about reproducibility.
+          if ($env:CI -ne 'true')
+          {
+              throw 'CI is not "true" - ContinuousIntegrationBuild would be off and source paths would not be normalised.'
+          }
+
+          $lines = @("sdk=$(dotnet --version)")
+
+          $projects = @(Get-ChildItem -Path src -Recurse -Filter *.csproj -File | Sort-Object Name)
+          if ($projects.Count -eq 0)
+          {
+              throw 'No project found under src/.'
+          }
+
+          $skippedNetFx = $false
+
+          foreach ($project in $projects)
+          {
+              $match = [regex]::Match((Get-Content -LiteralPath $project.FullName -Raw), '<TargetFrameworks?>([^<]+)<')
+              if (-not $match.Success)
+              {
+                  throw "No <TargetFramework(s)> element in $($project.Name)."
+              }
+
+              $tfms = @($match.Groups[1].Value -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+
+              foreach ($tfm in $tfms)
+              {
+                  if ($tfm -like 'net4*' -and -not $IsWindows)
+                  {
+                      Write-Host "::notice::Skipping $tfm on this runner - the .NET Framework reference assemblies are only present on Windows."
+                      $skippedNetFx = $true
+                      continue
+                  }
+
+                  dotnet build $project.FullName -c Release -f $tfm --nologo
+                  if ($LASTEXITCODE -ne 0)
+                  {
+                      throw "Build failed: $($project.Name) [$tfm]"
+                  }
+
+                  $outputDirectory = Join-Path $project.DirectoryName "bin/Release/$tfm"
+                  $outputs = @(Get-ChildItem -Path (Join-Path $outputDirectory '*') -Include *.dll, *.pdb -File | Sort-Object Name)
+                  if ($outputs.Count -eq 0)
+                  {
+                      throw "No assemblies under $outputDirectory."
+                  }
+
+                  foreach ($output in $outputs)
+                  {
+                      $hash = (Get-FileHash -LiteralPath $output.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+                      $lines += "build $($project.BaseName)/$tfm/$($output.Name) $hash"
+                  }
+              }
+          }
+
+          # Packing needs every TFM, so a runner that had to skip net4* cannot produce a
+          # comparable package. That is the linux leg: its cross-OS value is in the
+          # per-slice assembly hashes above.
+          if ($skippedNetFx)
+          {
+              Write-Host '::notice::Skipping pack - this runner could not build every target framework.'
+          }
+          else
+          {
+              foreach ($project in $projects)
+              {
+                  dotnet pack $project.FullName -c Release -o packages --nologo
+                  if ($LASTEXITCODE -ne 0)
+                  {
+                      throw "Pack failed: $($project.Name)"
+                  }
+              }
+
+              $sha256 = [System.Security.Cryptography.SHA256]::Create()
+
+              foreach ($package in @(Get-ChildItem -Path (Join-Path 'packages' '*') -Include *.nupkg, *.snupkg -File | Sort-Object Name))
+              {
+                  $archive = [System.IO.Compression.ZipFile]::OpenRead($package.FullName)
+
+                  try
+                  {
+                      foreach ($entry in @($archive.Entries | Sort-Object FullName))
+                      {
+                          $stream = $entry.Open()
+
+                          try
+                          {
+                              $hash = (($sha256.ComputeHash($stream) | ForEach-Object { $_.ToString('x2') }) -join '')
+                          }
+                          finally
+                          {
+                              $stream.Dispose()
+                          }
+
+                          $lines += "pack $($package.Name)!$($entry.FullName) $hash"
+                      }
+                  }
+                  finally
+                  {
+                      $archive.Dispose()
+                  }
+              }
+          }
+
+          New-Item -ItemType Directory -Path fingerprint -Force | Out-Null
+          Set-Content -LiteralPath 'fingerprint/fingerprint.txt' -Value $lines
+          Write-Host "Recorded $($lines.Count - 1) fingerprint(s)."
+
+      - name: Upload the fingerprint
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: fingerprint-${{ matrix.id }}
+          path: ${{ matrix.path }}/fingerprint/fingerprint.txt
+          if-no-files-found: error
+
+  # ============================================================================
+  # COMPARE: the actual gate. Any divergence fails with the list of outputs that
+  # differ, not just a red X.
+  # ============================================================================
+  compare:
+    name: Compare fingerprints
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: fingerprint
+    steps:
+      - name: Download the fingerprints
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
+        with:
+          pattern: fingerprint-*
+          path: fingerprints
+
+      - name: Compare
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          function Read-Fingerprint([string] $id)
+          {
+              $path = "fingerprints/fingerprint-$id/fingerprint.txt"
+              if (-not (Test-Path -LiteralPath $path))
+              {
+                  throw "Missing the fingerprint for '$id' - that leg of the matrix did not finish."
+              }
+
+              $sdk = $null
+              $hashes = @{}
+
+              foreach ($line in (Get-Content -LiteralPath $path))
+              {
+                  if ($line -match '^sdk=(.+)$')
+                  {
+                      $sdk = $Matches[1]
+                      continue
+                  }
+
+                  $parts = $line -split ' '
+                  $hashes[($parts[0] + ' ' + $parts[1])] = $parts[2]
+              }
+
+              return [pscustomobject]@{ Id = $id; Sdk = $sdk; Hashes = $hashes }
+          }
+
+          function Compare-Fingerprint($left, $right, [bool] $requireSameOutputSet)
+          {
+              $shared = @($left.Hashes.Keys | Where-Object { $right.Hashes.ContainsKey($_) } | Sort-Object)
+              $problems = @()
+
+              if ($requireSameOutputSet)
+              {
+                  foreach ($key in @($left.Hashes.Keys | Where-Object { -not $right.Hashes.ContainsKey($_) } | Sort-Object))
+                  {
+                      $problems += "$($left.Id) produced '$key' and $($right.Id) did not."
+                  }
+
+                  foreach ($key in @($right.Hashes.Keys | Where-Object { -not $left.Hashes.ContainsKey($_) } | Sort-Object))
+                  {
+                      $problems += "$($right.Id) produced '$key' and $($left.Id) did not."
+                  }
+              }
+
+              foreach ($key in $shared)
+              {
+                  if ($left.Hashes[$key] -ne $right.Hashes[$key])
+                  {
+                      $problems += "$key differs: $($left.Id)=$($left.Hashes[$key]) $($right.Id)=$($right.Hashes[$key])"
+                  }
+              }
+
+              $result = if ($problems.Count -eq 0) { 'match' } else { "$($problems.Count) problem(s)" }
+              $script:summary += "| $($left.Id) vs $($right.Id) | $($shared.Count) | $result |"
+
+              return $problems
+          }
+
+          $windowsA = Read-Fingerprint 'windows-a'
+          $windowsB = Read-Fingerprint 'windows-b'
+          $linux = Read-Fingerprint 'linux'
+
+          $failures = @()
+          $summary = @('| Comparison | Outputs compared | Result |', '|---|---|---|')
+
+          # A runner that installed a different 10.0.x patch runs a different Roslyn, so
+          # every hash differs for a reason that has nothing to do with this repository.
+          # Say that, instead of printing forty mismatches.
+          foreach ($other in @($windowsB, $linux))
+          {
+              if ($other.Sdk -ne $windowsA.Sdk)
+              {
+                  $failures += "SDK skew: windows-a built with $($windowsA.Sdk), $($other.Id) with $($other.Sdk). Pin the SDK with a global.json before reading the hashes below."
+              }
+          }
+
+          # Same OS, different checkout path: the output sets must be identical too.
+          $failures += Compare-Fingerprint $windowsA $windowsB $true
+
+          # Cross-OS: net4* is Windows-only by design, so compare what both produced.
+          $failures += Compare-Fingerprint $linux $windowsA $false
+
+          $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+
+          if ($failures.Count -gt 0)
+          {
+              @('', '### Divergence') | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+
+              foreach ($failure in $failures)
+              {
+                  Write-Host "::error::$failure"
+                  "- $failure" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+              }
+
+              throw "This commit did not build reproducibly: $($failures.Count) problem(s)."
+          }
+
+          Write-Host 'Every comparable output is byte-identical across all three environments.'
