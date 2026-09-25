@@ -17,16 +17,19 @@ means you can tie a published `.nupkg` back to a commit you have read.
 For any commit on `main`:
 
 - Every `.dll` and `.pdb` this repository produces is **byte-identical** when built on the same
-  operating system from two different directories.
-- Every `.dll` and `.pdb` for the portable target frameworks (`netstandard2.0`, `net8.0`, `net10.0`)
-  is byte-identical when built on Linux and on Windows.
-- Every **entry inside** the `.nupkg` and `.snupkg` is byte-identical across those environments.
+  operating system from a different directory, on a machine that has never built it before.
+- Every **entry inside** the `.nupkg` and `.snupkg` is byte-identical under those conditions.
+
+Releases are built on Windows, so a verifier on Windows can reach byte-identity. **Across operating
+systems you cannot** — for a reason in the SDK rather than in this repository. See
+[Why a Linux rebuild does not match byte-for-byte](#why-a-linux-rebuild-does-not-match-byte-for-byte).
 
 These are not aspirations. `.github/workflows/reproducible-build.yaml` builds every commit three
-ways — Windows in one directory, Windows in a deliberately deeper directory, and Linux — and fails
-the build if any comparable output differs, naming the file. Measured on the current `main`: **35 of
-35 fingerprints identical** (8 assembly/PDB outputs across four target frameworks, 27 package
-entries).
+ways — Windows in one directory, Windows in a deliberately deeper directory, and Linux — and **fails
+the build** if the two Windows builds disagree about anything, naming the file. The Linux comparison
+is printed rather than gated, for the same reason. Measured on the current `main`: **35 of 35
+fingerprints identical** between the two Windows builds (8 assembly/PDB outputs across four target
+frameworks, 27 package entries).
 
 The inputs that buy this are in `Directory.Build.props`: `ContinuousIntegrationBuild` (active
 whenever `CI=true`), which normalises the source paths embedded in the assembly and PDB, plus
@@ -54,6 +57,33 @@ reference assemblies, which are not present on the Linux runners, so those slice
 two-directory Windows comparison rather than the cross-OS one. The rest of this repository's CI
 treats them the same way (`build-all-versions.yaml` is `windows-latest` for the same reason).
 
+### Why a Linux rebuild does not match byte-for-byte
+
+Every project compiles a handful of sources the SDK generates for it — `AssemblyInfo.cs`,
+`GlobalUsings.g.cs`, `.AssemblyAttributes.cs` — and the SDK writes them with **the platform's
+newline**: CRLF on Windows, LF on Linux. The compiler hashes every source file it compiles, that
+hash reaches the PDB, and the PDB feeds the assembly's MVID. So the same code, compiled on two
+operating systems, gets a different assembly *identity* while the IL is the same.
+
+The effect is measurable on a single machine. Converting one tracked source file from LF to CRLF and
+rebuilding:
+
+```
+LF source     1c98a76adf41d3eb53c285cdccde26f71bfad2d69529f487dbc9f38335f95e48
+CRLF source   8166399fa1b85c911bc336c195d6359ecb8da16d47a861a6ce8c652f429c44a7
+
+same size (74,752 bytes), 71 differing bytes in 6 runs of 4, 7, 8, 4, 16 and 32 bytes
+```
+
+Same signature as the cross-OS difference: the PE timestamp, the MVID and the debug-directory
+entries. This is why the Linux leg of the workflow reports rather than gates — gating on it would
+fail every pull request forever without saying anything about the code.
+
+The repository's `.gitattributes` normalises tracked files to LF on every platform, so the tracked
+sources are not the problem; the generated ones are, and there is no supported switch for them. An
+MSBuild target could rewrite them before compilation, which *might* close the gap — nobody has shown
+that it is sufficient, so it is not claimed here.
+
 **The SDK version is not pinned.** There is no `global.json`, so each runner installs whatever
 `10.0.x` resolves to when it runs. Within a single workflow run the three legs agree, which is what
 makes the comparison meaningful; across *months* they will not. The compare job detects this and
@@ -67,8 +97,12 @@ The compiler version folds into a deterministic assembly's identity, so a differ
 produces a different `.dll` from identical source. Use the SDK the release used: open the
 `Release` workflow run for the tag and read the `Setup .NET` step.
 
-`net462` requires Windows. On Linux you can verify the `netstandard2.0`, `net8.0` and `net10.0`
-slices.
+**Use Windows.** Releases are built on Windows, and a rebuild on Linux or macOS cannot match
+byte-for-byte even with the right SDK — see
+[Why a Linux rebuild does not match byte-for-byte](#why-a-linux-rebuild-does-not-match-byte-for-byte).
+`net462` needs Windows regardless, for its reference assemblies. Verifying from Linux is still worth
+doing; just expect the four `.dll` entries to differ in their identity fields, and read
+[What you should see](#4-what-you-should-see) for how to tell that apart from a real discrepancy.
 
 ### 2. Clone at the tag and pack
 
@@ -126,9 +160,13 @@ the published package:
 A compiler change looks like that: a small, bounded residue in the identity fields. Changed source
 does not — it moves IL, and the differing byte count is not 72.
 
+**A different operating system looks the same way**, and for the same underlying reason — the
+generated sources carry the platform newline, so their checksums differ and the identity fields
+follow. A Linux rebuild against a Windows-built release lands in this shape, not in a clean match.
+
 ## Reporting a discrepancy
 
-If you get a mismatch that is **not** explained by the SDK version, please
+If you get a mismatch that is **not** explained by the SDK version or the operating system, please
 [open an issue](https://github.com/Chris-Wolfgang/DateTime-Extensions/issues/new/choose) with:
 
 - the tag you built, and the SDK version (`dotnet --version`) and OS you built on,
@@ -148,7 +186,10 @@ Treat a mismatch you cannot explain as a **security report** and follow
 1. **No `global.json`.** The claim holds *within* a workflow run, not across time. Pinning the SDK
    would make an old tag reproducible years later; it affects every workflow in the repository, so
    it is a separate change.
-2. **`net462` is not cross-OS verified** (see above).
+2. **Byte-identity is same-OS only**, because of the generated sources' newline
+   ([why](#why-a-linux-rebuild-does-not-match-byte-for-byte)). An MSBuild target normalising them
+   before compilation might close the gap; that is unverified, so it is not promised. `net462` is
+   additionally Windows-only, for its reference assemblies.
 3. **The reproducibility check is not the provenance check.** They answer different questions and
    neither substitutes for the other: reproducibility says *this source produces this binary*,
    provenance says *this binary came out of this repository's release workflow*. For the second one,
