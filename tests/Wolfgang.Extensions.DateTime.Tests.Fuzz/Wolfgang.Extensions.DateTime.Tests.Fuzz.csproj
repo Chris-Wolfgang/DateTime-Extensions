@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<!-- Property-based fuzz harness — net10.0-only. What needs multi-TFM coverage is the
+		     shipped library's behaviour, and Tests.Unit already runs on all thirteen slices;
+		     running the same generated cases thirteen times would buy nothing but CI minutes. -->
+		<TargetFramework>net10.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<IsPackable>false</IsPackable>
+		<IsTestProject>true</IsTestProject>
+		<Copyright>Copyright 2026 Chris Wolfgang</Copyright>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="CsCheck" Version="4.8.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+		<PackageReference Include="coverlet.collector" Version="10.0.1">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="xunit" Version="2.9.3" />
+		<PackageReference Include="xunit.assert" Version="2.9.3" />
+		<PackageReference Include="xunit.extensibility.core" Version="2.9.3" />
+		<PackageReference Include="xunit.runner.console" Version="2.9.3">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Wolfgang.Extensions.DateTime\Wolfgang.Extensions.DateTime.csproj" />
+	</ItemGroup>
+
+	<!-- Analyzer PackageReferences are centralized in Directory.Build.props -->
+
+</Project>
