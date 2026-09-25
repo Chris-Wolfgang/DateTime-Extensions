@@ -94,8 +94,23 @@ says so explicitly instead of reporting forty mismatched hashes. See [Known limi
 ### 1. Match the toolchain
 
 The compiler version folds into a deterministic assembly's identity, so a different SDK patch
-produces a different `.dll` from identical source. Use the SDK the release used: open the
-`Release` workflow run for the tag and read the `Setup .NET` step.
+produces a different `.dll` from identical source. Use the SDK the release used — it is recorded in
+the release's `reproducible-build-manifest.json` asset:
+
+```bash
+gh release download v1.3.2 --repo Chris-Wolfgang/DateTime-Extensions \
+  --pattern 'reproducible-build-manifest.json'
+pwsh -c '(Get-Content reproducible-build-manifest.json | ConvertFrom-Json).toolchain'
+```
+
+```
+sdk      os      continuousIntegrationBuild
+---      --      --------------------------
+10.0.400 Windows                       True
+```
+
+Releases made before that asset existed do not carry it. For those, open the `Release` workflow run
+for the tag and read the `Setup .NET` step.
 
 **Use Windows.** Releases are built on Windows, and a rebuild on Linux or macOS cannot match
 byte-for-byte even with the right SDK — see
@@ -140,6 +155,31 @@ The script skips two entries deliberately, neither of which comes from the build
 | `.signature.p7s` | nuget.org's repository signature, added after the build. Present in the downloaded package, absent from yours. |
 | `*.psmdcp` | OPC core properties. The *file name* is a GUID on some NuGet versions and the fixed `nuget.psmdcp` on others, so it is compared under a stable key rather than by name. |
 
+### 3b. Or compare against the manifest
+
+Each release also carries `reproducible-build-manifest.json`, which lists a SHA-256 for every entry
+inside every package it shipped. The same script reads it, so you can check your rebuild without
+downloading anything from nuget.org:
+
+```bash
+pwsh ./scripts/compare-package-entries.ps1 \
+  -Mine ./packages/Wolfgang.Extensions.DateTime.1.3.2.nupkg \
+  -Manifest ./reproducible-build-manifest.json
+```
+
+Two things to know before reading a difference as one:
+
+- **`sha256IsReproducible` is `false` on each package's own file hash.** It is recorded for
+  completeness. Do not compare it — see [What is not guaranteed](#what-is-not-guaranteed-and-why).
+- **The manifest does not list every entry.** The `.psmdcp` is omitted, because its entry name is not
+  stable across NuGet versions, and `.signature.p7s` does not exist yet when the manifest is written.
+  The manifest says both in its own `verification.entriesNotListed`.
+
+The manifest is written by the same workflow run that produced the packages, so it is a convenience,
+not independent evidence. If the question is whether *we* published what we said we did, compare
+against nuget.org as in step 3, or verify the provenance attestation, which is signed
+([SECURITY.md](SECURITY.md#verifying-a-release)).
+
 ### 4. What you should see
 
 With a matching SDK, every entry matches and the script exits 0.
@@ -183,9 +223,10 @@ Treat a mismatch you cannot explain as a **security report** and follow
 
 ## Known limits
 
-1. **No `global.json`.** The claim holds *within* a workflow run, not across time. Pinning the SDK
-   would make an old tag reproducible years later; it affects every workflow in the repository, so
-   it is a separate change.
+1. **No `global.json`.** The claim holds *within* a workflow run, not across time. Each release's
+   manifest records the SDK that built it, so an older tag can still be reproduced by installing
+   that SDK — but nothing in the repository pins it. Pinning it would make that automatic; it
+   affects every workflow here, so it is a separate change.
 2. **Byte-identity is same-OS only**, because of the generated sources' newline
    ([why](#why-a-linux-rebuild-does-not-match-byte-for-byte)). An MSBuild target normalising them
    before compilation might close the gap; that is unverified, so it is not promised. `net462` is
