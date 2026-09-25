@@ -6,6 +6,7 @@ namespace Wolfgang.Extensions.DateTime.Tests.Unit.Performance;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Xunit;
 
 /// <summary>
@@ -63,7 +64,11 @@ public class AllocationTests
     [Fact]
     public void Every_public_method_allocates_zero_bytes()
     {
-        var failures = new List<string>();
+        // Every call is recorded, not only the ones that allocate. A test that appends to a
+        // failure list inside `if (allocated)` leaves that block unexecuted whenever it passes,
+        // and this repository holds test assemblies to 100% line coverage - an assertion that
+        // cannot be covered while green is an assertion that quietly lowers the bar.
+        var measured = new List<string>();
 
         foreach (var (name, call) in Calls)
         {
@@ -80,25 +85,24 @@ public class AllocationTests
 
             var after = GC.GetAllocatedBytesForCurrentThread();
 
-            if (after != before)
-            {
-                failures.Add
+            measured.Add
+            (
+                string.Format
                 (
-                    string.Format
-                    (
-                        CultureInfo.InvariantCulture,
-                        "{0} allocated {1} byte(s)",
-                        name,
-                        after - before
-                    )
-                );
-            }
+                    CultureInfo.InvariantCulture,
+                    "{0} allocated {1} byte(s)",
+                    name,
+                    after - before
+                )
+            );
         }
 
+        // The expected list names every method with a zero, so a failure diff shows which call
+        // allocated and how much, exactly as it did when the list held only failures.
         Assert.Equal
         (
-            Array.Empty<string>(),
-            failures
+            Calls.Select(entry => string.Format(CultureInfo.InvariantCulture, "{0} allocated 0 byte(s)", entry.Name)),
+            measured
         );
     }
 
