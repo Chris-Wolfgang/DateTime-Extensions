@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+		<Nullable>enable</Nullable>
+		<!-- These two must stay in the project file. Passed on the command line they become
+		     global properties and flow into the referenced library, which multi-targets
+		     net462 and then fails with NETSDK1124 ("Trimming assemblies requires .NET Core
+		     3.0 or higher"). The publish command in aot-smoke.yaml therefore passes neither. -->
+		<PublishAot>true</PublishAot>
+		<PublishTrimmed>true</PublishTrimmed>
+		<IsPackable>false</IsPackable>
+		<IsTestProject>false</IsTestProject>
+
+		<!-- InvariantGlobalization is deliberately NOT set. This library's parameterless
+		     FirstOfWeek/EndOfWeek read CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek,
+		     so an AOT binary without culture data would silently answer as if every culture
+		     were invariant. Program.cs asserts a de-DE answer precisely so that regression
+		     fails the smoke test instead of reaching a consumer. -->
+
+		<!-- Throwaway AOT smoke harness - not shipped, and not held to the
+		     warnings-as-errors bar the shipped library is held to.
+		     Directory.Build.props applies TWAE in Release by walking up the
+		     directory tree, not by solution membership, so this is an explicit
+		     opt-out rather than a consequence of being outside the .slnx. -->
+		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Wolfgang.Extensions.DateTime\Wolfgang.Extensions.DateTime.csproj" />
+	</ItemGroup>
+
+</Project>
