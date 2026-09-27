@@ -23,7 +23,7 @@ on:
         required: false
         default: '100000'
       time_seconds:
-        description: Per-property time budget in seconds - a floor, so the run takes this times the number of properties
+        description: Per-property time budget in seconds (1-300) - a floor, so the run takes this times the number of properties
         required: false
         default: '300'
 
@@ -41,7 +41,8 @@ jobs:
     # CsCheck's time budget is a FLOOR per property, not a ceiling on the run: each property runs
     # for its full budget. Ten properties at the 300-second default is ~50 minutes, so the timeout
     # has to clear that with room for restore and startup. Measured: a 4-second budget produced a
-    # 40-second run for the ten properties.
+    # 40-second run for the ten properties. The time_seconds input is capped at 300 below for the
+    # same reason; raise the cap and this timeout together.
     timeout-minutes: 75
     permissions:
       contents: read
@@ -51,6 +52,26 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           persist-credentials: false
+
+      - name: Validate the inputs
+        # A budget the timeout above cannot cover would be accepted by the dispatch form and then
+        # killed mid-run, reporting nothing. Reject it up front instead.
+        env:
+          ITERATIONS: ${{ inputs.iterations || '100000' }}
+          TIME_SECONDS: ${{ inputs.time_seconds || '300' }}
+        run: |
+          case "$ITERATIONS" in
+            ''|*[!0-9]*|0) echo "::error::iterations must be a positive integer, got '$ITERATIONS'."; exit 1 ;;
+          esac
+
+          case "$TIME_SECONDS" in
+            ''|*[!0-9]*|0) echo "::error::time_seconds must be a positive integer, got '$TIME_SECONDS'."; exit 1 ;;
+          esac
+
+          if [ "$TIME_SECONDS" -gt 300 ]; then
+            echo "::error::time_seconds is capped at 300: ten properties at 300 s is ~50 minutes against the job's 75-minute timeout. Raise timeout-minutes with the cap."
+            exit 1
+          fi
 
       - name: Detect the fuzz project
         id: detect
@@ -77,22 +98,51 @@ jobs:
         env:
           FUZZ_ITERATIONS: ${{ inputs.iterations || '100000' }}
           FUZZ_TIME_SECONDS: ${{ inputs.time_seconds || '300' }}
+        #
+        # Only a failed TEST is a finding. `dotnet test`'s exit code alone cannot say that: it is
+        # non-zero for a restore, build or adapter failure too (which would file an issue with no
+        # counterexample in it), and it is 0 when no tests were discovered at all. So the verdict
+        # comes from the TRX counters, and anything else fails the run without reporting.
         run: |
           mkdir -p fuzz-results
           echo "FUZZ_ITERATIONS=$FUZZ_ITERATIONS FUZZ_TIME_SECONDS=$FUZZ_TIME_SECONDS"
 
-          if dotnet test tests/Wolfgang.Extensions.DateTime.Tests.Fuzz/Wolfgang.Extensions.DateTime.Tests.Fuzz.csproj \
+          status=0
+          dotnet test tests/Wolfgang.Extensions.DateTime.Tests.Fuzz/Wolfgang.Extensions.DateTime.Tests.Fuzz.csproj \
               --configuration Release \
               --logger "trx;LogFileName=fuzz.trx" \
               --results-directory fuzz-results \
-              > fuzz-results/fuzz.log 2>&1
-          then
-            echo "failed=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "failed=true" >> "$GITHUB_OUTPUT"
-          fi
+              > fuzz-results/fuzz.log 2>&1 || status=$?
 
           cat fuzz-results/fuzz.log
+
+          counters=""
+          if [ -f fuzz-results/fuzz.trx ]; then
+            counters=$(grep -o '<Counters [^>]*>' fuzz-results/fuzz.trx | head -n 1 || true)
+          fi
+
+          if [ -z "$counters" ]; then
+            echo "::error::dotnet test exited $status and wrote no TRX counters - a restore/build/adapter failure, not a fuzz finding."
+            exit 1
+          fi
+
+          executed=$(echo "$counters" | sed -n 's/.* executed="\([0-9]*\)".*/\1/p')
+          failed=$(echo "$counters" | sed -n 's/.* failed="\([0-9]*\)".*/\1/p')
+          echo "TRX: executed=${executed:-?} failed=${failed:-?} (dotnet test exit $status)"
+
+          if [ "${executed:-0}" -eq 0 ]; then
+            echo "::error::No fuzz property ran - the test adapter found nothing to execute. dotnet test exits 0 in this case, so this step fails instead."
+            exit 1
+          fi
+
+          if [ "${failed:-0}" -gt 0 ]; then
+            echo "failed=true" >> "$GITHUB_OUTPUT"
+          elif [ "$status" -ne 0 ]; then
+            echo "::error::dotnet test exited $status with no failed test - an infrastructure failure, not a fuzz finding."
+            exit 1
+          else
+            echo "failed=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Upload the run's output
         # Uploaded whether or not it failed: CsCheck prints the shrunk counterexample AND the seed
@@ -106,7 +156,8 @@ jobs:
           if-no-files-found: error
 
       - name: Report a finding
-        if: steps.fuzz.outputs.failed == 'true'
+        # always(): a failed artifact upload above must not skip the report of a real finding.
+        if: always() && steps.fuzz.outputs.failed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
@@ -157,7 +208,7 @@ jobs:
       - name: Fail the run when a property failed
         # Separate from the report step so that a reporting problem - a rate limit, a missing label -
         # cannot swallow the finding itself.
-        if: steps.fuzz.outputs.failed == 'true'
+        if: always() && steps.fuzz.outputs.failed == 'true'
         run: |
           echo "::error::A fuzz property failed. See the fuzz-results artifact and the filed issue."
           exit 1
