@@ -172,12 +172,13 @@ The script handles two entries specially, neither of which comes from the build:
 
 Each release also carries `reproducible-build-manifest.json`, which lists a SHA-256 for every entry
 inside every package it shipped. The same script reads it, so you can check your rebuild without
-downloading anything from nuget.org:
+downloading anything from nuget.org. You downloaded the manifest in step 1, before cloning, so it
+is one directory above the clone:
 
 ```bash
 pwsh ./scripts/compare-package-entries.ps1 \
   -Mine ./packages/Wolfgang.Extensions.DateTime.1.3.2.nupkg \
-  -Manifest ./reproducible-build-manifest.json
+  -Manifest ../reproducible-build-manifest.json
 ```
 
 Two things to know before reading a difference as one:
