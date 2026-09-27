@@ -227,6 +227,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: fingerprint
+    # Not the default success(): a failed fingerprint leg would skip this job, and the
+    # "that leg did not finish" diagnosis below would never be printed. The pairs whose
+    # legs both finished are still compared.
+    if: ${{ !cancelled() }}
     steps:
       - name: Download the fingerprints
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
@@ -244,7 +248,8 @@ jobs:
               $path = "fingerprints/fingerprint-$id/fingerprint.txt"
               if (-not (Test-Path -LiteralPath $path))
               {
-                  throw "Missing the fingerprint for '$id' - that leg of the matrix did not finish."
+                  $script:failures += "Missing the fingerprint for '$id' - that leg of the matrix did not finish."
+                  return $null
               }
 
               $sdk = $null
@@ -297,34 +302,48 @@ jobs:
               return $problems
           }
 
-          $windowsA = Read-Fingerprint 'windows-a'
-          $windowsB = Read-Fingerprint 'windows-b'
-          $linux = Read-Fingerprint 'linux'
-
           $failures = @()
           $notes = @()
           $summary = @('| Comparison | Outputs compared | Result | Gated |', '|---|---|---|---|')
 
+          # A missing leg is recorded as a failure by Read-Fingerprint; the pairs that did
+          # finish are still compared below.
+          $windowsA = Read-Fingerprint 'windows-a'
+          $windowsB = Read-Fingerprint 'windows-b'
+          $linux = Read-Fingerprint 'linux'
+
           # A runner that installed a different 10.0.x patch runs a different Roslyn, so
           # every hash differs for a reason that has nothing to do with this repository.
-          # Say that, instead of printing forty mismatches.
-          if ($windowsB.Sdk -ne $windowsA.Sdk)
+          # Say that and skip the pair, instead of printing forty mismatches.
+          if ($windowsA -and $windowsB)
           {
-              $failures += "SDK skew: windows-a built with $($windowsA.Sdk), windows-b with $($windowsB.Sdk). Pin the SDK with a global.json before reading the hashes below."
+              if ($windowsB.Sdk -ne $windowsA.Sdk)
+              {
+                  $failures += "SDK skew: windows-a built with $($windowsA.Sdk), windows-b with $($windowsB.Sdk). Hashes not compared - pin the SDK with a global.json."
+                  $summary += '| windows-a vs windows-b | 0 | SDK skew, not compared | yes |'
+              }
+              else
+              {
+                  # THE GATE. Same OS, different checkout path: the output sets must be identical too.
+                  $failures += Compare-Fingerprint $windowsA $windowsB $true 'yes'
+              }
           }
 
-          if ($linux.Sdk -ne $windowsA.Sdk)
+          if ($linux -and $windowsA)
           {
-              $notes += "SDK skew: windows-a built with $($windowsA.Sdk), linux with $($linux.Sdk)."
+              if ($linux.Sdk -ne $windowsA.Sdk)
+              {
+                  $notes += "SDK skew: windows-a built with $($windowsA.Sdk), linux with $($linux.Sdk). Hashes not compared."
+                  $summary += '| linux vs windows-a | 0 | SDK skew, not compared | no |'
+              }
+              else
+              {
+                  # Reported, not gated - the platform newline in the SDK's generated sources makes
+                  # byte-identical assemblies across OS unreachable. The header comment has the
+                  # measurement. net4* is Windows-only by design, so compare only what both produced.
+                  $notes += Compare-Fingerprint $linux $windowsA $false 'no'
+              }
           }
-
-          # THE GATE. Same OS, different checkout path: the output sets must be identical too.
-          $failures += Compare-Fingerprint $windowsA $windowsB $true 'yes'
-
-          # Reported, not gated - the platform newline in the SDK's generated sources makes
-          # byte-identical assemblies across OS unreachable. The header comment has the
-          # measurement. net4* is Windows-only by design, so compare only what both produced.
-          $notes += Compare-Fingerprint $linux $windowsA $false 'no'
 
           $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
 
