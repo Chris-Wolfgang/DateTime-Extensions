@@ -43,11 +43,35 @@ public sealed class DateTimeProperties
     /// Instants across the whole representable range, with all three <see cref="DateTimeKind"/>
     /// values. Kind matters: every method is supposed to carry it through untouched.
     /// </summary>
-    private static readonly Gen<System.DateTime> AnyInstant =
+    private static readonly Gen<DateTime> AnyInstant =
         Gen.Long[0, MaxTicks].Select
         (
             Gen.Int[0, 2],
-            (ticks, kind) => new System.DateTime(ticks, (DateTimeKind)kind)
+            (ticks, kind) => new DateTime(ticks, (DateTimeKind)kind)
+        );
+
+
+
+    /// <summary>
+    /// <see cref="AnyInstant"/> is uniform over all ticks, so the first and last week of the
+    /// representable range - where the week methods clamp - are almost never generated. This mixes
+    /// in instants from the first and last fourteen days so the clamp branches are exercised on
+    /// every run.
+    /// </summary>
+    private static readonly Gen<DateTime> EdgeInclusiveInstant =
+        Gen.OneOf
+        (
+            AnyInstant,
+            Gen.Long[0, TimeSpan.TicksPerDay * 14].Select
+            (
+                Gen.Int[0, 2],
+                (ticks, kind) => new DateTime(ticks, (DateTimeKind)kind)
+            ),
+            Gen.Long[MaxTicks - (TimeSpan.TicksPerDay * 14), MaxTicks].Select
+            (
+                Gen.Int[0, 2],
+                (ticks, kind) => new DateTime(ticks, (DateTimeKind)kind)
+            )
         );
 
 
@@ -107,7 +131,7 @@ public sealed class DateTimeProperties
 
                 return actual.Year == instant.Year
                     && actual.Month == instant.Month
-                    && actual.Day == System.DateTime.DaysInMonth(instant.Year, instant.Month)
+                    && actual.Day == DateTime.DaysInMonth(instant.Year, instant.Month)
                     && actual.TimeOfDay == LastTickOfADay
                     && actual.Kind == instant.Kind
                     && actual >= instant;
@@ -137,6 +161,8 @@ public sealed class DateTimeProperties
                     && end.Month == 12
                     && end.Day == 31
                     && end.TimeOfDay == LastTickOfADay
+                    && first.Kind == instant.Kind
+                    && end.Kind == instant.Kind
                     && first <= instant
                     && instant <= end;
             },
@@ -162,10 +188,12 @@ public sealed class DateTimeProperties
                     && first.Day == 1
                     && first.TimeOfDay == TimeSpan.Zero
                     && (end.Month == 3 || end.Month == 6 || end.Month == 9 || end.Month == 12)
-                    && end.Day == System.DateTime.DaysInMonth(end.Year, end.Month)
+                    && end.Day == DateTime.DaysInMonth(end.Year, end.Month)
                     && end.TimeOfDay == LastTickOfADay
                     && monthsIntoTheQuarter >= 0
                     && monthsIntoTheQuarter <= 2
+                    && first.Kind == instant.Kind
+                    && end.Kind == instant.Kind
                     && first <= instant
                     && instant <= end;
             },
@@ -191,10 +219,12 @@ public sealed class DateTimeProperties
                     && first.Day == 1
                     && first.TimeOfDay == TimeSpan.Zero
                     && (end.Month == 6 || end.Month == 12)
-                    && end.Day == System.DateTime.DaysInMonth(end.Year, end.Month)
+                    && end.Day == DateTime.DaysInMonth(end.Year, end.Month)
                     && end.TimeOfDay == LastTickOfADay
                     && monthsIntoTheHalf >= 0
                     && monthsIntoTheHalf <= 5
+                    && first.Kind == instant.Kind
+                    && end.Kind == instant.Kind
                     && first <= instant
                     && instant <= end;
             },
@@ -214,7 +244,7 @@ public sealed class DateTimeProperties
     [Fact]
     public void FirstOfWeek_lands_on_the_requested_day_unless_it_clamps_to_MinValue()
     {
-        AnyInstant.Select(AnyDayOfWeek, (instant, day) => (instant, day)).Sample
+        EdgeInclusiveInstant.Select(AnyDayOfWeek, (instant, day) => (instant, day)).Sample
         (
             generated =>
             {
@@ -249,7 +279,7 @@ public sealed class DateTimeProperties
     [Fact]
     public void EndOfWeek_is_one_tick_short_of_seven_days_after_FirstOfWeek_unless_it_clamps()
     {
-        AnyInstant.Select(AnyDayOfWeek, (instant, day) => (instant, day)).Sample
+        EdgeInclusiveInstant.Select(AnyDayOfWeek, (instant, day) => (instant, day)).Sample
         (
             generated =>
             {
