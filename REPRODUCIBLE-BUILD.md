@@ -116,6 +116,19 @@ CI=true dotnet pack src/Wolfgang.Extensions.DateTime/Wolfgang.Extensions.DateTim
   -c Release -o packages
 ```
 
+**Tags that contain `scripts/third-party-notices.ps1`** (releases after `v1.3.2`) ship a generated
+`THIRD-PARTY-NOTICES.md` at the package root. The release workflow renders it between restore and
+pack, and `Directory.Build.props` only packs it when the file exists, so a plain `pack` leaves that
+entry out and cannot match. For those tags, restore, generate the notices, then pack without
+restoring again:
+
+```bash
+CI=true dotnet restore
+CI=true pwsh ./scripts/third-party-notices.ps1
+CI=true dotnet pack src/Wolfgang.Extensions.DateTime/Wolfgang.Extensions.DateTime.csproj \
+  -c Release -o packages --no-restore
+```
+
 If the restore fails with `NU1902`/`NU1903`, that is expected on older tags and is not a build
 problem: NuGet's vulnerability audit is a *time-dependent* input, so a tag that restored clean on
 release day can fail today because an advisory was published since. Add `-p:NuGetAudit=false` to
@@ -133,12 +146,12 @@ pwsh ./scripts/compare-package-entries.ps1 \
   -Published ./wolfgang.extensions.datetime.1.3.2.nupkg
 ```
 
-The script skips two entries deliberately, neither of which comes from the build:
+The script handles two entries specially, neither of which comes from the build:
 
-| Entry | Why it is not compared |
+| Entry | How it is handled |
 |---|---|
-| `.signature.p7s` | nuget.org's repository signature, added after the build. Present in the downloaded package, absent from yours. |
-| `*.psmdcp` | OPC core properties. The *file name* is a GUID on some NuGet versions and the fixed `nuget.psmdcp` on others, so it is compared under a stable key rather than by name. |
+| `.signature.p7s` | **Skipped.** nuget.org's repository signature, added after the build. Present in the downloaded package, absent from yours. |
+| `*.psmdcp` | **Compared**, under a stable key rather than by name: OPC core properties, whose *file name* is a GUID on some NuGet versions and the fixed `nuget.psmdcp` on others. A difference in its content is reported. |
 
 ### 4. What you should see
 
@@ -154,7 +167,8 @@ the published package:
 - The four `.dll` entries differ in **72 of 74,752 bytes**, in five runs of 4, 16, 4, 16 and 32
   bytes. The sizes and positions are consistent with the PE header timestamp, the MVID, and the two
   debug-directory entries carrying the PDB id and checksum — the fields that *are* the compilation's
-  identity hash. All IL and all metadata is identical.
+  identity hash. All IL is identical, and so is every metadata value other than those identity
+  fields (the MVID is itself stored in metadata).
 - `_rels/.rels` and the OPC core properties differ in their generated ids only.
 
 A compiler change looks like that: a small, bounded residue in the identity fields. Changed source
