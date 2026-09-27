@@ -113,16 +113,32 @@ public class AllocationTests
     {
         // A method added to the library without being listed above would never be measured, and
         // nothing else here would notice. The culture matrix enumerates the surface by reflection
-        // for the same reason; this file cannot, so it counts instead.
-        var methods = typeof(DateTimeExtensions).GetMethods
-        (
-            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
-        );
+        // for the same reason; this file cannot, so it compares signatures instead. Comparing the
+        // sorted signature lists, not their counts, also catches a duplicated entry standing in
+        // for an omitted one.
+        var publicSignatures = typeof(DateTimeExtensions)
+            .GetMethods
+            (
+                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
+            )
+            .Select
+            (
+                method => string.Format
+                (
+                    CultureInfo.InvariantCulture,
+                    "{0}({1})",
+                    method.Name,
+                    string.Join(", ", method.GetParameters().Skip(1).Select(parameter => parameter.ParameterType.Name))
+                )
+            )
+            .OrderBy(signature => signature, StringComparer.Ordinal);
 
         Assert.Equal
         (
-            methods.Length,
-            Calls.Length
+            publicSignatures,
+            Calls
+                .Select(entry => entry.Name)
+                .OrderBy(name => name, StringComparer.Ordinal)
         );
     }
 }
