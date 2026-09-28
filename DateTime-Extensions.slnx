@@ -56,6 +56,7 @@
     <File Path=".github/workflows/aot-smoke.yaml" />
     <File Path=".github/workflows/reproducible-build.yaml" />
     <File Path=".github/workflows/fuzz.yaml" />
+    <File Path=".github/workflows/pr-benchmarks.yaml" />
     <File Path=".github/workflows/protected-files.yaml" />
     <File Path=".github/workflows/sourcelink.yaml" />
     <File Path=".github/workflows/sourcelink-stepinto.yaml" />
@@ -79,6 +80,7 @@
     <File Path="scripts/format.ps1" />
     <File Path="scripts/compare-package-entries.ps1" />
     <File Path="scripts/Normalize-TestResults.py" />
+    <File Path="scripts/compare-benchmarks.py" />
   </Folder>
   <Folder Name="/benchmarks/">
     <Project Path="benchmarks/Wolfgang.Extensions.DateTime.Benchmarks/Wolfgang.Extensions.DateTime.Benchmarks.csproj" />
