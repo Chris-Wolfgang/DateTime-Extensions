@@ -1,5 +1,3 @@
-using System;
-using System.IO;
 using System.Net;
 using System.Text;
 using Xunit.Abstractions;
@@ -128,6 +126,10 @@ public static class DocExampleSource
     /// depending on the real <see cref="AppContext.BaseDirectory"/> ever
     /// lacking a <c>src/</c> ancestor.
     /// </summary>
+    /// <exception cref="DirectoryNotFoundException">
+    /// No ancestor of <paramref name="startDirectory"/> contains
+    /// <c>src/Wolfgang.Extensions.DateTime/</c>.
+    /// </exception>
     internal static string FindSrcDirectory(string startDirectory)
     {
         var dir = new DirectoryInfo(startDirectory);
