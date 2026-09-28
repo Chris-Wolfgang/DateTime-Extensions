@@ -52,16 +52,19 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Check the PR tree has the benchmark class
+      - name: Check the PR tree has the benchmark class and compare script
         id: smoke
-        # A PR whose tree predates the benchmarks project (e.g. a protected-file
-        # split branched from an older main) has nothing to measure - skip
-        # instead of letting the BDN filter match nothing and fail.
+        # A PR whose tree predates the benchmarks project OR the compare
+        # script (e.g. a protected-file split branched from an older main -
+        # this workflow's own introduction is one, until its stacked
+        # follow-up merges) has nothing to measure - skip instead of letting
+        # the BDN filter match nothing, or the later `cp` of the script, fail.
         run: |
-          if [ -f benchmarks/Wolfgang.Extensions.DateTime.Benchmarks/DateTimeExtensionsBenchmarks.cs ]; then
+          if [ -f benchmarks/Wolfgang.Extensions.DateTime.Benchmarks/DateTimeExtensionsBenchmarks.cs ] && \
+             [ -f scripts/compare-benchmarks.py ]; then
             echo "present=true" >> "$GITHUB_OUTPUT"
           else
-            echo "::notice::PR tree has no DateTimeExtensionsBenchmarks - skipping benchmark delta."
+            echo "::notice::PR tree has no DateTimeExtensionsBenchmarks and/or compare-benchmarks.py - skipping benchmark delta."
             echo "present=false" >> "$GITHUB_OUTPUT"
           fi
 
