@@ -68,6 +68,8 @@ warns and continues if CycloneDX fails, and the artifact upload does not treat a
 an error, so a release can complete without one. Its absence is not evidence of tampering.
 Nothing below needs a key from us - verification uses GitHub's own transparency log.
 
+Provenance answers where a package came from, not whether its contents follow from the source. For that - rebuilding a tag yourself and comparing - see [REPRODUCIBLE-BUILD.md](REPRODUCIBLE-BUILD.md).
+
 **Provenance - did this package come from this repository's release workflow?**
 
 ```bash

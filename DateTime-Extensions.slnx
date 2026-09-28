@@ -10,6 +10,7 @@
     <File Path="Directory.Build.props" />
     <File Path="LICENSE" />
     <File Path="README.md" />
+    <File Path="REPRODUCIBLE-BUILD.md" />
     <File Path="SECURITY.md" />
   </Folder>
   <Folder Name="/.root/docs/">
@@ -51,6 +52,7 @@
     <File Path=".github/workflows/pr.yaml" />
     <File Path=".github/workflows/release.yaml" />
     <File Path=".github/workflows/aot-smoke.yaml" />
+    <File Path=".github/workflows/reproducible-build.yaml" />
     <File Path=".github/workflows/protected-files.yaml" />
     <File Path=".github/workflows/sourcelink.yaml" />
     <File Path=".github/workflows/sourcelink-stepinto.yaml" />
@@ -71,6 +73,7 @@
     <File Path="scripts/Validate-DocsDeploy.ps1" />
     <File Path="scripts/build-pr.ps1" />
     <File Path="scripts/format.ps1" />
+    <File Path="scripts/compare-package-entries.ps1" />
   </Folder>
   <Folder Name="/benchmarks/">
     <Project Path="benchmarks/Wolfgang.Extensions.DateTime.Benchmarks/Wolfgang.Extensions.DateTime.Benchmarks.csproj" />
