@@ -28,6 +28,8 @@
     <File Path="docs/adr/0004-package-validation-baseline.md" />
   </Folder>
   <Folder Name="/.root/.github/">
+    <File Path=".github/requirements/defusedxml.in" />
+    <File Path=".github/requirements/defusedxml.txt" />
     <File Path=".github/CODEOWNERS" />
     <File Path=".github/copilot-instructions.md" />
     <File Path=".github/dependabot.yml" />
@@ -58,6 +60,7 @@
     <File Path=".github/workflows/sourcelink.yaml" />
     <File Path=".github/workflows/sourcelink-stepinto.yaml" />
     <File Path=".github/workflows/stryker.yaml" />
+    <File Path=".github/workflows/cross-platform-differential.yaml" />
   </Folder>
   <Folder Name="/.root/assets/">
     <File Path="assets/icon.ico" />
@@ -75,6 +78,7 @@
     <File Path="scripts/build-pr.ps1" />
     <File Path="scripts/format.ps1" />
     <File Path="scripts/compare-package-entries.ps1" />
+    <File Path="scripts/Normalize-TestResults.py" />
   </Folder>
   <Folder Name="/benchmarks/">
     <Project Path="benchmarks/Wolfgang.Extensions.DateTime.Benchmarks/Wolfgang.Extensions.DateTime.Benchmarks.csproj" />
