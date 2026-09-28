@@ -53,6 +53,7 @@
     <File Path=".github/workflows/release.yaml" />
     <File Path=".github/workflows/aot-smoke.yaml" />
     <File Path=".github/workflows/reproducible-build.yaml" />
+    <File Path=".github/workflows/fuzz.yaml" />
     <File Path=".github/workflows/protected-files.yaml" />
     <File Path=".github/workflows/sourcelink.yaml" />
     <File Path=".github/workflows/sourcelink-stepinto.yaml" />
