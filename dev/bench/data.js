@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790280273321,
+  "lastUpdate": 1790623427141,
   "repoUrl": "https://github.com/Chris-Wolfgang/DateTime-Extensions",
   "entries": {
     "BenchmarkDotNet": [
@@ -1512,6 +1512,114 @@ window.BENCHMARK_DATA = {
             "value": 29.0883229970932,
             "unit": "ns",
             "range": "± 0.10606655047349432"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "67f6196f1403d2a015b5c0bb2016dfc60f6c4698",
+          "message": "docs: document EndOfWeek's non-idempotency at the year-1 boundary (#460)\n\nFirstOfWeek(DateTime, DayOfWeek) clamps to DateTime.MinValue rather\nthan underflowing when walking back would go before year 1. MinValue\nis itself a Monday, so the clamped result doesn't necessarily fall on\nthe requested firstDayOfWeek. EndOfWeek computes seven days from that\nresult, so calling it a second time on its own output can return a\nlater value - only reachable in the first week of year 1.\n\nNo behaviour change: the fuzz property (#435) and Stryker equivalent-\nmutant comment already encode this as intentional. This documents it\nin the XML docs, per the recommendation in #436's own analysis.\n\nCloses #436\n\nCo-authored-by: Claude Sonnet 5 <noreply@anthropic.com>",
+          "timestamp": "2026-09-28T15:19:00-04:00",
+          "tree_id": "8516ff102287403d4ea5b9109941f90985c6360c",
+          "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/67f6196f1403d2a015b5c0bb2016dfc60f6c4698"
+        },
+        "date": 1790623425819,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateMilliseconds",
+            "value": 0.001495063304901123,
+            "unit": "ns",
+            "range": "± 0.001389097191475738"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateSeconds",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfMonth",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfMonth",
+            "value": 28.225592970848083,
+            "unit": "ns",
+            "range": "± 0.0058393626276380065"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfYear",
+            "value": 0.0005655058970053991,
+            "unit": "ns",
+            "range": "± 0.0009794849455931637"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfYear",
+            "value": 0.000558679923415184,
+            "unit": "ns",
+            "range": "± 0.000967662012523788"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_Sunday",
+            "value": 14.554091195265451,
+            "unit": "ns",
+            "range": "± 0.04724386728599211"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_Sunday",
+            "value": 14.869208325942358,
+            "unit": "ns",
+            "range": "± 0.004141370183542117"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_CurrentCulture",
+            "value": 17.694190114736557,
+            "unit": "ns",
+            "range": "± 0.09621550510157229"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_CurrentCulture",
+            "value": 20.74777576327324,
+            "unit": "ns",
+            "range": "± 0.044295427844362946"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfQuarter",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfQuarter",
+            "value": 30.455263316631317,
+            "unit": "ns",
+            "range": "± 0.05308388245328419"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfHalf",
+            "value": 0.002927912399172783,
+            "unit": "ns",
+            "range": "± 0.0029688045676609666"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfHalf",
+            "value": 29.13982778787613,
+            "unit": "ns",
+            "range": "± 0.12924932823805554"
           }
         ]
       }
