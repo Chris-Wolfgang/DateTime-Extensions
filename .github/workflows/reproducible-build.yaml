@@ -270,19 +270,34 @@ jobs:
               return [pscustomobject]@{ Id = $id; Sdk = $sdk; Hashes = $hashes }
           }
 
-          function Compare-Fingerprint($left, $right, [bool] $requireSameOutputSet, [string] $gated)
+          function Compare-Fingerprint($left, $right, [string] $outputSetPolicy, [string] $gated)
           {
               $shared = @($left.Hashes.Keys | Where-Object { $right.Hashes.ContainsKey($_) } | Sort-Object)
               $problems = @()
 
-              if ($requireSameOutputSet)
+              # 'strict' checks every key (same OS, must match exactly). 'buildOnly' checks
+              # only non-net4* build keys - it skips 'pack' keys entirely (Linux never packs;
+              # see the net4*-skip note above) and net4* build keys (Linux never builds them),
+              # while still catching a genuinely missing netstandard2.0/net8.0/net10.0 output.
+              # 'none' skips the set check.
+              $isChecked = {
+                  param($key)
+                  switch ($outputSetPolicy)
+                  {
+                      'strict'    { $true }
+                      'buildOnly' { $key -like 'build *' -and $key -notmatch '/net4' }
+                      default     { $false }
+                  }
+              }
+
+              if ($outputSetPolicy -ne 'none')
               {
-                  foreach ($key in @($left.Hashes.Keys | Where-Object { -not $right.Hashes.ContainsKey($_) } | Sort-Object))
+                  foreach ($key in @($left.Hashes.Keys | Where-Object { (& $isChecked $_) -and -not $right.Hashes.ContainsKey($_) } | Sort-Object))
                   {
                       $problems += "$($left.Id) produced '$key' and $($right.Id) did not."
                   }
 
-                  foreach ($key in @($right.Hashes.Keys | Where-Object { -not $left.Hashes.ContainsKey($_) } | Sort-Object))
+                  foreach ($key in @($right.Hashes.Keys | Where-Object { (& $isChecked $_) -and -not $left.Hashes.ContainsKey($_) } | Sort-Object))
                   {
                       $problems += "$($right.Id) produced '$key' and $($left.Id) did not."
                   }
@@ -325,7 +340,7 @@ jobs:
               else
               {
                   # THE GATE. Same OS, different checkout path: the output sets must be identical too.
-                  $failures += Compare-Fingerprint $windowsA $windowsB $true 'yes'
+                  $failures += Compare-Fingerprint $windowsA $windowsB 'strict' 'yes'
               }
           }
 
@@ -340,8 +355,9 @@ jobs:
               {
                   # Reported, not gated - the platform newline in the SDK's generated sources makes
                   # byte-identical assemblies across OS unreachable. The header comment has the
-                  # measurement. net4* is Windows-only by design, so compare only what both produced.
-                  $notes += Compare-Fingerprint $linux $windowsA $false 'no'
+                  # measurement. 'buildOnly' still catches a build output Linux should have
+                  # produced but didn't; it just doesn't expect pack or net4* parity.
+                  $notes += Compare-Fingerprint $linux $windowsA 'buildOnly' 'no'
               }
           }
 
