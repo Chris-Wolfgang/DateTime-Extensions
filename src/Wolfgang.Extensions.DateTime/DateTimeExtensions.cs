@@ -193,6 +193,13 @@ public static class DateTimeExtensions
     /// <param name="dateTime">The value to process.</param>
     /// <param name="firstDayOfWeek">Specifies the first day of the week.</param>
     /// <returns>A new DateTime representing the first of the week.</returns>
+    /// <remarks>
+    /// Within the first week of year 1 - <c>0001-01-01</c> through <c>0001-01-07</c> - walking
+    /// back to <paramref name="firstDayOfWeek"/> can underflow the representable range. Rather
+    /// than throw, this method clamps to <see cref="System.DateTime.MinValue"/>, which is itself
+    /// a Monday and so is not guaranteed to fall on <paramref name="firstDayOfWeek"/>. See
+    /// <see cref="EndOfWeek(System.DateTime, DayOfWeek)"/>'s remarks for the consequence.
+    /// </remarks>
     /// <example>
     /// <code>
     /// var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
@@ -246,6 +253,22 @@ public static class DateTimeExtensions
     /// <param name="dateTime">The value to process.</param>
     /// <param name="firstDayOfWeek">Specifies the first day of the week. Use the parameterless overload to pick up <see cref="CultureInfo.CurrentCulture"/>'s value automatically.</param>
     /// <returns>A new DateTime representing the end of the week.</returns>
+    /// <remarks>
+    /// <para>
+    /// Not idempotent within the first week of year 1 - <c>0001-01-01</c> through
+    /// <c>0001-01-07</c>. This method computes seven days from
+    /// <see cref="FirstOfWeek(System.DateTime, DayOfWeek)"/>'s result, but that result clamps to
+    /// <see cref="System.DateTime.MinValue"/> rather than underflowing, and <c>MinValue</c> does
+    /// not necessarily fall on <paramref name="firstDayOfWeek"/> (see its remarks). Calling
+    /// <c>EndOfWeek</c> a second time, on the first call's own result, can therefore return a
+    /// later value than the first call did.
+    /// </para>
+    /// <para>
+    /// No plausible application reaches this - it needs an instant in the first seven days of
+    /// year 1 - so the behaviour is documented rather than changed. Deliberate, see
+    /// <see href="https://github.com/Chris-Wolfgang/DateTime-Extensions/issues/436">#436</see>.
+    /// </para>
+    /// </remarks>
     /// <example>
     /// <code>
     /// var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
