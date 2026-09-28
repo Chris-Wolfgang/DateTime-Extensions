@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790489488108,
+  "lastUpdate": 1790638544751,
   "repoUrl": "https://github.com/Chris-Wolfgang/DateTime-Extensions",
   "entries": {
     "Mutation score": [
@@ -21,6 +21,33 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/96114fbff682ad645735d7c73714ad184da10bbe"
         },
         "date": 1790489484117,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Mutation score",
+            "value": 100,
+            "unit": "%"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang",
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "4df090c8d4f7c61190f96632d791336e8078470b",
+          "message": "ci: run local tools as pinned, raise the coverage floor to 95% (#461)\n\nscripts/build-pr.ps1: ReportGenerator and DevSkim now run via\n`dotnet <tool>` against the versions pinned in .config/dotnet-tools.json\n(5.5.11 / 1.0.90), matching how pr.yaml runs them, instead of a global\ninstall that silently fell back and could false-pass DevSkim when\n~/.dotnet/tools wasn't on PATH. Ported from Chris-Wolfgang/repo-template#656,\nadapted to this repo's existing structure rather than overwritten wholesale.\n\npr.yaml + build-pr.ps1: CODECOV_MINIMUM raised 90 -> 95, matching the\n2026-09-27 fleet coverage policy. No gaps to close first - every\nassembly already measures 100% locally (verified via the updated\nbuild-pr.ps1, all checks passed).\n\nThe Chris-Wolfgang/repo-template#654 sync (integration-project coverage\ngating) does not apply here - this repo has no *.Tests.Integration.*\nproject.\n\nPart of #459\n\nCo-authored-by: Claude Sonnet 5 <noreply@anthropic.com>",
+          "timestamp": "2026-09-28T23:08:42Z",
+          "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/4df090c8d4f7c61190f96632d791336e8078470b"
+        },
+        "date": 1790638538644,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
