@@ -17,7 +17,7 @@ concurrency:
 
 env:
   # Minimum line coverage for PRODUCTION assemblies (anything under src/).
-  CODECOV_MINIMUM: 90
+  CODECOV_MINIMUM: 95
   # Minimum line coverage for TEST assemblies (anything under tests/).
   # Kept in sync with pr.yaml — see the note there.
   CODECOV_TEST_MINIMUM: 100
@@ -27,6 +27,7 @@ jobs:
   validate-release:
     name: Validate Release Build
     runs-on: windows-latest
+    timeout-minutes: 60
     if: github.repository != 'Chris-Wolfgang/repo-template'
     steps:
       - name: Checkout code
@@ -109,11 +110,38 @@ jobs:
       - name: Run multi-framework tests with coverage
         shell: pwsh
         run: |
-          $testProjects = Get-ChildItem -Path './tests' -Recurse -Filter '*Test*.csproj'
+          $testProjects = Get-ChildItem -Path './tests' -Recurse -Filter '*.csproj'
 
           if ($testProjects.Count -eq 0) {
             Write-Error "❌ No test projects found - release requires tests to validate quality"
             exit 1
+          }
+
+          # Ledger of the test assemblies that actually ran; the coverage step refuses to
+          # pass unless every one of them has a row in the report (mirrors pr.yaml).
+          $ranAssembliesFile = Join-Path $env:RUNNER_TEMP 'release-ran-test-assemblies.txt'
+          Remove-Item $ranAssembliesFile -ErrorAction SilentlyContinue
+
+          function Invoke-TestRun {
+            param([string]$Project, [string[]]$Arguments, [string]$Label)
+
+            # `dotnet test` exits 0 when the adapter finds NO tests ("No test is available
+            # in ..."), so a missing or incompatible runner for a TFM would pass silently.
+            # Fail the run unless the summary reports a non-zero total (mirrors pr.yaml).
+            $log = dotnet test $Project @Arguments 2>&1 | ForEach-Object { "$_" }
+            $exit = $LASTEXITCODE
+            $log | ForEach-Object { Write-Host $_ }
+
+            if ($exit -ne 0) {
+              Write-Error "❌ Tests failed $Label"
+              exit $exit
+            }
+
+            $joined = $log -join "`n"
+            if ($joined -match 'No test is available' -or $joined -notmatch '(?i)total( tests)?:\s*[1-9][0-9]*') {
+              Write-Error "❌ Zero tests ran $Label - the test adapter found nothing to execute (missing/incompatible xunit.runner.visualstudio for this TFM?)"
+              exit 1
+            }
           }
 
           foreach ($testProj in $testProjects) {
@@ -214,63 +242,58 @@ jobs:
               }
             }
 
+            # Only projects that really run tests: an AOT smoke executable or a fixture under
+            # tests/ has nothing for the adapter to execute and would trip the zero-tests guard.
+            # IsTestProject comes from Microsoft.NET.Test.Sdk's props (imported per TFM).
+            $isTestProject = $false
+            foreach ($fw in $frameworks) {
+              $probe = if ([string]::IsNullOrWhiteSpace($fw)) { @() } else { @("-p:TargetFramework=$fw") }
+              $value = dotnet msbuild $testProj.FullName -nologo -p:Configuration=Release @probe -getProperty:IsTestProject 2>$null
+              if ("$value".Trim() -ieq 'true') { $isTestProject = $true; break }
+            }
+            if (-not $isTestProject) {
+              Write-Host "⊘ Skipping $($testProj.Name): not a test project (IsTestProject != true)" -ForegroundColor Yellow
+              Write-Host ""
+              continue
+            }
+
             Write-Host "Detected frameworks: $($frameworks -join ', ')" -ForegroundColor Cyan
 
             foreach ($fw in $frameworks) {
+              $common = @(
+                '--configuration', 'Release',
+                '--no-build',
+                '--no-restore',
+                '--results-directory', './TestResults',
+                '--logger', 'console;verbosity=minimal'
+              )
+              # Coverage for .NET 5.0+ only; net4x still runs, without collection. The
+              # runsettings carry IncludeTestAssembly / ExcludeByAttribute, so without them
+              # the test-assembly rows never exist and the 100 % test gate gates nothing.
+              $coverage = @('--collect:XPlat Code Coverage', '--settings', 'coverlet.runsettings')
+
               if ([string]::IsNullOrWhiteSpace($fw)) {
                 Write-Host "Testing project $($testProj.Name) without explicit --framework (using SDK/MSBuild defaults)" -ForegroundColor Yellow
-
-                # When framework cannot be determined, run tests once without specifying --framework.
-                # Collect coverage in this case to avoid missing data due to unknown TFM.
-                dotnet test $testProj.FullName `
-                  --configuration Release `
-                  --no-build `
-                  --no-restore `
-                  --collect:"XPlat Code Coverage" `
-                  --results-directory "./TestResults" `
-                  --logger "console;verbosity=minimal"
-
-                if ($LASTEXITCODE -ne 0) {
-                  Write-Error "❌ Tests failed (no explicit TargetFramework) in $($testProj.Name)"
-                  exit $LASTEXITCODE
-                }
-
+                Invoke-TestRun $testProj.FullName ($common + $coverage) "(no explicit TargetFramework) in $($testProj.Name)"
                 continue
               }
 
               Write-Host "Testing framework: $fw" -ForegroundColor Yellow
-
-              # Collect coverage only for .NET 5.0+ TFMs; still run tests for all frameworks
-              if ($fw -match '^net([5-9]|[1-9][0-9]+)\.') {
-                dotnet test $testProj.FullName `
-                  --configuration Release `
-                  --framework $fw `
-                  --no-build `
-                  --no-restore `
-                  --collect:"XPlat Code Coverage" `
-                  --results-directory "./TestResults" `
-                  --logger "console;verbosity=minimal"
-              } else {
-                # For older frameworks (e.g., netstandard, net4x, net3x, etc.), run tests without coverage
-                dotnet test $testProj.FullName `
-                  --configuration Release `
-                  --framework $fw `
-                  --no-build `
-                  --no-restore `
-                  --results-directory "./TestResults" `
-                  --logger "console;verbosity=minimal"
-              }
-
-              if ($LASTEXITCODE -ne 0) {
-                if ($fw) {
-                  Write-Error "❌ Tests failed for $fw in $($testProj.Name)"
-                } else {
-                  Write-Error "❌ Tests failed in $($testProj.Name)"
-                }
-                exit $LASTEXITCODE
-              }
+              $arguments = $common + @('--framework', $fw)
+              if ($fw -match '^net([5-9]|[1-9][0-9]+)\.') { $arguments += $coverage }
+              Invoke-TestRun $testProj.FullName $arguments "for $fw in $($testProj.Name)"
             }
+
+            # Reached only for a project that ran; record it for the coverage-row check.
+            $asmMatch = [regex]::Match((Get-Content $testProj.FullName -Raw), '<AssemblyName>([^<]+)</AssemblyName>')
+            $asm = if ($asmMatch.Success) { $asmMatch.Groups[1].Value.Trim() } else { $testProj.BaseName }
+            Add-Content -Path $ranAssembliesFile -Value $asm
             Write-Host ""
+          }
+
+          if (-not (Test-Path $ranAssembliesFile)) {
+            Write-Error "❌ No test project ran (every project under tests/ was skipped) - release requires tests to validate quality"
+            exit 1
           }
           Write-Host "✅ All framework tests passed" -ForegroundColor Green
 
@@ -281,7 +304,7 @@ jobs:
           $coverageFiles = Get-ChildItem -Path "TestResults" -Recurse -Filter "coverage.cobertura.xml" -ErrorAction SilentlyContinue
 
           if ($coverageFiles.Count -eq 0) {
-            Write-Error "❌ No coverage files found - coverage data is required to enforce the 90% threshold"
+            Write-Error "❌ No coverage files found - coverage data is required to enforce the coverage gate"
             exit 1
           }
 
@@ -300,9 +323,29 @@ jobs:
           Get-Content CoverageReport/Summary.txt
           Write-Host ""
 
-          # Parse coverage and enforce threshold per module (matching pr.yaml)
           $summaryContent = Get-Content CoverageReport/Summary.txt
-          $threshold     = if ($env:CODECOV_MINIMUM) { [int]$env:CODECOV_MINIMUM } else { 90 }
+
+          # Every test assembly that ran must have a row (mirrors pr.yaml): an assembly that
+          # ran and recorded nothing simply drops out of the report, and the gate below then
+          # measures less than it did yesterday while still passing.
+          $ranAssembliesFile = Join-Path $env:RUNNER_TEMP 'release-ran-test-assemblies.txt'
+          if (-not (Test-Path $ranAssembliesFile)) {
+            Write-Error "❌ No record of which test assemblies ran - refusing to pass a gate that measured nothing"
+            exit 1
+          }
+          $missingRows = @()
+          foreach ($asm in (Get-Content $ranAssembliesFile | Sort-Object -Unique)) {
+            $pattern = '^' + [regex]::Escape($asm) + '\s'
+            if (-not ($summaryContent | Where-Object { $_ -match $pattern })) { $missingRows += $asm }
+          }
+          if ($missingRows.Count -gt 0) {
+            Write-Error "❌ These test assemblies ran but produced no coverage row: $($missingRows -join ', '). Is coverlet.collector still referenced?"
+            exit 1
+          }
+          Write-Host "Every test assembly that ran is present in the coverage report." -ForegroundColor Green
+
+          # Parse coverage and enforce threshold per module (matching pr.yaml)
+          $threshold     = if ($env:CODECOV_MINIMUM) { [int]$env:CODECOV_MINIMUM } else { 95 }
           $testThreshold = if ($env:CODECOV_TEST_MINIMUM) { [int]$env:CODECOV_TEST_MINIMUM } else { 100 }
           $failedModules = @()
           $coverageFound = $false
@@ -374,6 +417,7 @@ jobs:
     name: Pack & Validate NuGet
     needs: validate-release
     runs-on: windows-latest
+    timeout-minutes: 30
     outputs:
       has-packages: ${{ steps.check-packages.outputs.has-packages }}
     steps:
@@ -587,10 +631,12 @@ jobs:
             dotnet CycloneDX $proj.FullName --output $sbomDir --filename $sbomName --json
 
             if ($LASTEXITCODE -ne 0) {
-              Write-Warning "⚠️ SBOM generation failed for $($proj.Name) - continuing"
-            } else {
-              Write-Host "✅ SBOM generated: $sbomName" -ForegroundColor Green
+              # A release page without its *.bom.json is a silent gap; sbom.yaml fails on
+              # the same error, so this must too.
+              Write-Error "❌ SBOM generation failed for $($proj.Name)"
+              exit $LASTEXITCODE
             }
+            Write-Host "✅ SBOM generated: $sbomName" -ForegroundColor Green
           }
 
 
@@ -705,6 +751,7 @@ jobs:
   verify-docs-build:
     name: Verify Documentation Builds
     runs-on: windows-latest
+    timeout-minutes: 20
     # Gate on the prior validation jobs so we don't burn ~5-10 min of Windows
     # runner time on a release that's already failing earlier in the pipeline.
     # No repo guard here: validate-release carries it, and a `needs:` on a
@@ -805,6 +852,7 @@ jobs:
     needs: [pack-and-validate, verify-docs-build]
     if: needs.pack-and-validate.outputs.has-packages == 'true'
     runs-on: windows-latest
+    timeout-minutes: 15
     permissions:
       id-token: write       # OIDC token for NuGet trusted publishing (no stored API key) AND for signing the provenance attestation
       attestations: write   # record the SLSA build-provenance attestation on GitHub
@@ -924,7 +972,9 @@ jobs:
   # Note: reusable workflow jobs called via `uses:` do not require `runs-on` in the caller
   trigger-docs:
     name: Build & Deploy Documentation
-    needs: validate-release
+    # Deploy the tag's docs only once its package is live; a docs deploy for a release
+    # whose publish failed would describe a version nobody can install.
+    needs: [validate-release, publish-nuget]
     permissions:
       contents: write  # Required by docfx.yaml to push to gh-pages branch
     # GitHub's `$/` self-repository syntax is preferred here, but actionlint
@@ -940,6 +990,7 @@ jobs:
     needs: [validate-release, pack-and-validate, publish-nuget]
     if: needs.pack-and-validate.outputs.has-packages == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: write  # Required to upload assets to the GitHub Release
     steps:
