@@ -256,7 +256,7 @@ public sealed class DateTimeProperties
                 // Independent oracle: walk the calendar back from the instant (at most six
                 // days, never past MinValue) looking for the requested day. The clamp is
                 // legitimate only when that walk finds nothing.
-                var daysAvailable = (int)Math.Min(6, (instant.Date - DateTime.MinValue).Days);
+                var daysAvailable = Math.Min(6, (instant.Date - DateTime.MinValue).Days);
                 var dayIsReachable = Enumerable
                     .Range(0, daysAvailable + 1)
                     .Any(back => instant.Date.AddDays(-back).DayOfWeek == day);
