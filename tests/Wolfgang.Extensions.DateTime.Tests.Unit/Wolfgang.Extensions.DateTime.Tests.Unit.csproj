@@ -319,9 +319,6 @@
 		</PackageReference>
 	</ItemGroup>
 
-	<ItemGroup>
-		<Using Include="Xunit" />
-	</ItemGroup>
 
 	<!-- Analyzer PackageReferences are centralized in Directory.Build.props -->
 
