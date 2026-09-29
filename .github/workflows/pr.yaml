@@ -366,10 +366,34 @@ jobs:
 
       - name: Gate on error-severity findings
         run: |
+          # Explicit, not relied on implicitly: GitHub's default bash for an unqualified
+          # `run:` step already sets -e, so a missing jq/inspect.sarif already halts this
+          # step today - but that safety was never stated here, and a `shell:` override
+          # added later could silently remove it. Without this, a missing jq or a missing
+          # /malformed SARIF makes `count` come back EMPTY, `[ "" -gt 0 ]` fails with
+          # "integer expected", that failure sits in an `if` condition where set -e does not
+          # reach it, and the last statement is the "No findings" echo - so the step exits 0
+          # and the gate reports clean without reading anything. Same shape as the missing
+          # coverage file in the coverage-gate steps: a check that could not run must fail.
+          set -euo pipefail
+
+          if [ ! -s inspect.sarif ]; then
+            echo "::error::inspect.sarif is missing or empty - InspectCode produced no report, so the gate cannot run. Treating as a failure, not a pass."
+            exit 1
+          fi
+          if ! command -v jq > /dev/null 2>&1; then
+            echo "::error::jq is not available, so the SARIF cannot be read. Treating as a failure, not a pass."
+            exit 1
+          fi
+
           # SARIF level=error fails the job; warnings still upload (visible in
           # Security → Code scanning) but don't gate merge — raise to `error`
           # later when the noise floor is acceptable.
           count=$(jq '[.runs[].results[] | select(.level=="error")] | length' inspect.sarif)
+          if ! printf '%s' "$count" | grep -qE '^[0-9]+$'; then
+            echo "::error::Could not read a finding count from inspect.sarif (got '$count'). Treating as a failure, not a pass."
+            exit 1
+          fi
           if [ "$count" -gt 0 ]; then
             echo "::error::$count InspectCode error-severity finding(s) — see Security → Code scanning"
             exit 1
@@ -601,15 +625,19 @@ jobs:
             exit 0
           fi
 
-          mapfile -d '' -t test_projects < <(find ./tests -type f \( -name "*.csproj" -o -name "*.vbproj" -o -name "*.fsproj" \) -not -name "*.Tests.Integration.*" -print0)
+          # No *.Tests.Integration.* exclusion here: this is the only stage with Docker, so
+          # it is the one stage that CAN run Testcontainers-based integration suites. The old
+          # exclusion left them unmeasured everywhere while pr.yaml still called them tested.
+          # Synced from Chris-Wolfgang/repo-template#654. Stage 3 (macOS) still excludes them
+          # (no Docker there); Stage 2 (Windows) never excluded them.
+          mapfile -d '' -t test_projects < <(find ./tests -type f \( -name "*.csproj" -o -name "*.vbproj" -o -name "*.fsproj" \) -print0)
 
-          # Report any integration test projects deliberately excluded from the
-          # coverage gate, so the skip is visible rather than silent (they are
-          # expected to run in a separate workflow).
-          mapfile -d '' -t excluded_integration < <(find ./tests -type f \( -name "*.csproj" -o -name "*.vbproj" -o -name "*.fsproj" \) -name "*.Tests.Integration.*" -print0)
-          if [ ${#excluded_integration[@]} -gt 0 ]; then
-            echo "::notice::Excluded ${#excluded_integration[@]} integration test project(s) from the coverage gate (expected to run in a separate workflow): ${excluded_integration[*]}"
-          fi
+          # Assemblies that actually ran tests in this job. The row check after the report is
+          # generated requires one coverage row per name here, so a project whose collection
+          # silently broke (a dropped coverlet.collector reference) fails the gate instead of
+          # quietly dropping out of it.
+          ran_assemblies_file="$RUNNER_TEMP/stage1-ran-test-assemblies.txt"
+          : > "$ran_assemblies_file"
 
           if [ ${#test_projects[@]} -eq 0 ]; then
             if find ./src -type f \( -name "*.csproj" -o -name "*.vbproj" -o -name "*.fsproj" \) -print -quit 2>/dev/null | grep -q .; then
@@ -708,6 +736,15 @@ jobs:
               fi
               rm -f "$test_log"
             done <<< "$frameworks"
+
+            # Reached only for a project that ran (both "skip" branches above `continue`
+            # to the next project). Every framework in this stage's allowlist collects
+            # coverage unconditionally, so recording once per project is correct.
+            asm=$(grep -oE '<AssemblyName>[^<]+' "$test_proj" 2>/dev/null | head -1 | cut -d'>' -f2 || true)
+            if [ -z "$asm" ]; then
+              asm=$(basename "$test_proj"); asm="${asm%.*}"
+            fi
+            echo "$asm" >> "$ran_assemblies_file"
             echo ""
           done
 
@@ -718,8 +755,13 @@ jobs:
             echo "has-coverage=true" >> "$GITHUB_OUTPUT"
             echo "✅ Coverage files found"
           else
-            echo "has-coverage=false" >> "$GITHUB_OUTPUT"
-            echo "ℹ️  No coverage files found - skipping coverage report generation"
+            # Do NOT skip. By this point at least one test project ran (the block above
+            # already fails the job if ./tests has projects but none ran, or if a TFM ran
+            # zero tests), so absence of any coverage file means collection broke for
+            # every project - not that there was nothing to cover. A skip here silently
+            # bypasses the whole coverage gate and the job reports green.
+            echo "::error::No coverage files produced on this stage. Check that the test projects still reference coverlet.collector."
+            exit 1
           fi
 
       - name: Restore CI tools (ReportGenerator)
@@ -734,6 +776,41 @@ jobs:
             -reports:"TestResults/**/coverage.cobertura.xml" \
             -targetdir:"CoverageReport" \
             -reporttypes:"Html;TextSummary;MarkdownSummaryGithub;CsvSummary"
+
+      - name: Every test assembly that ran must be in the coverage report
+        # The threshold gate below can only judge modules that APPEAR in the report. A test
+        # assembly that ran and recorded nothing simply drops out of it, so the gate passes
+        # while measuring less than it did yesterday - the same silent-bypass shape as the
+        # missing-coverage-file check above. An unmeasured assembly must fail.
+        if: steps.check-coverage.outputs.has-coverage == 'true'
+        run: |
+          ran_assemblies_file="$RUNNER_TEMP/stage1-ran-test-assemblies.txt"
+          if [ ! -s "$ran_assemblies_file" ]; then
+            echo "::error::Coverage files exist but no test assembly was recorded as having run. The ledger step did not run - refusing to pass a check that measured nothing."
+            exit 1
+          fi
+          if [ ! -f CoverageReport/Summary.txt ]; then
+            echo "::error::CoverageReport/Summary.txt is missing, so the row check cannot run."
+            exit 1
+          fi
+
+          missing=""
+          while IFS= read -r asm; do
+            [ -z "$asm" ] && continue
+            # Module rows start in column 1; every other line in Summary.txt is indented.
+            if awk -v asm="$asm" '/^[^ ]/ && $1 == asm { found = 1 } END { exit !found }' CoverageReport/Summary.txt; then
+              echo "  OK   $asm has a coverage row"
+            else
+              echo "  FAIL $asm ran but recorded no coverage"
+              missing="$missing $asm"
+            fi
+          done < <(sort -u "$ran_assemblies_file")
+
+          if [ -n "$missing" ]; then
+            echo "::error::These test assemblies ran but produced no coverage row:$missing. Is coverlet.collector still referenced?"
+            exit 1
+          fi
+          echo "Every test assembly that ran is present in the coverage report."
 
       - name: Enforce 90% coverage threshold
         if: steps.check-coverage.outputs.has-coverage == 'true'
@@ -975,6 +1052,13 @@ jobs:
           $testProjects | ForEach-Object { Write-Host $_.FullName -ForegroundColor White }
           Write-Host ""
 
+          # Assemblies that collected coverage in this job. The row check after the report is
+          # generated requires one coverage row per name here, so a project whose collection
+          # silently broke (a dropped coverlet.collector reference) fails the gate instead of
+          # quietly dropping out of it. Only net5.0+ TFMs collect coverage on this stage (below),
+          # so this ledger is narrower than the set of projects that ran tests.
+          $ranAssemblies = @()
+
           foreach ($testProj in $testProjects) {
             Write-Host "==========================================" -ForegroundColor Cyan
             Write-Host "Testing project: $($testProj.FullName)" -ForegroundColor Cyan
@@ -1045,6 +1129,7 @@ jobs:
             # netcoreapp3.1 and net4x are tested but excluded from coverage:
             # netcoreapp3.1 has no matching test TFM on Linux (Stage 1) so its numbers
             # would not be comparable; net4x cannot use the XPlat collector on Windows.
+            $collectedCoverage = $false
             foreach ($fw in $frameworks) {
               Write-Host "Testing framework: $fw" -ForegroundColor Yellow
 
@@ -1064,6 +1149,7 @@ jobs:
                   --settings coverlet.runsettings `
                   --results-directory "./TestResults" `
                   --logger "console;verbosity=normal" 2>&1 | Tee-Object -FilePath $testLog
+                $collectedCoverage = $true
               } else {
                 dotnet test $testProj.FullName `
                   --configuration Release `
@@ -1083,8 +1169,17 @@ jobs:
                 exit 1
               }
             }
+
+            if ($collectedCoverage) {
+              $asmMatch = [regex]::Match((Get-Content $testProj.FullName -Raw), '<AssemblyName>([^<]+)</AssemblyName>')
+              $ranAssemblies += if ($asmMatch.Success) { $asmMatch.Groups[1].Value.Trim() } else { $testProj.BaseName }
+            }
             Write-Host ""
           }
+
+          $ranFile = Join-Path $env:RUNNER_TEMP 'stage2-ran-test-assemblies.txt'
+          Set-Content -Path $ranFile -Value $ranAssemblies
+          Write-Host "Recorded $($ranAssemblies.Count) test assembly/assemblies with coverage: $($ranAssemblies -join ', ')"
 
       - name: Check for coverage files
         id: check-coverage
@@ -1093,8 +1188,11 @@ jobs:
             echo "has-coverage=true" >> $env:GITHUB_OUTPUT
             Write-Host "✅ Coverage files found"
           } else {
-            echo "has-coverage=false" >> $env:GITHUB_OUTPUT
-            Write-Host "ℹ️  No coverage files found - skipping coverage report generation"
+            # Do NOT skip - see Stage 1's identical guard. By this point at least one test
+            # project ran; absence of any coverage file means collection broke for every
+            # project, not that there was nothing to cover.
+            Write-Host "::error::No coverage files produced on this stage. Check that the test projects still reference coverlet.collector."
+            exit 1
           }
         shell: pwsh
 
@@ -1111,6 +1209,44 @@ jobs:
             -reports:"TestResults/**/coverage.cobertura.xml" `
             -targetdir:"CoverageReport" `
             -reporttypes:"Html;TextSummary;MarkdownSummaryGithub;CsvSummary"
+
+      - name: Every test assembly that ran must be in the coverage report
+        # See Stage 1's identical step - the threshold gate can only judge modules that
+        # APPEAR in the report, so an assembly that ran and recorded nothing would
+        # otherwise silently drop out of it.
+        if: steps.check-coverage.outputs.has-coverage == 'true'
+        shell: pwsh
+        run: |
+          $ranFile = Join-Path $env:RUNNER_TEMP 'stage2-ran-test-assemblies.txt'
+          if (-not (Test-Path $ranFile)) {
+            Write-Host "::error::The ran-assemblies ledger is missing, so the row check cannot run."
+            exit 1
+          }
+          $ran = @(Get-Content $ranFile | Where-Object { $_.Trim() } | Sort-Object -Unique)
+          if ($ran.Count -eq 0) {
+            Write-Host "::error::Coverage files exist but no test assembly was recorded as having collected coverage - refusing to pass a check that measured nothing."
+            exit 1
+          }
+          if (-not (Test-Path 'CoverageReport/Summary.txt')) {
+            Write-Host "::error::CoverageReport/Summary.txt is missing, so the row check cannot run."
+            exit 1
+          }
+
+          # Module rows start in column 1; every other line in Summary.txt is indented.
+          $rows = @(Get-Content 'CoverageReport/Summary.txt' |
+            Where-Object { $_ -match '^\S' } |
+            ForEach-Object { ($_ -split '\s+')[0] })
+
+          $missing = @($ran | Where-Object { $rows -notcontains $_ })
+          foreach ($asm in $ran) {
+            if ($missing -contains $asm) { Write-Host "  FAIL $asm ran but recorded no coverage" }
+            else { Write-Host "  OK   $asm has a coverage row" }
+          }
+          if ($missing.Count -gt 0) {
+            Write-Host "::error::These test assemblies ran but produced no coverage row: $($missing -join ', '). Is coverlet.collector still referenced?"
+            exit 1
+          }
+          Write-Host "Every test assembly that collected coverage is present in the report."
 
       - name: Enforce 90% coverage threshold
         if: steps.check-coverage.outputs.has-coverage == 'true'
@@ -1410,6 +1546,10 @@ jobs:
             echo "::notice::Excluded ${#excluded_integration[@]} integration test project(s) from the coverage gate (expected to run in a separate workflow): ${excluded_integration[*]}"
           fi
 
+          # Assemblies that actually ran tests in this job — see Stage 1's identical ledger.
+          ran_assemblies_file="$RUNNER_TEMP/stage3-ran-test-assemblies.txt"
+          : > "$ran_assemblies_file"
+
           if [ ${#test_projects[@]} -eq 0 ]; then
             if find ./src -type f \( -name "*.csproj" -o -name "*.vbproj" -o -name "*.fsproj" \) -print -quit 2>/dev/null | grep -q .; then
               echo "❌ No test projects under ./tests but ./src contains projects — refusing to silently skip the coverage gate."
@@ -1503,6 +1643,13 @@ jobs:
               fi
               rm -f "$test_log"
             done <<< "$frameworks"
+
+            # Reached only for a project that ran — see Stage 1's identical placement.
+            asm=$(grep -oE '<AssemblyName>[^<]+' "$test_proj" 2>/dev/null | head -1 | cut -d'>' -f2 || true)
+            if [ -z "$asm" ]; then
+              asm=$(basename "$test_proj"); asm="${asm%.*}"
+            fi
+            echo "$asm" >> "$ran_assemblies_file"
             echo ""
           done
 
@@ -1518,20 +1665,47 @@ jobs:
               -targetdir:"CoverageReport" \
               -reporttypes:"Html;TextSummary;MarkdownSummaryGithub;CsvSummary"
           else
-            echo "ℹ️  No coverage files found - skipping report generation"
+            # Do NOT skip - see Stage 1's identical guard. By this point at least one test
+            # project ran; absence of any coverage file means collection broke for every
+            # project, not that there was nothing to cover.
+            echo "::error::No coverage files produced on this stage. Check that the test projects still reference coverlet.collector."
+            exit 1
           fi
+
+      - name: Every test assembly that ran must be in the coverage report
+        # See Stage 1's identical step - the threshold gate can only judge modules that
+        # APPEAR in the report, so an assembly that ran and recorded nothing would
+        # otherwise silently drop out of it.
+        run: |
+          ran_assemblies_file="$RUNNER_TEMP/stage3-ran-test-assemblies.txt"
+          if [ ! -s "$ran_assemblies_file" ]; then
+            echo "::error::Coverage files exist but no test assembly was recorded as having run. The ledger step did not run - refusing to pass a check that measured nothing."
+            exit 1
+          fi
+          if [ ! -f CoverageReport/Summary.txt ]; then
+            echo "::error::CoverageReport/Summary.txt is missing, so the row check cannot run."
+            exit 1
+          fi
+
+          missing=""
+          while IFS= read -r asm; do
+            [ -z "$asm" ] && continue
+            if awk -v asm="$asm" '/^[^ ]/ && $1 == asm { found = 1 } END { exit !found }' CoverageReport/Summary.txt; then
+              echo "  OK   $asm has a coverage row"
+            else
+              echo "  FAIL $asm ran but recorded no coverage"
+              missing="$missing $asm"
+            fi
+          done < <(sort -u "$ran_assemblies_file")
+
+          if [ -n "$missing" ]; then
+            echo "::error::These test assemblies ran but produced no coverage row:$missing. Is coverlet.collector still referenced?"
+            exit 1
+          fi
+          echo "Every test assembly that ran is present in the coverage report."
 
       - name: Enforce 90% coverage threshold
         run: |
-          # If no cobertura files were produced (no tests, all test projects
-          # skipped, etc.), the preceding step explicitly skipped report
-          # generation. Mirror that here — gating only when coverage was
-          # actually collected — instead of failing with "Coverage report
-          # not generated!" on jobs that legitimately had nothing to cover.
-          if ! find ./TestResults -name "coverage.cobertura.xml" -print -quit 2>/dev/null | grep -q .; then
-            echo "ℹ️  No coverage files produced — skipping coverage gate (consistent with the prior 'skipping report generation' notice)."
-            exit 0
-          fi
           if [ ! -f "CoverageReport/Summary.txt" ]; then
             echo "❌ Coverage files exist but Summary.txt is missing — ReportGenerator failed."
             exit 1
