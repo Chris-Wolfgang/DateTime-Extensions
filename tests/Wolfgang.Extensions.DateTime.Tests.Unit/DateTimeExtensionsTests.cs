@@ -367,6 +367,13 @@ public class DateTimeExtensionsTests
         );
 
         Assert.Equal("firstDayOfWeek", exception.ParamName);
+
+        Assert.StartsWith
+        (
+            "Value must be a defined DayOfWeek.",
+            exception.Message,
+            StringComparison.Ordinal
+        );
     }
 
 
@@ -384,6 +391,13 @@ public class DateTimeExtensionsTests
         );
 
         Assert.Equal("firstDayOfWeek", exception.ParamName);
+
+        Assert.StartsWith
+        (
+            "Value must be a defined DayOfWeek.",
+            exception.Message,
+            StringComparison.Ordinal
+        );
     }
 
 
