@@ -283,24 +283,33 @@ public sealed class DateTimeProperties
 
 
     /// <summary>
-    /// The mirror clamp: a week starting within seven days of the end of time cannot be a full
-    /// week long, so <c>EndOfWeek</c> saturates at <see cref="System.DateTime.MaxValue"/>.
+    /// <c>EndOfWeek</c> is the last tick of the day before the next <c>firstDayOfWeek</c>,
+    /// independent of <c>FirstOfWeek</c> and its MinValue clamp; a week that runs past the end of
+    /// time saturates at <see cref="System.DateTime.MaxValue"/>.
     /// </summary>
     [Fact]
-    public void EndOfWeek_is_one_tick_short_of_seven_days_after_FirstOfWeek_unless_it_clamps()
+    public void EndOfWeek_is_the_last_tick_of_the_day_before_firstDayOfWeek_or_MaxValue()
     {
         EdgeInclusiveInstant.Select(AnyDayOfWeek, (instant, day) => (instant, day)).Sample
         (
             generated =>
             {
                 var (instant, day) = generated;
-                var first = instant.FirstOfWeek(day);
                 var actual = instant.EndOfWeek(day);
 
-                // Saturating arithmetic on ticks, computed without consulting the production
-                // boundary check: seven days after the week start, less one tick, capped at
-                // the last representable tick.
-                var expectedTicks = Math.Min(MaxTicks, first.Ticks + (TimeSpan.TicksPerDay * 7) - 1);
+                // Independent oracle: walk the calendar forward from the instant to the day
+                // before `day` (never past MaxValue) and take that day's last tick; if the walk
+                // runs out of calendar first, the answer saturates.
+                var lastDay = (DayOfWeek)(((int)day + 6) % 7);
+                var end = instant.Date;
+                while (end.DayOfWeek != lastDay && end.Ticks + TimeSpan.TicksPerDay <= MaxTicks)
+                {
+                    end = end.AddDays(1);
+                }
+
+                var expectedTicks = end.DayOfWeek == lastDay
+                    ? end.Ticks + TimeSpan.TicksPerDay - 1
+                    : MaxTicks;
 
                 return actual.Ticks == expectedTicks
                     && actual.Kind == instant.Kind
@@ -349,13 +358,9 @@ public sealed class DateTimeProperties
     /// An off-by-one at a boundary usually shows up here first.
     /// </summary>
     /// <remarks>
-    /// One documented exception, and this property is how it was found. Inside the first week of
-    /// year 1 there is no earlier occurrence of <c>firstDayOfWeek</c> to walk back to, so
-    /// <c>FirstOfWeek</c> clamps to <see cref="System.DateTime.MinValue"/> - which is a Monday. The
-    /// clamped week is therefore not aligned to the requested day, and <c>EndOfWeek</c>'s
-    /// "first + 7 days - 1 tick" lands in the next aligned week, so applying it again moves. See
-    /// issue #436: this states the behaviour as it is rather than asserting what it ought to be, so
-    /// the weekly run does not re-report a known finding.
+    /// This property found #436: <c>EndOfWeek</c> used to derive its answer from
+    /// <c>FirstOfWeek</c>'s MinValue clamp and moved when applied to its own result in the first
+    /// week of year 1. It now counts forward from the instant, so there is no exception here.
     /// </remarks>
     [Fact]
     public void Every_method_is_idempotent()
@@ -365,7 +370,6 @@ public sealed class DateTimeProperties
             generated =>
             {
                 var (instant, day) = generated;
-                var weekWasClamped = instant.FirstOfWeek(day).Ticks == 0;
 
                 return instant.FirstOfMonth().FirstOfMonth() == instant.FirstOfMonth()
                     && instant.EndOfMonth().EndOfMonth() == instant.EndOfMonth()
@@ -376,7 +380,7 @@ public sealed class DateTimeProperties
                     && instant.FirstOfYear().FirstOfYear() == instant.FirstOfYear()
                     && instant.EndOfYear().EndOfYear() == instant.EndOfYear()
                     && instant.FirstOfWeek(day).FirstOfWeek(day) == instant.FirstOfWeek(day)
-                    && (weekWasClamped || instant.EndOfWeek(day).EndOfWeek(day) == instant.EndOfWeek(day))
+                    && instant.EndOfWeek(day).EndOfWeek(day) == instant.EndOfWeek(day)
                     && instant.TruncateMilliseconds().TruncateMilliseconds() == instant.TruncateMilliseconds()
                     && instant.TruncateSeconds().TruncateSeconds() == instant.TruncateSeconds();
             },

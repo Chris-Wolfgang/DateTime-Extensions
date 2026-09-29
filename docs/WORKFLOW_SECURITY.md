@@ -2,182 +2,151 @@
 
 ## Overview
 
-This document describes the security measures implemented in the GitHub Actions workflows for this repository, particularly focusing on the PR validation workflow (`.github/workflows/pr.yaml`).
+This document describes how the GitHub Actions workflows in this repository keep untrusted
+pull-request code away from anything it could abuse, and how a pull request is prevented from
+weakening the checks it is subject to. It describes the design as implemented; when a workflow
+changes, change this file in the same PR.
 
-## Security Architecture
+## The model in one paragraph
 
-### 1. Workflow YAML Protection
+`pr.yaml` runs on **`pull_request`**. It builds and tests the PR's own code with the PR's own copies
+of the workflow and of every analyzer and coverage configuration file, so a PR is validated exactly
+as it would merge. GitHub gives a `pull_request` run a read-only `GITHUB_TOKEN` and, for forks, no
+secrets at all; `pr.yaml` uses no secret and declares `permissions: contents: read`, so there is
+nothing for untrusted code to reach. Gate integrity comes from a second workflow,
+`protected-files.yaml`, which runs on **`pull_request_target`** from `main`, never checks out the PR,
+and fails any PR that mixes a change to a protected file with any other change. A PR therefore either
+leaves the gates alone, or changes *only* gates and is reviewed as such by a maintainer.
 
-**Mechanism**: `pull_request_target` trigger
+## 1. Validation runs the PR's code with the PR's config — deliberately
 
-The PR workflow uses `pull_request_target` instead of `pull_request`. This means:
-- The workflow YAML file is always executed from the base branch (main)
-- Pull requests cannot modify the workflow logic that validates them
-- Prevents malicious PRs from weakening or bypassing validation checks
+**Mechanism:** `pull_request` trigger (`.github/workflows/pr.yaml`)
 
-**Code Reference**:
 ```yaml
 on:
-  pull_request_target:  # Runs from the main branch, not from PR branch
+  pull_request:
+    branches:
+      - main
+  push:
     branches:
       - main
 ```
 
-### 2. Configuration File Protection
+A `pull_request` run executes the workflow file *as it exists in the PR*, checks out the merge
+commit, and gets a read-only token. That is the property that makes it safe to build and run
+arbitrary contributed code: the run can read the repository and nothing else. The `push` trigger
+re-runs the same gates on `main` after a merge, which also keeps the InspectCode alert set on `main`
+current.
 
-**Problem**: While `pull_request_target` protects the workflow YAML, the checked-out code includes configuration files (`.editorconfig`, `BannedSymbols.txt`, etc.) that control:
-- Code analyzer behavior
-- Code quality standards
-- Security scanning rules
+Consequence: a PR can edit `pr.yaml`, `.editorconfig`, `Directory.Build.props`, `BannedSymbols.txt`,
+`coverlet.runsettings`, `.config/dotnet-tools.json` and the scripts the workflow runs, and its
+validation will use those edited copies. Section 2 is what stops that from being exploitable.
 
-A malicious PR could modify these files to disable security checks.
+## 2. Protected files cannot change alongside anything else
 
-**Solution**: After checking out the PR code, we fetch and overwrite configuration files from the trusted main branch.
+**Mechanism:** `.github/workflows/protected-files.yaml`, required check `Protected Files Guard`
 
-**Protected Configuration Files**:
-- `.editorconfig` - Code style and analyzer rules
-- `Directory.Build.props` - MSBuild properties
-- `Directory.Build.targets` - MSBuild targets
-- `BannedSymbols.txt` - Banned API usage rules
-- `*.globalconfig` - Global analyzer configuration
-- `*.ruleset` - Code analysis rulesets
-- `.github/workflows/*.yml` and `.github/workflows/*.yaml` - Workflow definitions
+This is the one workflow that runs on `pull_request_target`, and the reason it may: it never checks
+out or executes anything from the PR. It runs from `main` (so a PR cannot edit it), lists the PR's
+changed files through the REST API, and classifies the PR:
 
-In addition to the overwrite step, a separate "Detect protected configuration file changes" step in `pr.yaml` causes the PR to fail if any of these files differ from `main`, signalling that a maintainer must manually review the change. Dependabot is exempted (its bumps to `Directory.Build.props` are legitimate).
+| PR changes | Result |
+|---|---|
+| no protected file | pass — `pr.yaml` validated everything |
+| only protected files | pass with a notice — a maintainer reviews the configuration diff on its own |
+| protected files **and** anything else | **fail**, and nothing bypasses it: split the PR |
 
-**Implementation** (in jobs that consume project source — e.g. `detect-projects`, the test stages, and the security scans; *not* the `secrets-scan` job, which only fetches `.gitleaks.toml`):
-```yaml
-- name: Fetch trusted configuration files from main branch
-  run: |
-    echo "Fetching configuration files from main branch to prevent malicious overrides..."
-    
-    # Fetch the main branch
-    git fetch origin main:main-branch
-    
-    # List of configuration files that should come from trusted main branch
-    config_files=(
-      ".editorconfig"
-      "Directory.Build.props"
-      "Directory.Build.targets"
-      "BannedSymbols.txt"
-      "*.globalconfig"
-      "*.ruleset"
-      ".github/workflows/*.yml"
-      ".github/workflows/*.yaml"
-    )
-    
-    # Copy each configuration file from main branch if it exists
-    for config_file in "${config_files[@]}"; do
-      # [Copy logic - see workflow file for full implementation]
-    done
-```
+"Protected" is every file that shapes what CI checks: the workflows (`.github/workflows/*.yml|yaml`),
+analyzer configuration (`.editorconfig`, `*.globalconfig`, `*.ruleset`, `*.DotSettings`,
+`BannedSymbols.txt`), build props (`Directory.Build.props`, `Directory.Build.targets`), coverage
+configuration (`coverlet.runsettings`), the Stryker floor (`stryker-config.json`), the gitleaks
+config, the CI tool manifest (`.config/dotnet-tools.json`), the hash-pinned Python requirements
+(`.github/requirements/*`), the license-audit policy (`.github/license-audit/*.json`) and the CI
+scripts `pr.yaml` and `license-audit.yaml` run (`scripts/changelog.ps1`, `tfm-parity.ps1`,
+`build-pr.ps1`, `third-party-notices.ps1`). The authoritative list is the `case` statement in the
+workflow itself.
 
-### 3. Credential Protection
+Dependabot is exempt: its bumps to `Directory.Build.props` and the requirements files are legitimate,
+and its identity is GitHub-controlled and not spoofable.
 
-**Mechanism**: `persist-credentials: false`
+Why this is sufficient: a PR that weakens a gate is protected-only and therefore *cannot* also
+contain the code the weaker gate would have let through; a PR that contains code cannot touch the
+gates. The two halves must merge separately, each reviewed for what it is.
 
-All checkout steps include `persist-credentials: false` to prevent the checkout token from being written to git config:
+## 3. Write scopes never coexist with PR code
+
+Every job that checks out or builds pull-request code runs with `contents: read` and nothing more.
+Where a workflow needs a write scope, it is on a separate job that does not execute repository code:
+
+- `pr.yaml`: `inspectcode-upload` (`security-events: write`, `actions: read`) uploads the SARIF the
+  `inspectcode` job produced; it never checks out PR code.
+- `stryker.yaml`: the `stryker` job that compiles and mutates the code is read-only; `publish`
+  (`contents: write`, `issues: write`) runs only for non-PR events and reads the run's artifact.
+- `release.yaml`: `publish-nuget` (`id-token: write`, `attestations: write`), `trigger-docs` and
+  `update-release-artifacts` (`contents: write`) run on `release: published` from a tagged commit
+  on `main`, never on PR code.
+
+The default for every workflow file is `permissions: contents: read`.
+
+## 4. Credentials are not left on disk
+
+**Mechanism:** `persist-credentials: false` on every `actions/checkout`
 
 ```yaml
 - name: Checkout code
-  uses: actions/checkout@v6
+  uses: actions/checkout@<sha>  # vX.Y.Z
   with:
-    ref: refs/pull/${{ github.event.pull_request.number }}/head
     persist-credentials: false
 ```
 
-**Note**: This prevents the token from being stored in git config, but does NOT prevent steps from accessing `GITHUB_TOKEN` if explicitly exposed.
+This stops the checkout token from being written into `.git/config`, where a later step (or the
+built code) could read it. It does **not** prevent a step from using `${{ github.token }}` when a
+workflow explicitly passes it; that is why the previous section matters.
 
-### 4. Minimal Permissions
+## 5. Supply chain
 
-The workflow runs with minimal required permissions:
+- Every third-party action is pinned to a full commit SHA with a `# vX.Y.Z` comment;
+  `actions-audit.yaml` (zizmor + actionlint) and Scorecard's Pinned-Dependencies check enforce it.
+- .NET tools used by CI (`docfx`, `dotnet-stryker`, `dotnet-reportgenerator-globaltool`,
+  `microsoft.cst.devskim.cli`, `cyclonedx`, `nuget-license`, `sourcelink`,
+  `jetbrains.resharper.globaltools`) are pinned in `.config/dotnet-tools.json` and restored with
+  `dotnet tool restore`; nothing is installed unversioned.
+- Python tools (`semgrep`, `zizmor`, `defusedxml`) are installed with `--require-hashes` from
+  `.github/requirements/*.txt`.
+- No `${{ github.event.* }}` value is interpolated into a `run:` script; untrusted strings go through
+  `env:`.
 
-```yaml
-permissions:
-  contents: read
-```
+## Attack scenarios
 
-This limits the impact if the `GITHUB_TOKEN` is somehow exposed or misused.
-
-## Attack Scenarios Prevented
-
-### Scenario 1: Malicious Workflow Modification
-**Attack**: PR modifies `.github/workflows/pr.yaml` to disable security checks
-**Prevention**: `pull_request_target` ensures workflow runs from main branch
-**Status**: ✅ Protected
-
-### Scenario 2: Configuration File Tampering
-**Attack**: PR modifies `.editorconfig` to disable security analyzers
-**Prevention**: Configuration files are fetched from main branch after checkout
-**Status**: ✅ Protected
-
-### Scenario 3: Credential Theft
-**Attack**: PR contains malicious code that tries to access GitHub credentials
-**Prevention**: `persist-credentials: false` + minimal permissions
-**Status**: ✅ Protected
-
-### Scenario 4: Code Analysis Bypass
-**Attack**: PR modifies `BannedSymbols.txt` or `.ruleset` to allow dangerous APIs
-**Prevention**: These files are fetched from main branch after checkout
-**Status**: ✅ Protected
-
-## Validation
-
-The following manual validation scenarios can be used when reviewing changes to the workflow security model:
-
-1. **Configuration Fetch Validation**: Confirm that configuration files are fetched from the `main` branch during workflow execution
-2. **Malicious Modification Validation**: Simulate a PR that modifies `.editorconfig` to disable analyzers and confirm the workflow replaces it with the trusted version from `main`
+| Attack | Why it fails |
+|---|---|
+| PR edits `pr.yaml` to skip a stage and adds code that stage would reject | The PR is mixed → `Protected Files Guard` fails. As protected-only, the weakened workflow merges alone and is reviewed as a workflow change. |
+| PR edits `.editorconfig` / `BannedSymbols.txt` to allow a banned API and uses it | Same: mixed → fails. |
+| PR code exfiltrates the token during `dotnet test` | The token is read-only and no secret is exposed; `persist-credentials: false` keeps it out of `.git/config`. |
+| PR alters `protected-files.yaml` itself | It runs on `pull_request_target`, i.e. from `main`; the PR's copy is never executed. |
+| PR lowers `stryker-config.json`'s break floor in the same change that drops the score | `stryker-config.json` is protected → mixed → fails. |
 
 ## Maintenance
 
-### Making Changes to Protected Configuration Files
+### Changing a protected file
 
-To update protected configuration files (`.editorconfig`, `BannedSymbols.txt`, etc.), follow this workflow:
+Open a PR that touches **only** protected files. `Protected Files Guard` passes with a notice; review
+it as a configuration change. If the new configuration is needed by a code change, land the
+configuration first and rebase the code PR onto it.
 
-1. **Create a PR with your configuration changes**
-   - Make changes to the configuration file(s) in your PR branch
-   - The PR workflow will still fetch and use the current main branch version for testing
-   - This means your PR will be tested against the **existing** configuration standards
+### Adding a protected file
 
-2. **Get your PR reviewed and merged to main**
-   - Once merged, your configuration changes become the new "trusted" version on main
-   - Future PRs will automatically use your updated configuration
+1. Add its path (or glob) to the `case` statement in `.github/workflows/protected-files.yaml`.
+2. Update the list in section 2 of this document in the same PR (both files are protected, so the PR
+   stays protected-only).
 
-3. **Why this works:**
-   - Configuration changes are intentionally one commit behind during PR validation
-   - This ensures you can't weaken security standards in the same PR that adds problematic code
-   - After merge, the new standards apply to all subsequent PRs
+### Adding a job that needs a write scope
 
-**Example Workflow:**
-```
-PR #1: Update .editorconfig to add new rule
-  ↓ (tested with old .editorconfig from main)
-  ↓ (approved and merged)
-  ↓
-Main: Now has updated .editorconfig
-
-PR #2: New feature
-  ↓ (tested with updated .editorconfig from main)
-  ↓ (builds/tests using new rules)
-```
-
-**Important Notes:**
-- If you need to relax a security rule AND add code that violates the old rule in the same change, you'll need two PRs:
-  1. First PR: Update the configuration file only
-  2. Second PR: Add the code that requires the relaxed rules
-- This is intentional security design to prevent simultaneous weakening of standards and addition of problematic code
-
-### Adding New Protected Configuration Files
-
-When adding new configuration files that control code quality or security:
-
-1. Add the file name to the `config_files` array in every job that runs `Fetch trusted configuration files from main branch` (the project-detection job, each test-stage job, and the security-scan jobs — search `pr.yaml` for that step name to find them all). The `secrets-scan` job does not consume project config files and does not need to be updated.
-2. Add the file path to the "Detect protected configuration file changes" guard in `pr.yaml` so PRs that touch the file fail with a maintainer-review banner.
-3. Test that the file is correctly fetched from main branch.
-4. Update this documentation.
+Put it in its own job that does not check out or build PR code, declare the scope on that job only,
+and add it to section 3.
 
 ## References
 
-- [GitHub Actions Security Hardening](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions)
-- [Keeping your GitHub Actions secure](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)
-- [Understanding pull_request_target](https://securitylab.github.com/research/github-actions-preventing-pwn-requests/)
+- [GitHub Actions security hardening](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions)
+- [Keeping your GitHub Actions and workflows secure: preventing pwn requests](https://securitylab.github.com/research/github-actions-preventing-pwn-requests/)
+- [OpenSSF Scorecard — Dangerous-Workflow and Pinned-Dependencies checks](https://github.com/ossf/scorecard/blob/main/docs/checks.md)
