@@ -79,6 +79,8 @@ public sealed class DocExample : IXunitSerializable
 public static class DocExampleSource
 {
     private const string LibraryDirectoryName = "Wolfgang.Extensions.DateTime";
+    private const string ExampleOpener = "/// <example>";
+    private const string CodeOpener = "/// <code>";
 
     /// <summary>
     /// Extracts every &lt;example&gt;&lt;code&gt; block from every .cs file in the
@@ -109,6 +111,34 @@ public static class DocExampleSource
         }
 
         return examples;
+    }
+
+
+
+    /// <summary>
+    /// Counts the <c>/// &lt;example&gt;</c> openers in the same files
+    /// <see cref="ExtractAll"/> scans, independently of the code-block
+    /// extraction, so a test can assert that every example produced exactly one
+    /// compiled snippet.
+    /// </summary>
+    public static int CountExampleOpeners()
+    {
+        var mainDir = FindSrcDirectory();
+        var count = 0;
+
+        foreach (var file in Directory.EnumerateFiles(mainDir, "*.cs", SearchOption.AllDirectories))
+        {
+            var relative = Path.GetRelativePath(mainDir, file).Replace('\\', '/');
+            if (relative.StartsWith("bin/", StringComparison.Ordinal)
+                || relative.StartsWith("obj/", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            count += File.ReadLines(file).Count(line => line.TrimStart().StartsWith(ExampleOpener, StringComparison.Ordinal));
+        }
+
+        return count;
     }
 
 
@@ -155,7 +185,17 @@ public static class DocExampleSource
 
 
 
-    private static IEnumerable<DocExample> ExtractFromFile(string filePath)
+    /// <summary>
+    /// Extracts the <c>&lt;example&gt;&lt;code&gt;</c> blocks of one file. Only the bare,
+    /// one-tag-per-line form is supported; any other spelling of the two opening tags
+    /// throws rather than being skipped, because a skipped example is exactly the silent
+    /// rot this project exists to catch.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// A line opens <c>&lt;example</c> or <c>&lt;code</c> in a form the extractor does
+    /// not handle (attributes, or another tag on the same line).
+    /// </exception>
+    internal static IEnumerable<DocExample> ExtractFromFile(string filePath)
     {
         var lines = File.ReadAllLines(filePath);
         var inExample = false;
@@ -169,8 +209,9 @@ public static class DocExampleSource
 
             if (!inExample)
             {
-                if (trimmed.StartsWith("/// <example>", StringComparison.Ordinal))
+                if (trimmed.StartsWith("/// <example", StringComparison.Ordinal))
                 {
+                    RequireBareTag(trimmed, ExampleOpener, filePath, i + 1);
                     inExample = true;
                 }
 
@@ -179,8 +220,9 @@ public static class DocExampleSource
 
             if (!inCode)
             {
-                if (trimmed.StartsWith("/// <code>", StringComparison.Ordinal))
+                if (trimmed.StartsWith("/// <code", StringComparison.Ordinal))
                 {
+                    RequireBareTag(trimmed, CodeOpener, filePath, i + 1);
                     inCode = true;
                     codeStartLine = i + 2;  // 1-based line number of the line AFTER <code>
                     codeLines.Clear();
@@ -201,6 +243,20 @@ public static class DocExampleSource
             }
 
             codeLines.Add(StripDocCommentPrefix(trimmed));
+        }
+    }
+
+
+
+    private static void RequireBareTag(string trimmedLine, string bareTag, string filePath, int lineNumber)
+    {
+        if (!string.Equals(trimmedLine, bareTag, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException
+            (
+                $"{filePath}:{lineNumber}: '{trimmedLine}' is not the bare '{bareTag}' this extractor handles; "
+                + "put the tag on its own line with no attributes, or extend the extractor."
+            );
         }
     }
 

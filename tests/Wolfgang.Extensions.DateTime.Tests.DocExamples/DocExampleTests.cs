@@ -110,6 +110,88 @@ public sealed class DocExampleTests
         );
     }
 
+
+
+    [Fact]
+    public void ExtractAll_extracts_exactly_one_snippet_per_example_opener()
+    {
+        // The floor above catches a total breakage; this catches a partial one - an
+        // example whose <code> the extractor did not recognise and skipped.
+        Assert.Equal
+        (
+            DocExampleSource.CountExampleOpeners(),
+            Examples.Count
+        );
+    }
+
+
+
+    [Theory]
+    [InlineData("/// <code language=\"csharp\">")]
+    [InlineData("/// <code> var x = 1;")]
+    public async Task ExtractFromFile_when_code_tag_has_attributes_or_trailing_text_throws(string codeLine)
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".cs");
+        var source = string.Join
+        (
+            Environment.NewLine,
+            "/// <example>",
+            codeLine,
+            "/// var x = 1;",
+            "/// </code>",
+            "/// </example>"
+        );
+
+        try
+        {
+            await File.WriteAllTextAsync(path, source);
+
+            var exception = Assert.Throws<InvalidOperationException>
+            (
+                () => DocExampleSource.ExtractFromFile(path).ToList()
+            );
+
+            Assert.Contains(":2:", exception.Message, StringComparison.Ordinal);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+
+
+    [Fact]
+    public async Task ExtractFromFile_when_example_and_code_share_a_line_throws()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".cs");
+        var source = string.Join
+        (
+            Environment.NewLine,
+            "/// <example><code>",
+            "/// var x = 1;",
+            "/// </code></example>"
+        );
+
+        try
+        {
+            await File.WriteAllTextAsync(path, source);
+
+            var exception = Assert.Throws<InvalidOperationException>
+            (
+                () => DocExampleSource.ExtractFromFile(path).ToList()
+            );
+
+            Assert.Contains(":1:", exception.Message, StringComparison.Ordinal);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+
+
     [Fact]
     public void Example_compiles_when_code_contains_await_uses_async_task_signature()
     {
@@ -143,6 +225,8 @@ public sealed class DocExampleTests
             error => error.ToString().Contains("NoSuchMethodExists", StringComparison.Ordinal)
         );
     }
+
+
 
     [Fact]
     public void Compile_when_yield_appears_only_in_a_comment_uses_the_synchronous_signature()
