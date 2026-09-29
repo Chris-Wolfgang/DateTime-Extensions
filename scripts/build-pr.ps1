@@ -355,14 +355,16 @@ if (-not $SkipSecurity) {
     }
     elseif (Test-Path "devskim-results.txt") {
         $results = Get-Content "devskim-results.txt" -Raw
-        # Same gate as pr.yaml: DevSkim prints "[Critical]" / "[Important]" / "[Moderate]" ...
-        if ($results -and $results -match '\[(Critical|Important)\]') {
+        # Same gate as pr.yaml: every finding line ("<file>:<line>:<col>:<line>:<col> [Severity] DSnnnnnn")
+        # fails, whatever its severity; exclude a false positive by rule id, never by lowering the bar.
+        $findings = @($results -split "`n" | Where-Object { $_ -match '^.+:\d+:\d+:\d+:\d+ \[[A-Za-z]+\] DS\d+' })
+        if ($findings.Count -gt 0) {
             Write-Host $results
-            Write-Fail "DevSkim found security issues"
+            Write-Fail "DevSkim reported $($findings.Count) finding(s) - every finding fails this gate"
             $failed += "DevSkim"
         }
         else {
-            Write-Pass "No critical security issues found"
+            Write-Pass "No DevSkim findings"
         }
         Remove-Item "devskim-results.txt" -ErrorAction SilentlyContinue
     }

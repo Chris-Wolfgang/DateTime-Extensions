@@ -1859,18 +1859,21 @@ jobs:
             cat devskim-results.txt
             echo ""
 
-            # DevSkim's severities are Critical / Important / Moderate / BestPractice /
-            # ManualReview (`dotnet devskim analyze --help`), printed as "[Severity]" in
-            # the text format. The old grep for error|critical|high matched only
-            # Critical, so Important findings passed and any path containing "error"
-            # failed the job.
-            if grep -qE '\[(Critical|Important)\]' devskim-results.txt; then
-              echo "❌ Critical or Important DevSkim findings - review required"
+            # Every finding fails the gate - Critical, Important, Moderate, BestPractice and
+            # ManualReview alike - the same policy TreatWarningsAsErrors applies to the
+            # compiler. A finding line is "<file>:<line>:<col>:<line>:<col> [Severity] DSnnnnnn ..."
+            # in the text format; matching that shape instead of a severity word keeps the
+            # gate independent of DevSkim's vocabulary (the old error|critical|high grep
+            # matched only Critical). A false positive is excluded by rule id with
+            # --ignore-rule-ids above, never by lowering the bar.
+            findings=$(grep -cE '^.+:[0-9]+:[0-9]+:[0-9]+:[0-9]+ \[[A-Za-z]+\] DS[0-9]+' devskim-results.txt || true)
+            if [ "$findings" -gt 0 ]; then
+              echo "By severity:"
+              grep -oE '\[[A-Za-z]+\]' devskim-results.txt | sort | uniq -c
+              echo "❌ $findings DevSkim finding(s) - every finding fails this gate; fix it or exclude the rule id with a reason"
               exit 1
-            elif grep -qE '\[Moderate\]' devskim-results.txt; then
-              echo "::warning::Moderate DevSkim findings present (not blocking) - see the results above"
             else
-              echo "✅ No Critical or Important DevSkim findings"
+              echo "✅ No DevSkim findings"
             fi
           else
             echo "✅ No security issues found"
