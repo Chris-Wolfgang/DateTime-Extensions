@@ -355,7 +355,8 @@ if (-not $SkipSecurity) {
     }
     elseif (Test-Path "devskim-results.txt") {
         $results = Get-Content "devskim-results.txt" -Raw
-        if ($results -and $results -match '(?i)(error|critical|high)') {
+        # Same gate as pr.yaml: DevSkim prints "[Critical]" / "[Important]" / "[Moderate]" ...
+        if ($results -and $results -match '\[(Critical|Important)\]') {
             Write-Host $results
             Write-Fail "DevSkim found security issues"
             $failed += "DevSkim"

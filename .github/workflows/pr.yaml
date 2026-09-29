@@ -1859,11 +1859,18 @@ jobs:
             cat devskim-results.txt
             echo ""
 
-            if grep -qi "error\|critical\|high" devskim-results.txt; then
-              echo "❌ Security issues detected - review required"
+            # DevSkim's severities are Critical / Important / Moderate / BestPractice /
+            # ManualReview (`dotnet devskim analyze --help`), printed as "[Severity]" in
+            # the text format. The old grep for error|critical|high matched only
+            # Critical, so Important findings passed and any path containing "error"
+            # failed the job.
+            if grep -qE '\[(Critical|Important)\]' devskim-results.txt; then
+              echo "❌ Critical or Important DevSkim findings - review required"
               exit 1
+            elif grep -qE '\[Moderate\]' devskim-results.txt; then
+              echo "::warning::Moderate DevSkim findings present (not blocking) - see the results above"
             else
-              echo "✅ No critical security issues found"
+              echo "✅ No Critical or Important DevSkim findings"
             fi
           else
             echo "✅ No security issues found"
