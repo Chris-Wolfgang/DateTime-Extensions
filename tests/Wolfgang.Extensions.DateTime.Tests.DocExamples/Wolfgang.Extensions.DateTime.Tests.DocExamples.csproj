@@ -4,7 +4,7 @@
 		<!-- Roslyn-hosted compile test — net10.0-only, no multi-TFM needed. -->
 		<TargetFramework>net10.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
-		<ImplicitUsings>enable</ImplicitUsings>
+		<ImplicitUsings>disable</ImplicitUsings>
 		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
 		<Copyright>Copyright 2026 Chris Wolfgang</Copyright>
@@ -32,10 +32,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Wolfgang.Extensions.DateTime\Wolfgang.Extensions.DateTime.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Using Include="Xunit" />
 	</ItemGroup>
 
 	<!-- Analyzer PackageReferences are centralized in Directory.Build.props -->
