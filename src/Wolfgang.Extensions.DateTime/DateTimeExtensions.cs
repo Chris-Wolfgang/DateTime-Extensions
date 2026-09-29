@@ -23,6 +23,21 @@ public static class DateTimeExtensions
 
 
 
+    private static void ThrowIfUndefined(DayOfWeek firstDayOfWeek)
+    {
+        if (firstDayOfWeek < DayOfWeek.Sunday || firstDayOfWeek > DayOfWeek.Saturday)
+        {
+            throw new ArgumentOutOfRangeException
+            (
+                nameof(firstDayOfWeek),
+                firstDayOfWeek,
+                "Value must be a defined DayOfWeek."
+            );
+        }
+    }
+
+
+
     /// <summary>
     /// Remove the milliseconds and everything after the milliseconds
     /// </summary>
@@ -177,8 +192,9 @@ public static class DateTimeExtensions
     /// Within the first six days of year 1 - <c>0001-01-01</c> through <c>0001-01-06</c> - walking
     /// back to <paramref name="firstDayOfWeek"/> can underflow the representable range. Rather
     /// than throw, this method clamps to <see cref="System.DateTime.MinValue"/>, which is itself
-    /// a Monday and so is not guaranteed to fall on <paramref name="firstDayOfWeek"/>. See
-    /// <see cref="EndOfWeek(System.DateTime, DayOfWeek)"/>'s remarks for the consequence.
+    /// a Monday and so is not guaranteed to fall on <paramref name="firstDayOfWeek"/>. The
+    /// clamp is confined to this method: <see cref="EndOfWeek(System.DateTime, DayOfWeek)"/>
+    /// counts forward from the instant and is unaffected.
     /// </remarks>
     /// <exception cref="ArgumentOutOfRangeException">
     /// <paramref name="firstDayOfWeek"/> is not a defined <see cref="DayOfWeek"/> value.
@@ -192,15 +208,7 @@ public static class DateTimeExtensions
     /// </example>
     public static System.DateTime FirstOfWeek(this System.DateTime dateTime, DayOfWeek firstDayOfWeek)
     {
-        if (firstDayOfWeek < DayOfWeek.Sunday || firstDayOfWeek > DayOfWeek.Saturday)
-        {
-            throw new ArgumentOutOfRangeException
-            (
-                nameof(firstDayOfWeek),
-                firstDayOfWeek,
-                "Value must be a defined DayOfWeek."
-            );
-        }
+        ThrowIfUndefined(firstDayOfWeek);
 
         var date = dateTime.Date;
         var daysBack = ((int)date.DayOfWeek - (int)firstDayOfWeek + 7) % 7;
@@ -245,20 +253,12 @@ public static class DateTimeExtensions
     /// <param name="firstDayOfWeek">Specifies the first day of the week. Use the parameterless overload to pick up <see cref="CultureInfo.CurrentCulture"/>'s value automatically.</param>
     /// <returns>A new DateTime representing the end of the week.</returns>
     /// <remarks>
-    /// <para>
-    /// Not idempotent within the first six days of year 1 - <c>0001-01-01</c> through
-    /// <c>0001-01-06</c>. This method computes seven days from
-    /// <see cref="FirstOfWeek(System.DateTime, DayOfWeek)"/>'s result, but that result clamps to
-    /// <see cref="System.DateTime.MinValue"/> rather than underflowing, and <c>MinValue</c> does
-    /// not necessarily fall on <paramref name="firstDayOfWeek"/> (see its remarks). Calling
-    /// <c>EndOfWeek</c> a second time, on the first call's own result, can therefore return a
-    /// later value than the first call did.
-    /// </para>
-    /// <para>
-    /// No plausible application reaches this - it needs an instant in the first six days of
-    /// year 1 - so the behaviour is documented rather than changed. Deliberate, see
-    /// <see href="https://github.com/Chris-Wolfgang/DateTime-Extensions/issues/436">#436</see>.
-    /// </para>
+    /// Counts forward from <paramref name="dateTime"/> to the day before the next
+    /// <paramref name="firstDayOfWeek"/> and returns that day's last tick. It does not go through
+    /// <see cref="FirstOfWeek(System.DateTime, DayOfWeek)"/>, so it does not inherit that method's
+    /// <see cref="System.DateTime.MinValue"/> clamp: within the first six days of year 1 the
+    /// result is still the correct day, and the method is idempotent over the whole
+    /// representable range (#436, #468).
     /// </remarks>
     /// <exception cref="ArgumentOutOfRangeException">
     /// <paramref name="firstDayOfWeek"/> is not a defined <see cref="DayOfWeek"/> value.
@@ -272,24 +272,16 @@ public static class DateTimeExtensions
     /// </example>
     public static System.DateTime EndOfWeek(this System.DateTime dateTime, DayOfWeek firstDayOfWeek)
     {
-        var firstOfWeek = dateTime.FirstOfWeek(firstDayOfWeek);
-        var maxTicks = System.DateTime.MaxValue.Ticks;
-        var sevenDaysTicks = 7 * TimeSpan.TicksPerDay;
+        ThrowIfUndefined(firstDayOfWeek);
 
-        // Stryker disable once Equality : equivalent mutant. firstOfWeek is
-        // always midnight (firstOfWeek.Ticks is a multiple of TicksPerDay),
-        // while MaxValue.Ticks ≡ -1 (mod TicksPerDay). The difference
-        // (maxTicks - firstOfWeek.Ticks) therefore always equals
-        // n * TicksPerDay - 1 for some integer n ≥ 0 — never an exact
-        // multiple of TicksPerDay, and in particular never equal to
-        // sevenDaysTicks (= 7 * TicksPerDay). The equality boundary
-        // `< sevenDaysTicks` vs `<= sevenDaysTicks` is therefore
-        // unreachable through the public API and both forms produce
-        // identical output. The invariant is asserted by
-        // EndOfWeek_seven_day_boundary_returns_firstOfWeek_plus_7_minus_1_tick.
-        return maxTicks - firstOfWeek.Ticks < sevenDaysTicks
-            ? new System.DateTime(maxTicks, dateTime.Kind)
-            : firstOfWeek.AddDays(7).AddTicks(-1);
+        var date = dateTime.Date;
+        var lastDayOfWeek = (DayOfWeek)(((int)firstDayOfWeek + 6) % 7);
+        var daysForward = ((int)lastDayOfWeek - (int)date.DayOfWeek + 7) % 7;
+        var endTicks = date.Ticks + ((daysForward + 1) * TimeSpan.TicksPerDay) - 1;
+
+        // Math.Min is the MaxValue clamp: a week that runs past 9999-12-31 ends at the
+        // last representable tick instead.
+        return new System.DateTime(Math.Min(System.DateTime.MaxValue.Ticks, endTicks), dateTime.Kind);
     }
 
 
