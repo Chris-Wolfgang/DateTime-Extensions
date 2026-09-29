@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using Xunit;
 
 /// <summary>
@@ -119,7 +120,7 @@ public class AllocationTests
         var publicSignatures = typeof(DateTimeExtensions)
             .GetMethods
             (
-                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
+                BindingFlags.Public | BindingFlags.Static
             )
             .Select
             (

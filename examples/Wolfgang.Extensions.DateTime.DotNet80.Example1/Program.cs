@@ -14,7 +14,7 @@ internal static class Program
 
         Console.WriteLine($"\tFirst of the current month: {System.DateTime.Today.FirstOfMonth()}.");
         Console.WriteLine($"\t  End of the current month: {System.DateTime.Today.EndOfMonth()}.");
-        Console.WriteLine($"\t  End of the Feb 2020 (leap year): {new System.DateTime(2020, 2, 15, 0, 0, 0, DateTimeKind.Utc).EndOfMonth()}.");
+        Console.WriteLine($"\t  End of Feb 2020 (leap year): {new System.DateTime(2020, 2, 15, 0, 0, 0, DateTimeKind.Utc).EndOfMonth()}.");
 
 
         Console.WriteLine("\n");
