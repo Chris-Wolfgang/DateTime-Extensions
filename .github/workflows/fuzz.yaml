@@ -201,7 +201,7 @@ jobs:
             gh issue create \
               --title "Fuzz finding: a property failed on the scheduled run" \
               --label bug \
-              --label "maintenance - testing" \
+              --label "kind:fuzz-finding" \
               --body-file body.md
           fi
 
