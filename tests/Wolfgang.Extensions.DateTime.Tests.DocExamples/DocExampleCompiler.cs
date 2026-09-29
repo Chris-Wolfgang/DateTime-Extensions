@@ -98,8 +98,8 @@ public static class DocExampleCompiler
         }
 
         // Forward slashes only — #line paths with backslashes are fragile
-        // across tooling (see the release.yaml manifest-step gotcha
-        // recorded in reference_thorough_review_impl_patterns).
+        // across tooling (the same reason release.yaml normalises the
+        // reproducible-build manifest paths).
         var normalizedPath = example.FilePath.Replace('\\', '/');
 
         return $$"""
