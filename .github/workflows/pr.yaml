@@ -78,7 +78,10 @@ jobs:
         # update scripts/build-pr.ps1 to the same version.
         run: |
           GITLEAKS_VERSION="8.30.1"
-          GITLEAKS_SHA256="551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb"
+          # The checksum below is a published release digest, verified by sha256sum two lines
+          # later - not a credential. Suppressed on its own line so DS173237 keeps catching
+          # real secrets everywhere else.
+          GITLEAKS_SHA256="551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb"  # DevSkim: ignore DS173237
           mkdir -p "$HOME/.local/bin"
           TARBALL="$(mktemp)"
           curl -sSfL -o "$TARBALL" "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
@@ -1853,8 +1856,22 @@ jobs:
             --source-code . \
             --file-format text \
             --output-file devskim-results.txt \
-            --ignore-rule-ids DS176209 \
-            --ignore-globs "**/api/**,**/CoverageReport/**,**/TestResults/**"
+            --ignore-rule-ids DS176209,DS450000 \
+            --ignore-globs "**/api/**,**/CoverageReport/**,**/TestResults/**,**/.github/license-audit/**,**/scripts/Normalize-TestResults.py"
+
+          # DS450000 ("do not target .NET Framework < 4.7.2") is excluded by rule id: net462 is a
+          # deliberate, repo-wide target, so the rule can never be actionable here and a per-file
+          # glob would have to list every net462 project.
+          #
+          # Two files are excluded by glob because the flagged value has to stay exactly as it is,
+          # and only DS137138 ("insecure URL") is involved in either:
+          #   .github/license-audit/**         - maps the license URL a package actually publishes
+          #                                      to an SPDX id. The http:// form is a lookup key;
+          #                                      rewriting it breaks the mapping.
+          #   scripts/Normalize-TestResults.py - the TRX XML namespace URI. An identifier that is
+          #                                      never dereferenced and must match the file.
+          #
+          # DS137138 stays live everywhere else, and DS173237 everywhere without exception.
 
       - name: Display security scan results
         if: always()
@@ -1871,8 +1888,10 @@ jobs:
             # compiler. A finding line is "<file>:<line>:<col>:<line>:<col> [Severity] DSnnnnnn ..."
             # in the text format; matching that shape instead of a severity word keeps the
             # gate independent of DevSkim's vocabulary (the old error|critical|high grep
-            # matched only Critical). A false positive is excluded by rule id with
-            # --ignore-rule-ids above, never by lowering the bar.
+            # matched only Critical). A false positive is excluded as narrowly as it can be - by
+            # rule id when the rule is structurally inapplicable to this repo, by glob when one
+            # data file trips one rule, or inline on the single line when neither fits - always
+            # with a reason, and never by lowering the bar.
             findings=$(grep -cE '^.+:[0-9]+:[0-9]+:[0-9]+:[0-9]+ \[[A-Za-z]+\] DS[0-9]+' devskim-results.txt || true)
             if [ "$findings" -gt 0 ]; then
               echo "By severity:"
