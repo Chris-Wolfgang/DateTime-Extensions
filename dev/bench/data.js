@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790691970467,
+  "lastUpdate": 1790700363066,
   "repoUrl": "https://github.com/Chris-Wolfgang/DateTime-Extensions",
   "entries": {
     "BenchmarkDotNet": [
@@ -1836,6 +1836,126 @@ window.BENCHMARK_DATA = {
             "value": 20.540606300036114,
             "unit": "ns",
             "range": "± 0.03369155350119822"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fd77a2052028486750f70b1a25b5c9473ee67a94",
+          "message": "ci: bring release.yaml's gates to parity with pr.yaml (#504)\n\nThe release pipeline enforced a 90% production floor while pr.yaml had\nmoved to 95, collected coverage without coverlet.runsettings (so the\ntest-assembly rows never existed and the 100% test gate gated nothing),\nselected test projects by file name, accepted a TFM on which the adapter\nran zero tests, kept going when SBOM generation failed, and deployed the\ntag's docs even if publishing failed. Each of those now matches pr.yaml:\n95% floor, --settings coverlet.runsettings, IsTestProject selection, a\nzero-tests guard, a coverage-row ledger for every assembly that ran,\nhard-fail SBOM, docs deploy gated on publish-nuget, and per-job timeouts.\n\nCloses #487\n\nCo-authored-by: Claude Fable 5.1 <noreply@anthropic.com>",
+          "timestamp": "2026-09-29T12:38:22-04:00",
+          "tree_id": "498aff9d1c959fae5a9eda59448f28fb24ed28ab",
+          "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/fd77a2052028486750f70b1a25b5c9473ee67a94"
+        },
+        "date": 1790700360135,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateMilliseconds",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateSeconds",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfMonth",
+            "value": 0.0004837686816851298,
+            "unit": "ns",
+            "range": "± 0.00031649752131911814"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfMonth",
+            "value": 29.764817436536152,
+            "unit": "ns",
+            "range": "± 0.03756505757168494"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfYear",
+            "value": 0.00008770885566870372,
+            "unit": "ns",
+            "range": "± 0.00015191619429192035"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfYear",
+            "value": 0.003317310164372126,
+            "unit": "ns",
+            "range": "± 0.0057457497491571865"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_Sunday",
+            "value": 0.0003665878127018611,
+            "unit": "ns",
+            "range": "± 0.0003174775270579885"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_Sunday",
+            "value": 0.00037943261365095776,
+            "unit": "ns",
+            "range": "± 0.0005072289286762184"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_Sunday_from_Saturday",
+            "value": 0.0020838522662719092,
+            "unit": "ns",
+            "range": "± 0.0024982192294788243"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_Sunday_from_Saturday",
+            "value": 0.0004861336201429367,
+            "unit": "ns",
+            "range": "± 0.0006704593619044348"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_CurrentCulture",
+            "value": 4.978628396987915,
+            "unit": "ns",
+            "range": "± 0.03996932859448778"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_CurrentCulture",
+            "value": 7.4255205144484835,
+            "unit": "ns",
+            "range": "± 0.05756958959016938"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfQuarter",
+            "value": 0.000513384739557902,
+            "unit": "ns",
+            "range": "± 0.0008480959951970744"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfQuarter",
+            "value": 32.98992768923441,
+            "unit": "ns",
+            "range": "± 0.008972753289129533"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfHalf",
+            "value": 0.0007071644067764282,
+            "unit": "ns",
+            "range": "± 0.001056382141514657"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfHalf",
+            "value": 29.948853413263958,
+            "unit": "ns",
+            "range": "± 0.012505400820979716"
           }
         ]
       }
