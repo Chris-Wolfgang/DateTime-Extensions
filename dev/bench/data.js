@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790623427141,
+  "lastUpdate": 1790685368079,
   "repoUrl": "https://github.com/Chris-Wolfgang/DateTime-Extensions",
   "entries": {
     "BenchmarkDotNet": [
@@ -1620,6 +1620,114 @@ window.BENCHMARK_DATA = {
             "value": 29.13982778787613,
             "unit": "ns",
             "range": "± 0.12924932823805554"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d583bb707933d2772d655415e169713717e30a8a",
+          "message": "chore: disable ImplicitUsings in DocExamples and drop the global Xunit using (#493)\n\nADR-0003 says every project disables implicit usings; DocExamples was the\none exception, and both it and Tests.Unit emitted a `global using Xunit`\nthrough `<Using Include>` that the ADR's rationale argues against. The\nthree DocExamples files now carry their own `using` lines.\n\nCloses #472\n\nCo-authored-by: Claude Fable 5.1 <noreply@anthropic.com>",
+          "timestamp": "2026-09-29T08:30:30-04:00",
+          "tree_id": "27726bfdf4d3aa4f43c6b714198b0657ef08c945",
+          "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/d583bb707933d2772d655415e169713717e30a8a"
+        },
+        "date": 1790685366369,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateMilliseconds",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateSeconds",
+            "value": 0.0007581400374571482,
+            "unit": "ns",
+            "range": "± 0.0013131370641279525"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfMonth",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfMonth",
+            "value": 30.016228993733723,
+            "unit": "ns",
+            "range": "± 0.0931051692247718"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfYear",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfYear",
+            "value": 0.0001237678031126658,
+            "unit": "ns",
+            "range": "± 0.00021437212333231864"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_Sunday",
+            "value": 14.377118776241938,
+            "unit": "ns",
+            "range": "± 0.005033831973268675"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_Sunday",
+            "value": 16.292095959186554,
+            "unit": "ns",
+            "range": "± 0.005110206101516278"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_CurrentCulture",
+            "value": 19.932592004537582,
+            "unit": "ns",
+            "range": "± 0.23945521911392587"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_CurrentCulture",
+            "value": 22.05829367041588,
+            "unit": "ns",
+            "range": "± 0.23177279745068402"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfQuarter",
+            "value": 0.0007156922171513239,
+            "unit": "ns",
+            "range": "± 0.0007009852221358479"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfQuarter",
+            "value": 33.078718066215515,
+            "unit": "ns",
+            "range": "± 0.03117624044502261"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfHalf",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfHalf",
+            "value": 29.617920835812885,
+            "unit": "ns",
+            "range": "± 0.047119843157440285"
           }
         ]
       }
