@@ -7,23 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
+Unreleased changes are kept as fragments in `changelog/unreleased/` and assembled into a version
+section here by `scripts/changelog.ps1 assemble` at release time.
 
-### Changed
-
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
-
-## [1.3.2] - 2026-07-06
+## [1.3.2] - 2026-07-12
 
 ### Fixed
 
 - `EndOfWeek`: kill equivalent Stryker mutant on the 7-day boundary (#217).
+
 ## [1.3.1] - 2026-05-28
 
 ### Added
@@ -139,9 +131,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Analyzer `PackageReference`s moved from `Directory.Build.props` into
-  individual csproj files for this release (later reverted in
-  `[Unreleased]` — see above — when the canonical template-sync settled
-  on `Directory.Build.props` as the fleet-wide source of truth).
+  individual csproj files for this release (reverted in 1.3.0 - see
+  above - when the canonical template-sync settled on
+  `Directory.Build.props` as the fleet-wide source of truth).
 
 ## [1.1.0] - 2026-03-31
 
