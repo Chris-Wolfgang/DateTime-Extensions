@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790685368079,
+  "lastUpdate": 1790691970467,
   "repoUrl": "https://github.com/Chris-Wolfgang/DateTime-Extensions",
   "entries": {
     "BenchmarkDotNet": [
@@ -1728,6 +1728,114 @@ window.BENCHMARK_DATA = {
             "value": 29.617920835812885,
             "unit": "ns",
             "range": "± 0.047119843157440285"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": false,
+          "id": "dfd0821d3728971048ef80f6e447515480810a4e",
+          "message": "chore: project and config hygiene (#494)\n\n- .gitignore: `!docs/*.md` so hand-written docs are no longer tracked-but-\n  ignored; drop the duplicate `.claude/` entry.\n- Delete the root `format.ps1`, a diverged older copy of scripts/format.ps1.\n- src csproj: drop the LangVersion override (Directory.Build.props owns it),\n  PackageRequireLicenseAcceptance (MIT), the duplicated\n  GenerateDocumentationFile and the SignAssembly designer noise.\n- Test/bench csproj: drop stale <Version>, per-project Copyright and\n  LangVersion overrides; remove the unused xunit.runner.console references;\n  drop an unneeded NoWarn=NU1701; comment the [3.0.2] runner pin.\n- Tests.Unit: SuppressTfmSupportBuildWarnings so the System.IO.Hashing\n  \"doesn't support net6.0\" MSBuild warning (transitive via SourceLink, not\n  visible to TreatWarningsAsErrors) stops appearing in Release builds.\n- Examples: IsPackable=false.\n\nCloses #473 (non-protected part; the .editorconfig / dotnet-tools.json\nitems follow in a protected-only PR)\n\nCo-authored-by: Claude Fable 5.1 <noreply@anthropic.com>",
+          "timestamp": "2026-09-29T10:21:47-04:00",
+          "tree_id": "2e6a5302ac452dbce30b622034b4433be0cddc32",
+          "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/dfd0821d3728971048ef80f6e447515480810a4e"
+        },
+        "date": 1790691967819,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateMilliseconds",
+            "value": 0.00005052859584490458,
+            "unit": "ns",
+            "range": "± 0.0000875180952384884"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateSeconds",
+            "value": 0.0012100301682949066,
+            "unit": "ns",
+            "range": "± 0.0020958337301778974"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfMonth",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfMonth",
+            "value": 20.09505655368169,
+            "unit": "ns",
+            "range": "± 0.0283391087334967"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfYear",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfYear",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_Sunday",
+            "value": 8.788303628563881,
+            "unit": "ns",
+            "range": "± 0.018586998466906375"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_Sunday",
+            "value": 11.615022430817286,
+            "unit": "ns",
+            "range": "± 0.030996979969748435"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_CurrentCulture",
+            "value": 13.128687222798666,
+            "unit": "ns",
+            "range": "± 0.017365866897216788"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_CurrentCulture",
+            "value": 15.73486539721489,
+            "unit": "ns",
+            "range": "± 0.03824387055345345"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfQuarter",
+            "value": 0.002789126088221868,
+            "unit": "ns",
+            "range": "± 0.00483090809351611"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfQuarter",
+            "value": 22.04221338033676,
+            "unit": "ns",
+            "range": "± 0.07269648928912122"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfHalf",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfHalf",
+            "value": 20.540606300036114,
+            "unit": "ns",
+            "range": "± 0.03369155350119822"
           }
         ]
       }
