@@ -58,7 +58,7 @@ You can contribute in several ways:
 
 This project maintains **extremely high code quality standards** through multiple layers of static analysis and automated enforcement.
 
-### The 7 Analyzers
+### The 8 Analyzers
 
 All code is analyzed by these tools during build:
 
@@ -95,6 +95,11 @@ All code is analyzed by these tools during build:
    - Industry-standard code analysis
    - Security vulnerability detection
    - Code smell identification
+
+8. **Microsoft.CodeAnalysis.PublicApiAnalyzers**
+   - Tracks the shipped public surface in `PublicAPI.Shipped.txt` / `PublicAPI.Unshipped.txt`
+   - A new or changed public member must be declared there (RS0016 / RS0017), so API changes are
+     deliberate and reviewable
 
 ### Async-First Enforcement
 
@@ -189,7 +194,7 @@ This project uses `.editorconfig` for consistent code style:
 # Format all code
 dotnet format
 
-# Check formatting without changes (CI mode)
+# Check formatting without writing changes
 dotnet format --verify-no-changes
 
 # PowerShell formatting script
@@ -211,7 +216,7 @@ Key style rules enforced:
 - **Final newline:** Yes
 - **Braces:** New line style (Allman)
 - **Naming:** PascalCase for public members, camelCase for parameters/locals
-- **File-scoped namespaces:** Required in C# 10+
+- **File-scoped namespaces:** Preferred (`.editorconfig` suggestion); all current code uses them
 - **`var` preferences:** Use for built-in types and when type is obvious
 - **Null checks:** Prefer pattern matching (`is null`, `is not null`)
 

@@ -4,7 +4,7 @@ This guide will help you quickly get up and running with Wolfgang.Extensions.Dat
 
 ## Prerequisites
 
-- .NET 8.0 SDK or later (for development; the library targets .NET Framework 4.6.2+, .NET Standard 2.0, and .NET 8.0+)
+- .NET 10.0 SDK (for development; the library targets .NET Framework 4.6.2, .NET Standard 2.0, .NET 8.0 and .NET 10.0)
 
 ## Installation
 
@@ -35,6 +35,12 @@ var noSeconds = now.TruncateSeconds();              // Zeroes out seconds and mi
 var firstOfMonth = now.FirstOfMonth();  // e.g. 2026-03-01 00:00:00.000
 var endOfMonth = now.EndOfMonth();      // e.g. 2026-03-31 23:59:59.9999999
 
+// Navigate to quarter and half-year boundaries
+var firstOfQuarter = now.FirstOfQuarter();  // e.g. 2026-01-01 00:00:00.000 for a March date
+var endOfQuarter = now.EndOfQuarter();      // e.g. 2026-03-31 23:59:59.9999999
+var firstOfHalf = now.FirstOfHalf();        // e.g. 2026-01-01 00:00:00.000
+var endOfHalf = now.EndOfHalf();            // e.g. 2026-06-30 23:59:59.9999999
+
 // Navigate to year boundaries
 var firstOfYear = now.FirstOfYear();    // e.g. 2026-01-01 00:00:00.000
 var endOfYear = now.EndOfYear();        // e.g. 2026-12-31 23:59:59.9999999
@@ -55,7 +61,7 @@ var endOfWeek = now.EndOfWeek();
 
 ### Namespace conflicts with `System.DateTime`
 
-The library namespace is `Wolfgang.Extensions.DateTime`, which can conflict with `System.DateTime`. In the source code, the type is referenced as `System.DateTime` to avoid ambiguity. If you encounter conflicts, use a fully qualified name or a `using` alias.
+The library namespace is `Wolfgang.Extensions.DateTime`, whose last segment has the same name as the `System.DateTime` type. Consumers are unaffected: `using Wolfgang.Extensions.DateTime;` brings the extension methods into scope and `DateTime` still means `System.DateTime` in your code. Only code declared *inside* the `Wolfgang.Extensions.DateTime` namespace (the library's own source) has to write `System.DateTime` in full - see [ADR-0002](https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/main/docs/adr/0002-namespace-shadows-system-datetime.md).
 
 ### DateTimeKind is preserved
 

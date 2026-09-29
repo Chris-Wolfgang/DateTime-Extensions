@@ -4,7 +4,7 @@ A collection of extension methods for `DateTime` data type in .Net
 
 [![NuGet](https://img.shields.io/nuget/v/Wolfgang.Extensions.DateTime.svg?logo=nuget&label=NuGet)](https://www.nuget.org/packages/Wolfgang.Extensions.DateTime)
 [![NuGet downloads](https://img.shields.io/nuget/dt/Wolfgang.Extensions.DateTime.svg?logo=nuget&label=downloads)](https://www.nuget.org/packages/Wolfgang.Extensions.DateTime)
-[![PR build](https://img.shields.io/github/actions/workflow/status/Chris-Wolfgang/DateTime-Extensions/pr.yaml?event=pull_request_target&label=PR%20build&logo=github)](https://github.com/Chris-Wolfgang/DateTime-Extensions/actions/workflows/pr.yaml)
+[![PR build](https://img.shields.io/github/actions/workflow/status/Chris-Wolfgang/DateTime-Extensions/pr.yaml?event=pull_request&label=PR%20build&logo=github)](https://github.com/Chris-Wolfgang/DateTime-Extensions/actions/workflows/pr.yaml)
 [![Release](https://img.shields.io/github/actions/workflow/status/Chris-Wolfgang/DateTime-Extensions/release.yaml?label=release&logo=github)](https://github.com/Chris-Wolfgang/DateTime-Extensions/actions/workflows/release.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-Multi--Targeted-purple.svg)](https://dotnet.microsoft.com/)
@@ -184,8 +184,10 @@ rather than asserting something weaker there.
 You do not have to take our word for what is in a published package.
 
 - **Rebuild it yourself.** Every commit is verified to be *reproducible*, not merely deterministic:
-  CI builds it on Windows in two different directories and on Linux, and fails if any assembly, PDB
-  or package entry differs. [REPRODUCIBLE-BUILD.md](REPRODUCIBLE-BUILD.md) has the step-by-step
+  CI builds it on Windows in two different directories and on Linux, fails if the two Windows builds
+  differ in any assembly, PDB or package entry, and reports the Linux comparison (byte-identity across
+  operating systems is not reachable - the document explains why).
+  [REPRODUCIBLE-BUILD.md](REPRODUCIBLE-BUILD.md) has the step-by-step
   procedure for checking a released package against its tag, including which differences are
   expected and which are worth reporting.
 - **Check where it came from.** Each release carries a SLSA build-provenance bundle you can verify
@@ -246,7 +248,7 @@ This project uses `.editorconfig` and `dotnet format`:
 # Format code
 dotnet format
 
-# Verify formatting (as CI does)
+# Verify formatting without changing files
 dotnet format --verify-no-changes
 ```
 
@@ -257,31 +259,33 @@ See [docs/README-FORMATTING.md](docs/README-FORMATTING.md) for detailed formatti
 This project uses [DocFX](https://dotnet.github.io/docfx/) to generate API documentation:
 
 ```bash
-# Install DocFX (one-time setup)
-dotnet tool install -g docfx
+# Restore the pinned DocFX local tool (.config/dotnet-tools.json)
+dotnet tool restore
 
 # Generate API metadata and build documentation
 cd docfx_project
-docfx metadata  # Extract API metadata from source code
-docfx build     # Build HTML documentation
+dotnet docfx metadata  # Extract API metadata from source code
+dotnet docfx build     # Build HTML documentation
 
-# Documentation is generated in the docs/ folder at the repository root
+# Output is written to docfx_project/_site/ (not committed)
 ```
 
-The documentation is automatically built and deployed to GitHub Pages when changes are pushed to the `main` branch.
+The documentation is built and deployed to GitHub Pages by `release.yaml` when a GitHub Release is
+published (it calls `docfx.yaml`, which can also be run by hand from the Actions tab).
 
 **Local Preview:**
 ```bash
 # Serve documentation locally (with live reload)
 cd docfx_project
-docfx build --serve
+dotnet docfx build --serve
 
 # Open http://localhost:8080 in your browser
 ```
 
 **Documentation Structure:**
 - `docfx_project/` - DocFX configuration and source files
-- `docs/` - Generated HTML documentation (published to GitHub Pages)
+- `docfx_project/_site/` - Generated HTML output (deployed to GitHub Pages; not in the repository)
+- `docs/` - Hand-written documentation, ADRs (`docs/adr/`) and migration guides (`docs/migrations/`)
 - `docfx_project/index.md` - Main landing page content
 - `docfx_project/docs/` - Additional documentation articles
 - `docfx_project/api/` - Auto-generated API reference YAML files
