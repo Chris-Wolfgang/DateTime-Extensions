@@ -98,8 +98,10 @@ public static class DateTimeExtensions
 
 
     /// <summary>
-    /// Returns a new DateTime that represents the last day of the
-    /// month specified by the DateTime passed in.
+    /// Returns a new DateTime that represents the last tick of the
+    /// month specified by the DateTime passed in. Clamps at
+    /// <see cref="System.DateTime.MaxValue"/> when the month is December
+    /// of year 9999.
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
     /// <returns>A new DateTime representing the end of the month.</returns>
@@ -118,7 +120,6 @@ public static class DateTimeExtensions
             ? new System.DateTime(System.DateTime.MaxValue.Ticks, dateTime.Kind)
             : firstOfMonth.AddMonths(1).AddTicks(-1);
     }
-
 
 
 
@@ -141,8 +142,9 @@ public static class DateTimeExtensions
 
 
     /// <summary>
-    /// Returns a new DateTime that represents the last day of the
-    /// year specified by the DateTime passed in.
+    /// Returns a new DateTime that represents the last tick of the
+    /// year specified by the DateTime passed in. Clamps at
+    /// <see cref="System.DateTime.MaxValue"/> when the year is 9999.
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
     /// <returns>A new DateTime representing the end of the year.</returns>
@@ -191,10 +193,10 @@ public static class DateTimeExtensions
     /// firstDayOfWeek
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
-    /// <param name="firstDayOfWeek">Specifies the first day of the week.</param>
+    /// <param name="firstDayOfWeek">Specifies the first day of the week. Use the parameterless overload to pick up <see cref="CultureInfo.CurrentCulture"/>'s value automatically.</param>
     /// <returns>A new DateTime representing the first of the week.</returns>
     /// <remarks>
-    /// Within the first week of year 1 - <c>0001-01-01</c> through <c>0001-01-07</c> - walking
+    /// Within the first six days of year 1 - <c>0001-01-01</c> through <c>0001-01-06</c> - walking
     /// back to <paramref name="firstDayOfWeek"/> can underflow the representable range. Rather
     /// than throw, this method clamps to <see cref="System.DateTime.MinValue"/>, which is itself
     /// a Monday and so is not guaranteed to fall on <paramref name="firstDayOfWeek"/>. See
@@ -212,7 +214,7 @@ public static class DateTimeExtensions
         var firstOfWeek = dateTime.Date;
         while (firstOfWeek.DayOfWeek != firstDayOfWeek)
         {
-            if (firstOfWeek == System.DateTime.MinValue.Date)
+            if (firstOfWeek == System.DateTime.MinValue)
             {
                 return new System.DateTime(System.DateTime.MinValue.Ticks, dateTime.Kind);
             }
@@ -226,9 +228,11 @@ public static class DateTimeExtensions
 
 
     /// <summary>
-    /// Returns a new DateTime that represents the last day of the
+    /// Returns a new DateTime that represents the last tick of the
     /// week specified by the DateTime passed in using the thread's
-    /// CurrentCulture FirstDayOfWeek.
+    /// CurrentCulture FirstDayOfWeek. Clamps at
+    /// <see cref="System.DateTime.MaxValue"/> when the week would extend
+    /// past the end of the representable range.
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
     /// <returns>A new DateTime representing the end of the week.</returns>
@@ -246,17 +250,18 @@ public static class DateTimeExtensions
 
 
     /// <summary>
-    /// Returns a new DateTime that represents the last day of the
+    /// Returns a new DateTime that represents the last tick of the
     /// week specified by the DateTime passed in using the specified
-    /// firstDayOfWeek.
+    /// firstDayOfWeek. Clamps at <see cref="System.DateTime.MaxValue"/>
+    /// when the week would extend past the end of the representable range.
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
     /// <param name="firstDayOfWeek">Specifies the first day of the week. Use the parameterless overload to pick up <see cref="CultureInfo.CurrentCulture"/>'s value automatically.</param>
     /// <returns>A new DateTime representing the end of the week.</returns>
     /// <remarks>
     /// <para>
-    /// Not idempotent within the first week of year 1 - <c>0001-01-01</c> through
-    /// <c>0001-01-07</c>. This method computes seven days from
+    /// Not idempotent within the first six days of year 1 - <c>0001-01-01</c> through
+    /// <c>0001-01-06</c>. This method computes seven days from
     /// <see cref="FirstOfWeek(System.DateTime, DayOfWeek)"/>'s result, but that result clamps to
     /// <see cref="System.DateTime.MinValue"/> rather than underflowing, and <c>MinValue</c> does
     /// not necessarily fall on <paramref name="firstDayOfWeek"/> (see its remarks). Calling
@@ -264,7 +269,7 @@ public static class DateTimeExtensions
     /// later value than the first call did.
     /// </para>
     /// <para>
-    /// No plausible application reaches this - it needs an instant in the first seven days of
+    /// No plausible application reaches this - it needs an instant in the first six days of
     /// year 1 - so the behaviour is documented rather than changed. Deliberate, see
     /// <see href="https://github.com/Chris-Wolfgang/DateTime-Extensions/issues/436">#436</see>.
     /// </para>
