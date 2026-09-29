@@ -4,6 +4,13 @@
 		<OutputType>Exe</OutputType>
 		<TargetFrameworks>net8.0;net10.0</TargetFrameworks>
 		<Nullable>enable</Nullable>
+
+		<!-- Every project in this repo states this explicitly rather than leaning on the
+		     SDK default. The library and the unit tests multi-target down to net462, where
+		     implicit usings do not apply at all, so enabling them anywhere would leave the
+		     same source compiling with different usings in scope per TFM. -->
+		<ImplicitUsings>disable</ImplicitUsings>
+
 		<!-- These two must stay in the project file. Passed on the command line they become
 		     global properties and flow into the referenced library, which multi-targets
 		     net462 and then fails with NETSDK1124 ("Trimming assemblies requires .NET Core
