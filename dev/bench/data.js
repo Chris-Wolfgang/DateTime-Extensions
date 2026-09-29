@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790700363066,
+  "lastUpdate": 1790719346488,
   "repoUrl": "https://github.com/Chris-Wolfgang/DateTime-Extensions",
   "entries": {
     "BenchmarkDotNet": [
@@ -1956,6 +1956,126 @@ window.BENCHMARK_DATA = {
             "value": 29.948853413263958,
             "unit": "ns",
             "range": "± 0.012505400820979716"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "9c2aba6e6a6e1b2cf6032d55c040e54a266bf5cf",
+          "message": "ci: land the protected configuration stranded by the partial stack merge (#520)\n\n* ci: land the protected configuration stranded by the partial stack merge\n\nPRs #505-#514 were squash-merged into feature branches whose own PRs had\nalready merged, so their content never reached main. This lands the protected\nhalf of that work on its own, which is what the protected-files guard requires:\na PR mixing these files with ordinary source is failed by design, because the\nfiles decide what CI checks.\n\nProtected files only, taken verbatim from ci/release-gate-parity:\n\n  .config/dotnet-tools.json\n  .github/workflows/{actions-audit,benchmarks,build-all-versions}.yaml\n  .github/workflows/{cross-platform-differential,docfx,fuzz,pr}.yaml\n  .github/workflows/{protected-files,stryker}.yaml\n  .github/workflows/security-alerts.yml\n  scripts/build-pr.ps1\n  tests/.editorconfig\n\nThe originating PRs, each already reviewed and approved on its own:\n\n  #505 keep write scopes out of the Stryker job that builds PR code\n  #506 run the cross-platform differential on net10.0 test projects only\n  #507 fail the DevSkim gate on any finding\n  #508 workflow hygiene - timeouts, gh-pages serialisation, protected list\n  #509 drop the seven analyzer rules tests/.editorconfig duplicates\n  #510 rewrite RELEASE-WORKFLOW-SETUP.md (its build-pr.ps1 change only)\n  #514 remove the ruleset and one-time bootstrap scripts (workflow parts)\n\nThe remaining 12 unprotected files follow in a second PR rebased on this one.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\n\n* ci: triage the four DevSkim findings the strict gate now surfaces\n\n#507 made the gate fail on any finding, whatever its severity. The old\nerror|critical|high grep matched none of DevSkim's actual severity names, so\nthe gate had never fired and four pre-existing findings were sitting under it.\nAll four are false positives whose flagged value has to stay exactly as it is,\nso each is excluded as narrowly as it can be rather than by blunting the gate.\n\n  DS450000 net462 target   -> by rule id. net462 is a deliberate repo-wide\n                              target, so the rule can never be actionable here\n                              and a per-file glob would list every net462\n                              project.\n  DS137138 license mapping -> by glob. The http:// URL is the lookup key a\n                              package actually publishes; rewriting it breaks\n                              the mapping.\n  DS137138 TRX namespace   -> by glob. An XML namespace URI, never\n                              dereferenced, and it must match the file.\n  DS173237 gitleaks digest -> inline on its own line. A published release\n                              checksum, verified by sha256sum two lines later.\n\nDS137138 stays live everywhere outside those two data files; DS173237 stays\nlive everywhere without exception.\n\nVerified locally against the DevSkim CLI pinned in .config/dotnet-tools.json:\nwith the old flags it reports the same findings CI reported; with these flags\nthe results file is empty and the gate's finding-line grep counts 0.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Claude Opus 5 <noreply@anthropic.com>",
+          "timestamp": "2026-09-29T17:54:58-04:00",
+          "tree_id": "10d19c4ac283ad83ba585ce9a330bd1efdb5edea",
+          "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/9c2aba6e6a6e1b2cf6032d55c040e54a266bf5cf"
+        },
+        "date": 1790719344603,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateMilliseconds",
+            "value": 0.001062974954644839,
+            "unit": "ns",
+            "range": "± 0.0011975664359960478"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateSeconds",
+            "value": 0.0002750636388858159,
+            "unit": "ns",
+            "range": "± 0.00047642419786501157"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfMonth",
+            "value": 0.0007003179440895716,
+            "unit": "ns",
+            "range": "± 0.0012129862606153185"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfMonth",
+            "value": 29.732951313257217,
+            "unit": "ns",
+            "range": "± 0.1577211909648191"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfYear",
+            "value": 0.0013714265078306198,
+            "unit": "ns",
+            "range": "± 0.0004330224267283435"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfYear",
+            "value": 0.0006296634674072266,
+            "unit": "ns",
+            "range": "± 0.0005086930603609885"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_Sunday",
+            "value": 0.0003887973725795746,
+            "unit": "ns",
+            "range": "± 0.0003981780745477185"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_Sunday",
+            "value": 0.009026016419132551,
+            "unit": "ns",
+            "range": "± 0.013331782626613392"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_Sunday_from_Saturday",
+            "value": 0.0006338730454444885,
+            "unit": "ns",
+            "range": "± 0.0009189349975632861"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_Sunday_from_Saturday",
+            "value": 0.0003023923685153325,
+            "unit": "ns",
+            "range": "± 0.0005237589460896473"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_CurrentCulture",
+            "value": 5.002744582792123,
+            "unit": "ns",
+            "range": "± 0.11310215926761158"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_CurrentCulture",
+            "value": 7.389605129758517,
+            "unit": "ns",
+            "range": "± 0.01030357023113595"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfQuarter",
+            "value": 0.0007971140245596567,
+            "unit": "ns",
+            "range": "± 0.0002805888033094392"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfQuarter",
+            "value": 32.96982534726461,
+            "unit": "ns",
+            "range": "± 0.008219074603860437"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfHalf",
+            "value": 0.005269218857089679,
+            "unit": "ns",
+            "range": "± 0.003891194791589371"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfHalf",
+            "value": 30.237374782562256,
+            "unit": "ns",
+            "range": "± 0.1146830813760146"
           }
         ]
       }
