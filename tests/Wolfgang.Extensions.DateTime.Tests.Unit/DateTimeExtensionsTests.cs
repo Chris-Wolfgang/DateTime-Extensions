@@ -403,6 +403,56 @@ public class DateTimeExtensionsTests
 
 
     [Fact]
+    public void TruncateMilliseconds_when_value_has_sub_millisecond_ticks_drops_them_too()
+    {
+        var input = new DateTime(2026, 9, 28, 14, 30, 45, DateTimeKind.Utc)
+            .AddMilliseconds(253)
+            .AddTicks(15);
+
+        var result = input.TruncateMilliseconds();
+
+        Assert.Equal
+        (
+            new DateTime(2026, 9, 28, 14, 30, 45, DateTimeKind.Utc),
+            result
+        );
+        Assert.Equal(DateTimeKind.Utc, result.Kind);
+    }
+
+
+
+    [Theory]
+    [InlineData(1, DayOfWeek.Sunday)]
+    [InlineData(3, DayOfWeek.Saturday)]
+    [InlineData(6, DayOfWeek.Sunday)]
+    public void FirstOfWeek_when_requested_day_is_before_MinValue_clamps_to_MinValue(int day, DayOfWeek firstDayOfWeek)
+    {
+        var input = new DateTime(1, 1, day, 12, 0, 0, DateTimeKind.Local);
+
+        var result = input.FirstOfWeek(firstDayOfWeek);
+
+        Assert.Equal(DateTime.MinValue.Ticks, result.Ticks);
+        Assert.Equal(DateTimeKind.Local, result.Kind);
+    }
+
+
+
+    [Fact]
+    public void FirstOfWeek_when_requested_day_is_exactly_MinValue_returns_MinValue_without_clamping()
+    {
+        // 0001-01-01 is a Monday: a Monday-started week from 0001-01-03 lands
+        // exactly on MinValue, the last case that does not need the clamp.
+        var input = new DateTime(1, 1, 3, 12, 0, 0, DateTimeKind.Unspecified);
+
+        var result = input.FirstOfWeek(DayOfWeek.Monday);
+
+        Assert.Equal(DateTime.MinValue.Ticks, result.Ticks);
+        Assert.Equal(DayOfWeek.Monday, result.DayOfWeek);
+    }
+
+
+
+    [Fact]
     public void FirstOfWeek_when_DateTime_MinValue_does_not_throw()
     {
         var result = DateTime.MinValue.FirstOfWeek(DayOfWeek.Sunday);

@@ -10,11 +10,12 @@ namespace Wolfgang.Extensions.DateTime.Benchmarks;
 /// <c>TruncateSeconds</c>, <c>FirstOfMonth</c> / <c>EndOfMonth</c>,
 /// <c>FirstOfYear</c> / <c>EndOfYear</c>, <c>FirstOfQuarter</c> /
 /// <c>EndOfQuarter</c>, <c>FirstOfHalf</c> / <c>EndOfHalf</c>, plus
-/// both overloads of <c>FirstOfWeek</c> and <c>EndOfWeek</c>). They
-/// allocate a small number of DateTime structs and short loops; each
-/// should be well under a microsecond. The MemoryDiagnoser is enabled
-/// so any future refactor that introduces allocation surfaces in the
-/// gh-pages benchmark chart immediately.
+/// both overloads of <c>FirstOfWeek</c> and <c>EndOfWeek</c>), plus a
+/// worst-case week series. None of them allocates (DateTime is a struct
+/// and <c>AllocationTests</c> asserts zero bytes); each should be well
+/// under a microsecond. The MemoryDiagnoser is enabled so any future
+/// refactor that introduces allocation surfaces in the gh-pages benchmark
+/// chart immediately.
 /// </summary>
 [MemoryDiagnoser]
 public class DateTimeExtensionsBenchmarks
@@ -25,6 +26,12 @@ public class DateTimeExtensionsBenchmarks
     // fast path.
     private static readonly System.DateTime Sample =
         new(2026, 5, 26, 13, 45, 30, 123, DateTimeKind.Utc);
+
+    // A Saturday: the furthest possible distance back to a Sunday-started
+    // week, so the week methods are measured at their longest path as well
+    // as the typical one above (a Tuesday, two days back).
+    private static readonly System.DateTime SaturdaySample =
+        new(2026, 5, 30, 13, 45, 30, 123, DateTimeKind.Utc);
 
 
 
@@ -65,6 +72,16 @@ public class DateTimeExtensionsBenchmarks
 
     [Benchmark]
     public System.DateTime EndOfWeek_Sunday() => Sample.EndOfWeek(DayOfWeek.Sunday);
+
+
+
+    [Benchmark]
+    public System.DateTime FirstOfWeek_Sunday_from_Saturday() => SaturdaySample.FirstOfWeek(DayOfWeek.Sunday);
+
+
+
+    [Benchmark]
+    public System.DateTime EndOfWeek_Sunday_from_Saturday() => SaturdaySample.EndOfWeek(DayOfWeek.Sunday);
 
 
 
