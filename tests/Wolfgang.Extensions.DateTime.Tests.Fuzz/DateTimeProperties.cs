@@ -2,6 +2,7 @@ namespace Wolfgang.Extensions.DateTime.Tests.Fuzz;
 
 
 using System;
+using System.Linq;
 using CsCheck;
 using Xunit;
 
@@ -35,7 +36,7 @@ using Xunit;
 /// </remarks>
 public sealed class DateTimeProperties
 {
-    private const long MaxTicks = 3155378975999999999L;
+    private static readonly long MaxTicks = DateTime.MaxValue.Ticks;
 
 
 
@@ -53,10 +54,11 @@ public sealed class DateTimeProperties
 
 
     /// <summary>
-    /// <see cref="AnyInstant"/> is uniform over all ticks, so the first and last week of the
-    /// representable range - where the week methods clamp - are almost never generated. This mixes
-    /// in instants from the first and last fourteen days so the clamp branches are exercised on
-    /// every run.
+    /// <see cref="AnyInstant"/> is uniform over all ticks, so December 9999 - where every End*
+    /// method clamps - has probability ~8e-6 per case and the first and last week of the range,
+    /// where the week methods clamp, are rarer still. This mixes in instants from the first and
+    /// last fourteen days so every clamp branch is exercised on every run. All properties sample
+    /// from this generator.
     /// </summary>
     private static readonly Gen<DateTime> EdgeInclusiveInstant =
         Gen.OneOf
@@ -100,7 +102,7 @@ public sealed class DateTimeProperties
     [Fact]
     public void FirstOfMonth_is_midnight_on_the_first_of_the_same_month()
     {
-        AnyInstant.Sample
+        EdgeInclusiveInstant.Sample
         (
             instant =>
             {
@@ -123,7 +125,7 @@ public sealed class DateTimeProperties
     [Fact]
     public void EndOfMonth_is_the_last_tick_of_the_same_month()
     {
-        AnyInstant.Sample
+        EdgeInclusiveInstant.Sample
         (
             instant =>
             {
@@ -146,7 +148,7 @@ public sealed class DateTimeProperties
     [Fact]
     public void FirstOfYear_and_EndOfYear_bracket_the_instant_within_its_own_year()
     {
-        AnyInstant.Sample
+        EdgeInclusiveInstant.Sample
         (
             instant =>
             {
@@ -176,7 +178,7 @@ public sealed class DateTimeProperties
     [Fact]
     public void Quarters_start_in_January_April_July_or_October_and_contain_the_instant()
     {
-        AnyInstant.Sample
+        EdgeInclusiveInstant.Sample
         (
             instant =>
             {
@@ -207,7 +209,7 @@ public sealed class DateTimeProperties
     [Fact]
     public void Halves_start_in_January_or_July_and_contain_the_instant()
     {
-        AnyInstant.Sample
+        EdgeInclusiveInstant.Sample
         (
             instant =>
             {
@@ -251,9 +253,17 @@ public sealed class DateTimeProperties
                 var (instant, day) = generated;
                 var actual = instant.FirstOfWeek(day);
 
-                if (actual.Ticks == 0)
+                // Independent oracle: walk the calendar back from the instant (at most six
+                // days, never past MinValue) looking for the requested day. The clamp is
+                // legitimate only when that walk finds nothing.
+                var daysAvailable = (int)Math.Min(6, (instant.Date - DateTime.MinValue).Days);
+                var dayIsReachable = Enumerable
+                    .Range(0, daysAvailable + 1)
+                    .Any(back => instant.Date.AddDays(-back).DayOfWeek == day);
+
+                if (actual.Ticks == 0 && !dayIsReachable)
                 {
-                    return actual.Kind == instant.Kind && instant.Ticks < TimeSpan.TicksPerDay * 7;
+                    return actual.Kind == instant.Kind;
                 }
 
                 var daysWalkedBack = (instant.Date - actual).Days;
@@ -287,12 +297,12 @@ public sealed class DateTimeProperties
                 var first = instant.FirstOfWeek(day);
                 var actual = instant.EndOfWeek(day);
 
-                if (MaxTicks - first.Ticks < TimeSpan.TicksPerDay * 7)
-                {
-                    return actual.Ticks == MaxTicks && actual.Kind == instant.Kind;
-                }
+                // Saturating arithmetic on ticks, computed without consulting the production
+                // boundary check: seven days after the week start, less one tick, capped at
+                // the last representable tick.
+                var expectedTicks = Math.Min(MaxTicks, first.Ticks + (TimeSpan.TicksPerDay * 7) - 1);
 
-                return actual == first.AddDays(7).AddTicks(-1)
+                return actual.Ticks == expectedTicks
                     && actual.Kind == instant.Kind
                     && instant <= actual;
             },
@@ -306,7 +316,7 @@ public sealed class DateTimeProperties
     [Fact]
     public void Truncations_clear_the_smaller_units_and_keep_the_larger_ones()
     {
-        AnyInstant.Sample
+        EdgeInclusiveInstant.Sample
         (
             instant =>
             {
@@ -350,7 +360,7 @@ public sealed class DateTimeProperties
     [Fact]
     public void Every_method_is_idempotent()
     {
-        AnyInstant.Select(AnyDayOfWeek, (instant, day) => (instant, day)).Sample
+        EdgeInclusiveInstant.Select(AnyDayOfWeek, (instant, day) => (instant, day)).Sample
         (
             generated =>
             {
@@ -383,7 +393,7 @@ public sealed class DateTimeProperties
     [Fact]
     public void Every_method_is_monotonic()
     {
-        AnyInstant.Select(AnyInstant, AnyDayOfWeek, (left, right, day) => (left, right, day)).Sample
+        EdgeInclusiveInstant.Select(EdgeInclusiveInstant, AnyDayOfWeek, (left, right, day) => (left, right, day)).Sample
         (
             generated =>
             {
