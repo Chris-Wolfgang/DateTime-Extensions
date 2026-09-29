@@ -16,9 +16,7 @@ public static class DateTimeExtensions
     /// constructor pattern used by every <c>FirstOf*</c> boundary method
     /// that returns a midnight value: <see cref="FirstOfMonth"/>,
     /// <see cref="FirstOfYear"/>, <see cref="FirstOfQuarter"/>,
-    /// <see cref="FirstOfHalf"/>, and the explicit-DayOfWeek overload of
-    /// <c>FirstOfWeek</c> (the parameterless overload just delegates to
-    /// that one via the current culture's <c>FirstDayOfWeek</c>).
+    /// <see cref="FirstOfHalf"/>. The week methods work on ticks instead.
     /// </summary>
     private static System.DateTime MidnightOf(int year, int month, int day, DateTimeKind kind)
         => new(year, month, day, 0, 0, 0, 0, kind);
@@ -38,17 +36,7 @@ public static class DateTimeExtensions
     /// </code>
     /// </example>
     public static System.DateTime TruncateMilliseconds(this System.DateTime dateTime)
-        => new
-            (
-                dateTime.Year,
-                dateTime.Month,
-                dateTime.Day,
-                dateTime.Hour,
-                dateTime.Minute,
-                dateTime.Second,
-                0,
-                dateTime.Kind
-            );
+        => new(dateTime.Ticks - (dateTime.Ticks % TimeSpan.TicksPerSecond), dateTime.Kind);
 
 
 
@@ -65,17 +53,7 @@ public static class DateTimeExtensions
     /// </code>
     /// </example>
     public static System.DateTime TruncateSeconds(this System.DateTime dateTime)
-        => new
-            (
-                dateTime.Year,
-                dateTime.Month,
-                dateTime.Day,
-                dateTime.Hour,
-                dateTime.Minute,
-                0,
-                0,
-                dateTime.Kind
-            );
+        => new(dateTime.Ticks - (dateTime.Ticks % TimeSpan.TicksPerMinute), dateTime.Kind);
 
 
 
@@ -224,18 +202,13 @@ public static class DateTimeExtensions
             );
         }
 
-        var firstOfWeek = dateTime.Date;
-        while (firstOfWeek.DayOfWeek != firstDayOfWeek)
-        {
-            if (firstOfWeek == System.DateTime.MinValue)
-            {
-                return new System.DateTime(System.DateTime.MinValue.Ticks, dateTime.Kind);
-            }
+        var date = dateTime.Date;
+        var daysBack = ((int)date.DayOfWeek - (int)firstDayOfWeek + 7) % 7;
+        var ticksBack = daysBack * TimeSpan.TicksPerDay;
 
-            firstOfWeek = firstOfWeek.AddDays(-1);
-        }
-
-        return MidnightOf(firstOfWeek.Year, firstOfWeek.Month, firstOfWeek.Day, dateTime.Kind);
+        // Math.Max is the MinValue clamp: a week start before 0001-01-01 is not
+        // representable, so the earliest instant stands in for it (see remarks).
+        return new System.DateTime(Math.Max(0L, date.Ticks - ticksBack), dateTime.Kind);
     }
 
 
@@ -301,7 +274,7 @@ public static class DateTimeExtensions
     {
         var firstOfWeek = dateTime.FirstOfWeek(firstDayOfWeek);
         var maxTicks = System.DateTime.MaxValue.Ticks;
-        var sevenDaysTicks = TimeSpan.FromDays(7).Ticks;
+        var sevenDaysTicks = 7 * TimeSpan.TicksPerDay;
 
         // Stryker disable once Equality : equivalent mutant. firstOfWeek is
         // always midnight (firstOfWeek.Ticks is a multiple of TicksPerDay),
