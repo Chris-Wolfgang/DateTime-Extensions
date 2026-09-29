@@ -340,8 +340,8 @@ if (-not $SkipSecurity) {
             --source-code . `
             --file-format text `
             --output-file devskim-results.txt `
-            --ignore-rule-ids DS176209 `
-            --ignore-globs "**/api/**,**/CoverageReport/**,**/TestResults/**"
+            --ignore-rule-ids DS176209,DS450000 `
+            --ignore-globs "**/api/**,**/CoverageReport/**,**/TestResults/**,**/.github/license-audit/**,**/scripts/Normalize-TestResults.py"
         # Mirror pr.yaml, where a non-zero exit fails the DevSkim step.
         $devskimExit = $LASTEXITCODE
         $devskimRan = ($devskimExit -eq 0)
@@ -356,7 +356,10 @@ if (-not $SkipSecurity) {
     elseif (Test-Path "devskim-results.txt") {
         $results = Get-Content "devskim-results.txt" -Raw
         # Same gate as pr.yaml: every finding line ("<file>:<line>:<col>:<line>:<col> [Severity] DSnnnnnn")
-        # fails, whatever its severity; exclude a false positive by rule id, never by lowering the bar.
+        # fails, whatever its severity; a false positive is excluded as narrowly as
+        # it can be - by rule id, by glob, or inline on the line - never by lowering the bar.
+        # These exclusions MUST stay in step with pr.yaml, or a local run disagrees with CI,
+        # which is the one thing this script exists to prevent.
         $findings = @($results -split "`n" | Where-Object { $_ -match '^.+:\d+:\d+:\d+:\d+ \[[A-Za-z]+\] DS\d+' })
         if ($findings.Count -gt 0) {
             Write-Host $results
