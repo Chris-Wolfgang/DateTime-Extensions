@@ -3,9 +3,11 @@ name: Cross-Platform Differential
 # Multi-arch differential (#231): pr.yaml's stages verify the suite PASSES on
 # each OS; this workflow verifies it passes the SAME WAY everywhere - the
 # same tests run, pass, fail and skip identically across OS *and CPU
-# architecture*. Each leg runs the full suite and reduces its TRX to a
-# normalized "<outcome>\t<test name>" list; the diff job fails on any
-# divergence from the linux-x64 reference. ARM64 coverage comes free from
+# architecture*. Each leg runs every test project on net10.0 - the one TFM
+# all four legs share (the unit suite's .NET Framework slices are Windows-only
+# and its 3.1/5/6/7/9 slices have no runtime here; pr.yaml covers TFM breadth)
+# - and reduces its TRX to a normalized "<outcome>\t<test name>" list; the diff
+# job fails on any divergence from the linux-x64 reference. ARM64 coverage comes free from
 # GitHub-hosted runners (ubuntu-24.04-arm is x64-priced-at-zero for public
 # repos; macos-latest has been Apple-silicon since macOS 14).
 #
@@ -72,9 +74,24 @@ jobs:
         env:
           DiffEngine_Disabled: 'true'
         run: |
-          dotnet test DateTime-Extensions.slnx -c Release \
-            --logger "trx;LogFilePrefix=results" \
-            --results-directory TestResults-diff
+          # Test projects only, one TFM: `dotnet test <slnx>` would also build the
+          # examples (net462 / net8.0-only) and fail on the runtimes this leg lacks.
+          shopt -s nullglob
+          ran=0
+          for proj in tests/*/*.csproj; do
+            if ! dotnet msbuild "$proj" -nologo -p:Configuration=Release -p:TargetFramework=net10.0 -getProperty:IsTestProject 2>/dev/null | grep -qi '^true$'; then
+              echo "skip $proj (not a test project)"
+              continue
+            fi
+            dotnet test "$proj" -c Release --framework net10.0 \
+              --logger "trx;LogFilePrefix=results" \
+              --results-directory TestResults-diff
+            ran=$((ran + 1))
+          done
+          if [ "$ran" -eq 0 ]; then
+            echo "::error::No test project ran on this leg."
+            exit 1
+          fi
 
       - name: Normalize outcomes
         shell: bash
