@@ -52,8 +52,14 @@ permissions:
 
 jobs:
   build-and-deploy:
+    # Same group as benchmarks.yaml: both push to gh-pages, and two concurrent pushes
+    # end in a non-fast-forward failure and a lost update. Queue, never cancel.
+    concurrency:
+      group: gh-pages
+      cancel-in-progress: false
     name: Build & Deploy Documentation
     runs-on: windows-latest
+    timeout-minutes: 30
 
     permissions:
       contents: write # Allow write access for gh-pages branch
