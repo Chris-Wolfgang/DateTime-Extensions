@@ -202,6 +202,9 @@ public static class DateTimeExtensions
     /// a Monday and so is not guaranteed to fall on <paramref name="firstDayOfWeek"/>. See
     /// <see cref="EndOfWeek(System.DateTime, DayOfWeek)"/>'s remarks for the consequence.
     /// </remarks>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="firstDayOfWeek"/> is not a defined <see cref="DayOfWeek"/> value.
+    /// </exception>
     /// <example>
     /// <code>
     /// var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
@@ -211,6 +214,16 @@ public static class DateTimeExtensions
     /// </example>
     public static System.DateTime FirstOfWeek(this System.DateTime dateTime, DayOfWeek firstDayOfWeek)
     {
+        if (firstDayOfWeek < DayOfWeek.Sunday || firstDayOfWeek > DayOfWeek.Saturday)
+        {
+            throw new ArgumentOutOfRangeException
+            (
+                nameof(firstDayOfWeek),
+                firstDayOfWeek,
+                "Value must be a defined DayOfWeek."
+            );
+        }
+
         var firstOfWeek = dateTime.Date;
         while (firstOfWeek.DayOfWeek != firstDayOfWeek)
         {
@@ -274,6 +287,9 @@ public static class DateTimeExtensions
     /// <see href="https://github.com/Chris-Wolfgang/DateTime-Extensions/issues/436">#436</see>.
     /// </para>
     /// </remarks>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="firstDayOfWeek"/> is not a defined <see cref="DayOfWeek"/> value.
+    /// </exception>
     /// <example>
     /// <code>
     /// var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);

@@ -354,6 +354,54 @@ public class DateTimeExtensionsTests
 
 
 
+    [Theory]
+    [InlineData((DayOfWeek)7)]
+    [InlineData((DayOfWeek)(-1))]
+    public void FirstOfWeek_when_firstDayOfWeek_is_undefined_throws_ArgumentOutOfRangeException(DayOfWeek firstDayOfWeek)
+    {
+        var input = new DateTime(2026, 9, 28, 12, 0, 0, DateTimeKind.Utc);
+
+        var exception = Assert.Throws<ArgumentOutOfRangeException>
+        (
+            () => input.FirstOfWeek(firstDayOfWeek)
+        );
+
+        Assert.Equal("firstDayOfWeek", exception.ParamName);
+
+        Assert.StartsWith
+        (
+            "Value must be a defined DayOfWeek.",
+            exception.Message,
+            StringComparison.Ordinal
+        );
+    }
+
+
+
+    [Theory]
+    [InlineData((DayOfWeek)7)]
+    [InlineData((DayOfWeek)(-1))]
+    public void EndOfWeek_when_firstDayOfWeek_is_undefined_throws_ArgumentOutOfRangeException(DayOfWeek firstDayOfWeek)
+    {
+        var input = new DateTime(2026, 9, 28, 12, 0, 0, DateTimeKind.Utc);
+
+        var exception = Assert.Throws<ArgumentOutOfRangeException>
+        (
+            () => input.EndOfWeek(firstDayOfWeek)
+        );
+
+        Assert.Equal("firstDayOfWeek", exception.ParamName);
+
+        Assert.StartsWith
+        (
+            "Value must be a defined DayOfWeek.",
+            exception.Message,
+            StringComparison.Ordinal
+        );
+    }
+
+
+
     [Fact]
     public void FirstOfWeek_when_DateTime_MinValue_does_not_throw()
     {
