@@ -16,9 +16,7 @@ public static class DateTimeExtensions
     /// constructor pattern used by every <c>FirstOf*</c> boundary method
     /// that returns a midnight value: <see cref="FirstOfMonth"/>,
     /// <see cref="FirstOfYear"/>, <see cref="FirstOfQuarter"/>,
-    /// <see cref="FirstOfHalf"/>, and the explicit-DayOfWeek overload of
-    /// <c>FirstOfWeek</c> (the parameterless overload just delegates to
-    /// that one via the current culture's <c>FirstDayOfWeek</c>).
+    /// <see cref="FirstOfHalf"/>. The week methods work on ticks instead.
     /// </summary>
     private static System.DateTime MidnightOf(int year, int month, int day, DateTimeKind kind)
         => new(year, month, day, 0, 0, 0, 0, kind);
@@ -38,17 +36,7 @@ public static class DateTimeExtensions
     /// </code>
     /// </example>
     public static System.DateTime TruncateMilliseconds(this System.DateTime dateTime)
-        => new
-            (
-                dateTime.Year,
-                dateTime.Month,
-                dateTime.Day,
-                dateTime.Hour,
-                dateTime.Minute,
-                dateTime.Second,
-                0,
-                dateTime.Kind
-            );
+        => new(dateTime.Ticks - (dateTime.Ticks % TimeSpan.TicksPerSecond), dateTime.Kind);
 
 
 
@@ -65,17 +53,7 @@ public static class DateTimeExtensions
     /// </code>
     /// </example>
     public static System.DateTime TruncateSeconds(this System.DateTime dateTime)
-        => new
-            (
-                dateTime.Year,
-                dateTime.Month,
-                dateTime.Day,
-                dateTime.Hour,
-                dateTime.Minute,
-                0,
-                0,
-                dateTime.Kind
-            );
+        => new(dateTime.Ticks - (dateTime.Ticks % TimeSpan.TicksPerMinute), dateTime.Kind);
 
 
 
@@ -98,8 +76,10 @@ public static class DateTimeExtensions
 
 
     /// <summary>
-    /// Returns a new DateTime that represents the last day of the
-    /// month specified by the DateTime passed in.
+    /// Returns a new DateTime that represents the last tick of the
+    /// month specified by the DateTime passed in. Clamps at
+    /// <see cref="System.DateTime.MaxValue"/> when the month is December
+    /// of year 9999.
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
     /// <returns>A new DateTime representing the end of the month.</returns>
@@ -118,7 +98,6 @@ public static class DateTimeExtensions
             ? new System.DateTime(System.DateTime.MaxValue.Ticks, dateTime.Kind)
             : firstOfMonth.AddMonths(1).AddTicks(-1);
     }
-
 
 
 
@@ -141,8 +120,9 @@ public static class DateTimeExtensions
 
 
     /// <summary>
-    /// Returns a new DateTime that represents the last day of the
-    /// year specified by the DateTime passed in.
+    /// Returns a new DateTime that represents the last tick of the
+    /// year specified by the DateTime passed in. Clamps at
+    /// <see cref="System.DateTime.MaxValue"/> when the year is 9999.
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
     /// <returns>A new DateTime representing the end of the year.</returns>
@@ -191,15 +171,18 @@ public static class DateTimeExtensions
     /// firstDayOfWeek
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
-    /// <param name="firstDayOfWeek">Specifies the first day of the week.</param>
+    /// <param name="firstDayOfWeek">Specifies the first day of the week. Use the parameterless overload to pick up <see cref="CultureInfo.CurrentCulture"/>'s value automatically.</param>
     /// <returns>A new DateTime representing the first of the week.</returns>
     /// <remarks>
-    /// Within the first week of year 1 - <c>0001-01-01</c> through <c>0001-01-07</c> - walking
+    /// Within the first six days of year 1 - <c>0001-01-01</c> through <c>0001-01-06</c> - walking
     /// back to <paramref name="firstDayOfWeek"/> can underflow the representable range. Rather
     /// than throw, this method clamps to <see cref="System.DateTime.MinValue"/>, which is itself
     /// a Monday and so is not guaranteed to fall on <paramref name="firstDayOfWeek"/>. See
     /// <see cref="EndOfWeek(System.DateTime, DayOfWeek)"/>'s remarks for the consequence.
     /// </remarks>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="firstDayOfWeek"/> is not a defined <see cref="DayOfWeek"/> value.
+    /// </exception>
     /// <example>
     /// <code>
     /// var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
@@ -209,26 +192,33 @@ public static class DateTimeExtensions
     /// </example>
     public static System.DateTime FirstOfWeek(this System.DateTime dateTime, DayOfWeek firstDayOfWeek)
     {
-        var firstOfWeek = dateTime.Date;
-        while (firstOfWeek.DayOfWeek != firstDayOfWeek)
+        if (firstDayOfWeek < DayOfWeek.Sunday || firstDayOfWeek > DayOfWeek.Saturday)
         {
-            if (firstOfWeek == System.DateTime.MinValue.Date)
-            {
-                return new System.DateTime(System.DateTime.MinValue.Ticks, dateTime.Kind);
-            }
-
-            firstOfWeek = firstOfWeek.AddDays(-1);
+            throw new ArgumentOutOfRangeException
+            (
+                nameof(firstDayOfWeek),
+                firstDayOfWeek,
+                "Value must be a defined DayOfWeek."
+            );
         }
 
-        return MidnightOf(firstOfWeek.Year, firstOfWeek.Month, firstOfWeek.Day, dateTime.Kind);
+        var date = dateTime.Date;
+        var daysBack = ((int)date.DayOfWeek - (int)firstDayOfWeek + 7) % 7;
+        var ticksBack = daysBack * TimeSpan.TicksPerDay;
+
+        // Math.Max is the MinValue clamp: a week start before 0001-01-01 is not
+        // representable, so the earliest instant stands in for it (see remarks).
+        return new System.DateTime(Math.Max(0L, date.Ticks - ticksBack), dateTime.Kind);
     }
 
 
 
     /// <summary>
-    /// Returns a new DateTime that represents the last day of the
+    /// Returns a new DateTime that represents the last tick of the
     /// week specified by the DateTime passed in using the thread's
-    /// CurrentCulture FirstDayOfWeek.
+    /// CurrentCulture FirstDayOfWeek. Clamps at
+    /// <see cref="System.DateTime.MaxValue"/> when the week would extend
+    /// past the end of the representable range.
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
     /// <returns>A new DateTime representing the end of the week.</returns>
@@ -246,17 +236,18 @@ public static class DateTimeExtensions
 
 
     /// <summary>
-    /// Returns a new DateTime that represents the last day of the
+    /// Returns a new DateTime that represents the last tick of the
     /// week specified by the DateTime passed in using the specified
-    /// firstDayOfWeek.
+    /// firstDayOfWeek. Clamps at <see cref="System.DateTime.MaxValue"/>
+    /// when the week would extend past the end of the representable range.
     /// </summary>
     /// <param name="dateTime">The value to process.</param>
     /// <param name="firstDayOfWeek">Specifies the first day of the week. Use the parameterless overload to pick up <see cref="CultureInfo.CurrentCulture"/>'s value automatically.</param>
     /// <returns>A new DateTime representing the end of the week.</returns>
     /// <remarks>
     /// <para>
-    /// Not idempotent within the first week of year 1 - <c>0001-01-01</c> through
-    /// <c>0001-01-07</c>. This method computes seven days from
+    /// Not idempotent within the first six days of year 1 - <c>0001-01-01</c> through
+    /// <c>0001-01-06</c>. This method computes seven days from
     /// <see cref="FirstOfWeek(System.DateTime, DayOfWeek)"/>'s result, but that result clamps to
     /// <see cref="System.DateTime.MinValue"/> rather than underflowing, and <c>MinValue</c> does
     /// not necessarily fall on <paramref name="firstDayOfWeek"/> (see its remarks). Calling
@@ -264,11 +255,14 @@ public static class DateTimeExtensions
     /// later value than the first call did.
     /// </para>
     /// <para>
-    /// No plausible application reaches this - it needs an instant in the first seven days of
+    /// No plausible application reaches this - it needs an instant in the first six days of
     /// year 1 - so the behaviour is documented rather than changed. Deliberate, see
     /// <see href="https://github.com/Chris-Wolfgang/DateTime-Extensions/issues/436">#436</see>.
     /// </para>
     /// </remarks>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="firstDayOfWeek"/> is not a defined <see cref="DayOfWeek"/> value.
+    /// </exception>
     /// <example>
     /// <code>
     /// var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
@@ -280,7 +274,7 @@ public static class DateTimeExtensions
     {
         var firstOfWeek = dateTime.FirstOfWeek(firstDayOfWeek);
         var maxTicks = System.DateTime.MaxValue.Ticks;
-        var sevenDaysTicks = TimeSpan.FromDays(7).Ticks;
+        var sevenDaysTicks = 7 * TimeSpan.TicksPerDay;
 
         // Stryker disable once Equality : equivalent mutant. firstOfWeek is
         // always midnight (firstOfWeek.Ticks is a multiple of TicksPerDay),

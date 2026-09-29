@@ -44,8 +44,9 @@ public sealed class CultureInvarianceTests : IDisposable
 
 
     /// <summary>
-    /// Deliberately awkward instants: a leap day, the last moment of a year, a month end that is
-    /// also a quarter end, and one with sub-second precision to exercise the truncations.
+    /// Deliberately awkward instants: a leap day, the last millisecond of a year, a month end
+    /// that is also a quarter end (at midnight, Unspecified), and a Local noon; three of the four
+    /// carry sub-second precision to exercise the truncations.
     /// </summary>
     private static readonly DateTime[] Samples =
     {

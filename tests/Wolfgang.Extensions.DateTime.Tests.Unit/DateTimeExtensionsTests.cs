@@ -2,8 +2,6 @@ namespace Wolfgang.Extensions.DateTime.Tests.Unit;
 
 
 using System;
-using System.Globalization;
-using System.Threading;
 using Xunit;
 
 public class DateTimeExtensionsTests
@@ -210,57 +208,13 @@ public class DateTimeExtensionsTests
 
 
     [Theory]
-    [InlineData("2020/2/23", DayOfWeek.Sunday, "2020/2/23")]
-    [InlineData("2020/2/29", DayOfWeek.Sunday, "2020/2/23")]
-    [InlineData("2020/2/23", DayOfWeek.Monday, "2020/2/17")]
-    [InlineData("2020/2/29", DayOfWeek.Monday, "2020/2/24")]
-    [InlineData("2020/2/24", DayOfWeek.Monday, "2020/2/24")]
-    [InlineData("2020/3/2", DayOfWeek.Monday, "2020/3/2")]
-    [InlineData("2020/2/23", DayOfWeek.Saturday, "2020/2/22")]
-    [InlineData("2020/2/29", DayOfWeek.Saturday, "2020/2/29")]
-    public void FirstOfWeek_returns_the_date_time_of_the_first_day_of_the_week_containing_the_specified_DateTime
+    [MemberData(nameof(WeekCases.FirstOfWeek), MemberType = typeof(WeekCases))]
+    public void FirstOfWeek_DayOfWeek_is_specified_returns_the_DateTime_of_the_first_day_of_the_week_containing_the_specified_DateTime
     (
         DateTime testValue,
         DayOfWeek firstDayOfWeek,
         DateTime expectedResult
     )
-    {
-        var backup = Thread.CurrentThread.CurrentCulture;
-        try
-        {
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US")
-            {
-                DateTimeFormat = { FirstDayOfWeek = firstDayOfWeek }
-            };
-
-            var actualResult = testValue.FirstOfWeek();
-
-            Assert.Equal(expectedResult, actualResult);
-        }
-        finally
-        {
-            Thread.CurrentThread.CurrentCulture = backup;
-        }
-    }
-
-
-
-    [Theory]
-    [InlineData("2020/2/23", DayOfWeek.Sunday, "2020/2/23")]
-    [InlineData("2020/2/29", DayOfWeek.Sunday, "2020/2/23")]
-    [InlineData("2020/2/23", DayOfWeek.Monday, "2020/2/17")]
-    [InlineData("2020/2/29", DayOfWeek.Monday, "2020/2/24")]
-    [InlineData("2020/2/24", DayOfWeek.Monday, "2020/2/24")]
-    [InlineData("2020/3/2", DayOfWeek.Monday, "2020/3/2")]
-    [InlineData("2020/2/23", DayOfWeek.Saturday, "2020/2/22")]
-    [InlineData("2020/2/29", DayOfWeek.Saturday, "2020/2/29")]
-    public void
-        FirstOfWeek_DayOfWeek_is_specified_returns_the_DateTime_of_the_first_day_of_the_week_containing_the_specified_DateTime
-        (
-            DateTime testValue,
-            DayOfWeek firstDayOfWeek,
-            DateTime expectedResult
-        )
     {
         var actualResult = testValue.FirstOfWeek(firstDayOfWeek);
 
@@ -270,56 +224,7 @@ public class DateTimeExtensionsTests
 
 
     [Theory]
-    [InlineData("2020/2/23", DayOfWeek.Sunday, "2020/2/29 23:59:59.9999999")]
-    [InlineData("2020/2/29", DayOfWeek.Sunday, "2020/2/29 23:59:59.9999999")]
-    [InlineData("2020/2/23", DayOfWeek.Monday, "2020/2/23 23:59:59.9999999")]
-    [InlineData("2020/2/29", DayOfWeek.Monday, "2020/3/1 23:59:59.9999999")]
-    [InlineData("2020/3/7", DayOfWeek.Monday, "2020/3/8 23:59:59.9999999")]
-    [InlineData("2020/2/24", DayOfWeek.Monday, "2020/3/1 23:59:59.9999999")]
-    [InlineData("2020/3/2", DayOfWeek.Monday, "2020/3/8 23:59:59.9999999")]
-    [InlineData("2020/2/23", DayOfWeek.Saturday, "2020/2/28 23:59:59.9999999")]
-    [InlineData("2020/2/29", DayOfWeek.Saturday, "2020/3/6 23:59:59.9999999")]
-    [InlineData("2020/3/1", DayOfWeek.Sunday, "2020/3/7 23:59:59.9999999")]
-    [InlineData("2020/3/4", DayOfWeek.Sunday, "2020/3/7 23:59:59.9999999")]
-    public void EndOfWeek_returns_the_DateTime_of_the_last_day_of_the_week_containing_the_specified_DateTime
-    (
-        DateTime testValue,
-        DayOfWeek firstDayOfWeek,
-        DateTime expectedResult
-    )
-    {
-        var backup = Thread.CurrentThread.CurrentCulture;
-        try
-        {
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US")
-            {
-                DateTimeFormat = { FirstDayOfWeek = firstDayOfWeek }
-            };
-
-            var actualResult = testValue.EndOfWeek();
-
-            Assert.Equal(expectedResult, actualResult);
-        }
-        finally
-        {
-            Thread.CurrentThread.CurrentCulture = backup;
-        }
-    }
-
-
-
-    [Theory]
-    [InlineData("2020/2/23", DayOfWeek.Sunday, "2020/2/29 23:59:59.9999999")]
-    [InlineData("2020/2/29", DayOfWeek.Sunday, "2020/2/29 23:59:59.9999999")]
-    [InlineData("2020/2/23", DayOfWeek.Monday, "2020/2/23 23:59:59.9999999")]
-    [InlineData("2020/2/29", DayOfWeek.Monday, "2020/3/1 23:59:59.9999999")]
-    [InlineData("2020/3/7", DayOfWeek.Monday, "2020/3/8 23:59:59.9999999")]
-    [InlineData("2020/2/24", DayOfWeek.Monday, "2020/3/1 23:59:59.9999999")]
-    [InlineData("2020/3/2", DayOfWeek.Monday, "2020/3/8 23:59:59.9999999")]
-    [InlineData("2020/2/23", DayOfWeek.Saturday, "2020/2/28 23:59:59.9999999")]
-    [InlineData("2020/2/29", DayOfWeek.Saturday, "2020/3/6 23:59:59.9999999")]
-    [InlineData("2020/3/1", DayOfWeek.Sunday, "2020/3/7 23:59:59.9999999")]
-    [InlineData("2020/3/4", DayOfWeek.Sunday, "2020/3/7 23:59:59.9999999")]
+    [MemberData(nameof(WeekCases.EndOfWeek), MemberType = typeof(WeekCases))]
     public void EndOfWeek_DayOfWeek_is_specified_returns_the_DateTime_of_the_last_day_of_the_week_containing_the_specified_DateTime
     (
         DateTime testValue,
@@ -350,6 +255,104 @@ public class DateTimeExtensionsTests
         var result = DateTime.MaxValue.EndOfYear();
 
         Assert.Equal(DateTime.MaxValue.Ticks, result.Ticks);
+    }
+
+
+
+    [Theory]
+    [InlineData((DayOfWeek)7)]
+    [InlineData((DayOfWeek)(-1))]
+    public void FirstOfWeek_when_firstDayOfWeek_is_undefined_throws_ArgumentOutOfRangeException(DayOfWeek firstDayOfWeek)
+    {
+        var input = new DateTime(2026, 9, 28, 12, 0, 0, DateTimeKind.Utc);
+
+        var exception = Assert.Throws<ArgumentOutOfRangeException>
+        (
+            () => input.FirstOfWeek(firstDayOfWeek)
+        );
+
+        Assert.Equal("firstDayOfWeek", exception.ParamName);
+
+        Assert.StartsWith
+        (
+            "Value must be a defined DayOfWeek.",
+            exception.Message,
+            StringComparison.Ordinal
+        );
+    }
+
+
+
+    [Theory]
+    [InlineData((DayOfWeek)7)]
+    [InlineData((DayOfWeek)(-1))]
+    public void EndOfWeek_when_firstDayOfWeek_is_undefined_throws_ArgumentOutOfRangeException(DayOfWeek firstDayOfWeek)
+    {
+        var input = new DateTime(2026, 9, 28, 12, 0, 0, DateTimeKind.Utc);
+
+        var exception = Assert.Throws<ArgumentOutOfRangeException>
+        (
+            () => input.EndOfWeek(firstDayOfWeek)
+        );
+
+        Assert.Equal("firstDayOfWeek", exception.ParamName);
+
+        Assert.StartsWith
+        (
+            "Value must be a defined DayOfWeek.",
+            exception.Message,
+            StringComparison.Ordinal
+        );
+    }
+
+
+
+    [Fact]
+    public void TruncateMilliseconds_when_value_has_sub_millisecond_ticks_drops_them_too()
+    {
+        var input = new DateTime(2026, 9, 28, 14, 30, 45, DateTimeKind.Utc)
+            .AddMilliseconds(253)
+            .AddTicks(15);
+
+        var result = input.TruncateMilliseconds();
+
+        Assert.Equal
+        (
+            new DateTime(2026, 9, 28, 14, 30, 45, DateTimeKind.Utc),
+            result
+        );
+        Assert.Equal(DateTimeKind.Utc, result.Kind);
+    }
+
+
+
+    [Theory]
+    [InlineData(1, DayOfWeek.Sunday)]
+    [InlineData(3, DayOfWeek.Saturday)]
+    [InlineData(6, DayOfWeek.Sunday)]
+    public void FirstOfWeek_when_requested_day_is_before_MinValue_clamps_to_MinValue(int day, DayOfWeek firstDayOfWeek)
+    {
+        var input = new DateTime(1, 1, day, 12, 0, 0, DateTimeKind.Local);
+
+        var result = input.FirstOfWeek(firstDayOfWeek);
+
+        Assert.Equal(DateTime.MinValue.Ticks, result.Ticks);
+        Assert.Equal(DateTimeKind.Local, result.Kind);
+    }
+
+
+
+    [Fact]
+    public void FirstOfWeek_when_requested_day_is_exactly_MinValue_returns_MinValue_without_clamping()
+    {
+        // 0001-01-01 is a Monday: a Monday-started week from 0001-01-03 lands
+        // exactly on MinValue, the last case that does not need the clamp.
+        var input = new DateTime(1, 1, 3, 12, 0, 0, DateTimeKind.Unspecified);
+
+        var result = input.FirstOfWeek(DayOfWeek.Monday);
+
+        Assert.Equal(DateTime.MinValue.Ticks, result.Ticks);
+        Assert.Equal(DayOfWeek.Monday, result.DayOfWeek);
     }
 
 
