@@ -418,33 +418,54 @@ public class DateTimeExtensionsTests
 
 
     [Fact]
-    public void EndOfWeek_seven_day_boundary_returns_firstOfWeek_plus_7_minus_1_tick()
+    public void EndOfWeek_when_week_ends_before_MaxValue_does_not_clamp()
     {
-        // Documents the invariant used by the boundary check in EndOfWeek:
-        // firstOfWeek (produced by FirstOfWeek) is always midnight, so
-        // firstOfWeek.Ticks is a multiple of TimeSpan.TicksPerDay; meanwhile
-        // DateTime.MaxValue.Ticks ≡ -1 (mod TicksPerDay). So
-        // (maxTicks - firstOfWeek.Ticks) always equals n * TicksPerDay - 1
-        // for some integer n ≥ 0 — never an exact multiple of TicksPerDay,
-        // and in particular never equal to exactly 7 * TicksPerDay. The
-        // equality boundary of the clamp check is therefore unreachable,
-        // and any input whose firstOfWeek is at least 7 days before
-        // MaxValue should return firstOfWeek + 7 days - 1 tick (not the
-        // MaxValue clamp).
-
-        // 7 days + 1 day of headroom before MaxValue keeps us well clear of
-        // the clamp branch and exercises the AddDays(7).AddTicks(-1) path.
+        // Eight days of headroom: the week containing this instant ends before MaxValue,
+        // so the saturating clamp must not engage and the ordinary seven-day week applies.
         var input = DateTime.MaxValue.AddDays(-8);
-        var firstOfWeek = input.FirstOfWeek(DayOfWeek.Monday);
-
-        // Sanity-check the invariant the production code relies on.
-        Assert.Equal(0, firstOfWeek.Ticks % TimeSpan.TicksPerDay);
-        Assert.Equal(TimeSpan.TicksPerDay - 1, DateTime.MaxValue.Ticks % TimeSpan.TicksPerDay);
 
         var result = input.EndOfWeek(DayOfWeek.Monday);
 
-        Assert.Equal(firstOfWeek.AddDays(7).AddTicks(-1), result);
+        Assert.Equal(input.FirstOfWeek(DayOfWeek.Monday).AddDays(7).AddTicks(-1), result);
         Assert.NotEqual(DateTime.MaxValue, result);
+    }
+
+
+
+    [Theory]
+    [InlineData(1, DayOfWeek.Tuesday, 1)]
+    [InlineData(2, DayOfWeek.Wednesday, 2)]
+    [InlineData(3, DayOfWeek.Saturday, 5)]
+    [InlineData(6, DayOfWeek.Sunday, 6)]
+    public void EndOfWeek_when_FirstOfWeek_would_clamp_still_returns_the_correct_day(int day, DayOfWeek firstDayOfWeek, int expectedDay)
+    {
+        // 0001-01-01 is a Monday. For these pairs the week START lies before MinValue (so
+        // FirstOfWeek clamps), but the week END is representable and must be exact.
+        var input = new DateTime(1, 1, day, 12, 0, 0, DateTimeKind.Utc);
+
+        var result = input.EndOfWeek(firstDayOfWeek);
+
+        Assert.Equal
+        (
+            new DateTime(1, 1, expectedDay).AddDays(1).AddTicks(-1),
+            result
+        );
+        Assert.Equal(DateTimeKind.Utc, result.Kind);
+    }
+
+
+
+    [Fact]
+    public void EndOfWeek_when_in_the_first_week_of_year_1_is_idempotent()
+    {
+        // The #436 finding: EndOfWeek(Saturday) applied to its own result used to move.
+        var input = new DateTime(1, 1, 1, 0, 8, 54, DateTimeKind.Unspecified);
+
+        var once = input.EndOfWeek(DayOfWeek.Saturday);
+        var twice = once.EndOfWeek(DayOfWeek.Saturday);
+
+        Assert.Equal(new DateTime(1, 1, 6).AddTicks(-1), once);
+        Assert.Equal(once, twice);
     }
 
 
