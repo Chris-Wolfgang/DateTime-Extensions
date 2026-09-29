@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790719346488,
+  "lastUpdate": 1790720171069,
   "repoUrl": "https://github.com/Chris-Wolfgang/DateTime-Extensions",
   "entries": {
     "BenchmarkDotNet": [
@@ -2076,6 +2076,126 @@ window.BENCHMARK_DATA = {
             "value": 30.237374782562256,
             "unit": "ns",
             "range": "± 0.1146830813760146"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8bce6982d493ab68ee78d551fcee551a56e75eb6",
+          "message": "fix: land the source, tests and docs stranded by the partial stack merge (#521)\n\nThe unprotected half of the work orphaned when PRs #505-#514 squash-merged into\nfeature branches whose own PRs had already merged. Stacked on the protected-file\nPR so these changes are validated by the configuration reviewed there.\n\nTaken verbatim from ci/release-gate-parity; the combined tree is byte-identical\nto that branch.\n\nCloses #468\nCloses #474\nCloses #479\nCloses #480\nCloses #488\nCloses #489\nCloses #490\nCloses #491\n\nThose eight are open only because their originating PRs merged into feature\nbranches, where the Closes keyword does not fire.\n\nCo-authored-by: Claude Opus 5 <noreply@anthropic.com>",
+          "timestamp": "2026-09-29T18:08:41-04:00",
+          "tree_id": "b4e09ae811c97126df6eb4b56397f50dff9a98a7",
+          "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/8bce6982d493ab68ee78d551fcee551a56e75eb6"
+        },
+        "date": 1790720169146,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateMilliseconds",
+            "value": 0.005352738002936046,
+            "unit": "ns",
+            "range": "± 0.009271214180689996"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateSeconds",
+            "value": 0.0004113931208848953,
+            "unit": "ns",
+            "range": "± 0.0007125537872569637"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfMonth",
+            "value": 0.0015685825298229854,
+            "unit": "ns",
+            "range": "± 0.0012854000473582995"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfMonth",
+            "value": 29.87096639474233,
+            "unit": "ns",
+            "range": "± 0.19490480889435197"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfYear",
+            "value": 0.0009499496469895045,
+            "unit": "ns",
+            "range": "± 0.0012644152623628696"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfYear",
+            "value": 0.000005364418029785156,
+            "unit": "ns",
+            "range": "± 0.000009291444580626426"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_Sunday",
+            "value": 0.004136386017004649,
+            "unit": "ns",
+            "range": "± 0.0068487526196644105"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_Sunday",
+            "value": 0.001242764915029208,
+            "unit": "ns",
+            "range": "± 0.0012035966757000212"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_Sunday_from_Saturday",
+            "value": 0.00008230159680048625,
+            "unit": "ns",
+            "range": "± 0.00014255054720249032"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_Sunday_from_Saturday",
+            "value": 0.00009174458682537079,
+            "unit": "ns",
+            "range": "± 0.00015890628570095646"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_CurrentCulture",
+            "value": 4.935868516564369,
+            "unit": "ns",
+            "range": "± 0.0040748988583671165"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_CurrentCulture",
+            "value": 6.601727738976479,
+            "unit": "ns",
+            "range": "± 0.0003908277287981474"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfQuarter",
+            "value": 0.019090251997113228,
+            "unit": "ns",
+            "range": "± 0.032737555073247965"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfQuarter",
+            "value": 32.99114169677099,
+            "unit": "ns",
+            "range": "± 0.03460749014620467"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfHalf",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfHalf",
+            "value": 30.069135268529255,
+            "unit": "ns",
+            "range": "± 0.15127933928907533"
           }
         ]
       }
