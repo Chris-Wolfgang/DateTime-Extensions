@@ -46,8 +46,8 @@ declared on that job only.
 ### GitHub Pages
 
 `trigger-docs` calls `docfx.yaml`, which pushes the built site to the `gh-pages` branch. Pages must be
-configured to serve from `gh-pages` (root). `scripts/Setup-GitHubPages.ps1` did this when the
-repository was bootstrapped.
+configured to serve from `gh-pages` (root): Settings → Pages → Source "Deploy from a branch",
+branch `gh-pages`, folder `/ (root)`. This repository already is.
 
 ### Branch ruleset on `main`
 
