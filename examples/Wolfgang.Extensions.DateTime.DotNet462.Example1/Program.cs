@@ -1,48 +1,45 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 
-namespace Wolfgang.Extensions.DateTime.DotNet462.Example1
+namespace Wolfgang.Extensions.DateTime.DotNet462.Example1;
+
+internal static class Program
 {
-    [ExcludeFromCodeCoverage]
-    internal static class Program
+    public static void Main()
     {
-        public static void Main()
-        {
-            Console.ForegroundColor = ConsoleColor.White;
+        Console.ForegroundColor = ConsoleColor.White;
 
-            Console.WriteLine("\n");
+        Console.WriteLine("\n");
 
-            Console.WriteLine($"\tFirst of the current month: {System.DateTime.Today.FirstOfMonth()}.");
-            Console.WriteLine($"\t  End of the current month: {System.DateTime.Today.EndOfMonth()}.");
-            Console.WriteLine($"\t  End of Feb 2020 (leap year): {new System.DateTime(2020, 2, 15, 0, 0, 0, DateTimeKind.Utc).EndOfMonth()}.");
-            Console.WriteLine("\n");
+        Console.WriteLine($"\tFirst of the current month: {System.DateTime.Today.FirstOfMonth()}.");
+        Console.WriteLine($"\t  End of the current month: {System.DateTime.Today.EndOfMonth()}.");
+        Console.WriteLine($"\t  End of Feb 2020 (leap year): {new System.DateTime(2020, 2, 15, 0, 0, 0, DateTimeKind.Utc).EndOfMonth()}.");
+        Console.WriteLine("\n");
 
-            Console.WriteLine($"\tFirst of the current year: {System.DateTime.Today.FirstOfYear()}.");
-            Console.WriteLine($"\t  End of the current year: {System.DateTime.Today.EndOfYear()}.");
-            Console.WriteLine("\n");
+        Console.WriteLine($"\tFirst of the current year: {System.DateTime.Today.FirstOfYear()}.");
+        Console.WriteLine($"\t  End of the current year: {System.DateTime.Today.EndOfYear()}.");
+        Console.WriteLine("\n");
 
-            Console.WriteLine($"\tFirst of the current week: {System.DateTime.Today.FirstOfWeek()} (current culture first of week).");
-            Console.WriteLine($"\t  End of the current week: {System.DateTime.Today.EndOfWeek()} (current culture first of week).");
-            Console.WriteLine("\n");
+        Console.WriteLine($"\tFirst of the current week: {System.DateTime.Today.FirstOfWeek()} (current culture first of week).");
+        Console.WriteLine($"\t  End of the current week: {System.DateTime.Today.EndOfWeek()} (current culture first of week).");
+        Console.WriteLine("\n");
 
-            Console.WriteLine($"\tFirst of the current week: {System.DateTime.Today.FirstOfWeek(DayOfWeek.Saturday)} (Saturday as first of week).");
-            Console.WriteLine($"\t  End of the current week: {System.DateTime.Today.EndOfWeek(DayOfWeek.Saturday)} (Saturday as first of week).");
-            Console.WriteLine("\n");
+        Console.WriteLine($"\tFirst of the current week: {System.DateTime.Today.FirstOfWeek(DayOfWeek.Saturday)} (Saturday as first of week).");
+        Console.WriteLine($"\t  End of the current week: {System.DateTime.Today.EndOfWeek(DayOfWeek.Saturday)} (Saturday as first of week).");
+        Console.WriteLine("\n");
 
-            Console.WriteLine($"\tFirst of the current quarter: {System.DateTime.Today.FirstOfQuarter()}.");
-            Console.WriteLine($"\t  End of the current quarter: {System.DateTime.Today.EndOfQuarter()}.");
-            Console.WriteLine("\n");
+        Console.WriteLine($"\tFirst of the current quarter: {System.DateTime.Today.FirstOfQuarter()}.");
+        Console.WriteLine($"\t  End of the current quarter: {System.DateTime.Today.EndOfQuarter()}.");
+        Console.WriteLine("\n");
 
-            Console.WriteLine($"\tFirst of the current half-year: {System.DateTime.Today.FirstOfHalf()}.");
-            Console.WriteLine($"\t  End of the current half-year: {System.DateTime.Today.EndOfHalf()}.");
-            Console.WriteLine("\n");
+        Console.WriteLine($"\tFirst of the current half-year: {System.DateTime.Today.FirstOfHalf()}.");
+        Console.WriteLine($"\t  End of the current half-year: {System.DateTime.Today.EndOfHalf()}.");
+        Console.WriteLine("\n");
 
-            var now = System.DateTime.UtcNow;
-            Console.WriteLine($"\t                 Now: {now:yyyy-MM-dd hh:mm:ss.fff tt}");
-            Console.WriteLine($"\tTruncateMilliseconds: {now.TruncateMilliseconds():yyyy-MM-dd hh:mm:ss.fff tt}");
-            Console.WriteLine($"\t     TruncateSeconds: {now.TruncateSeconds():yyyy-MM-dd hh:mm:ss.fff tt}");
+        var now = System.DateTime.UtcNow;
+        Console.WriteLine($"\t                 Now: {now:yyyy-MM-dd hh:mm:ss.fff tt}");
+        Console.WriteLine($"\tTruncateMilliseconds: {now.TruncateMilliseconds():yyyy-MM-dd hh:mm:ss.fff tt}");
+        Console.WriteLine($"\t     TruncateSeconds: {now.TruncateSeconds():yyyy-MM-dd hh:mm:ss.fff tt}");
 
-            Console.ResetColor();
-        }
+        Console.ResetColor();
     }
 }

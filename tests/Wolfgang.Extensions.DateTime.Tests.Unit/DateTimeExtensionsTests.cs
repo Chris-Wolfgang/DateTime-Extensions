@@ -47,30 +47,6 @@ public class DateTimeExtensionsTests
 
 
     [Fact]
-    public void TruncateSeconds_when_value_is_the_current_time_removes_everything_below_the_minute()
-    {
-        var now = DateTime.UtcNow;
-
-        var actualResult = now.TruncateSeconds();
-
-        var expectedResult = new DateTime
-        (
-            now.Year,
-            now.Month,
-            now.Day,
-            now.Hour,
-            now.Minute,
-            0,
-            0,
-            DateTimeKind.Utc
-        );
-
-        Assert.Equal(expectedResult, actualResult);
-    }
-
-
-
-    [Fact]
     public void TruncateSeconds_when_value_has_seconds_milliseconds_and_ticks_removes_everything_below_the_minute()
     {
         var testValue = new DateTime
@@ -114,7 +90,7 @@ public class DateTimeExtensionsTests
     [InlineData("2016/2/1", "2016/2/1")]
     [InlineData("2016/2/29", "2016/2/1")]
     [InlineData("2016/12/31 23:59:59.9999999", "2016/12/1")]
-    public void FirstOfMonth_returns_the_first_of_the_specified_month
+    public void FirstOfMonth_when_called_for_any_date_returns_midnight_on_the_first_of_that_month
     (
         DateTime testValue,
         DateTime expectedResult
@@ -133,7 +109,7 @@ public class DateTimeExtensionsTests
     [InlineData("2017/2/1", "2017/2/28 23:59:59.9999999")]
     [InlineData("2016/2/29 23:59:59.9999999", "2016/2/29 23:59:59.9999999")]
     [InlineData("2016/12/31 23:59:59.9999999", "2016/12/31 23:59:59.9999999")]
-    public void EndOfMonth_returns_the_last_date_and_time_of_the_specified_month
+    public void EndOfMonth_when_called_for_any_date_returns_the_last_tick_of_that_month
     (
         DateTime testValue,
         DateTime expectedResult
@@ -150,7 +126,7 @@ public class DateTimeExtensionsTests
     [InlineData("2016/5/13", "2016/1/1")]
     [InlineData("2020/2/29", "2020/1/1")]
     [InlineData("2018/12/31 23:59:59.9999999", "2018/1/1")]
-    public void FirstOfYear_returns_the_first_of_the_specified_year
+    public void FirstOfYear_when_called_for_any_date_returns_midnight_on_the_first_of_that_year
     (
         DateTime testValue,
         DateTime expectedResult
@@ -167,7 +143,7 @@ public class DateTimeExtensionsTests
     [InlineData("2016/5/13", "2016/12/31 23:59:59.9999999")]
     [InlineData("2020/2/29", "2020/12/31 23:59:59.9999999")]
     [InlineData("2018/12/31 23:59:59.9999999", "2018/12/31 23:59:59.9999999")]
-    public void EndOfYear_returns_the_last_date_and_time_of_the_specified_year
+    public void EndOfYear_when_called_for_any_date_returns_the_last_tick_of_that_year
     (
         DateTime testValue,
         DateTime expectedResult
@@ -182,7 +158,7 @@ public class DateTimeExtensionsTests
 
     [Theory]
     [MemberData(nameof(WeekCases.FirstOfWeek), MemberType = typeof(WeekCases))]
-    public void FirstOfWeek_DayOfWeek_is_specified_returns_the_DateTime_of_the_first_day_of_the_week_containing_the_specified_DateTime
+    public void FirstOfWeek_when_firstDayOfWeek_is_specified_returns_the_first_day_of_the_containing_week
     (
         DateTime testValue,
         DayOfWeek firstDayOfWeek,
@@ -198,7 +174,7 @@ public class DateTimeExtensionsTests
 
     [Theory]
     [MemberData(nameof(WeekCases.EndOfWeek), MemberType = typeof(WeekCases))]
-    public void EndOfWeek_DayOfWeek_is_specified_returns_the_DateTime_of_the_last_day_of_the_week_containing_the_specified_DateTime
+    public void EndOfWeek_when_firstDayOfWeek_is_specified_returns_the_last_day_of_the_containing_week
     (
         DateTime testValue,
         DayOfWeek firstDayOfWeek,
@@ -626,5 +602,38 @@ public class DateTimeExtensionsTests
         var result = input.FirstOfHalf();
 
         Assert.Equal(DateTimeKind.Local, result.Kind);
+    }
+
+
+
+
+    [Fact]
+    public void FirstOfMonth_when_DateTime_MaxValue_returns_the_first_of_December_9999()
+    {
+        Assert.Equal(new DateTime(9999, 12, 1), DateTime.MaxValue.FirstOfMonth());
+    }
+
+
+
+    [Fact]
+    public void FirstOfYear_when_DateTime_MaxValue_returns_the_first_of_year_9999()
+    {
+        Assert.Equal(new DateTime(9999, 1, 1), DateTime.MaxValue.FirstOfYear());
+    }
+
+
+
+    [Fact]
+    public void FirstOfQuarter_when_DateTime_MaxValue_returns_the_first_of_October_9999()
+    {
+        Assert.Equal(new DateTime(9999, 10, 1), DateTime.MaxValue.FirstOfQuarter());
+    }
+
+
+
+    [Fact]
+    public void FirstOfHalf_when_DateTime_MaxValue_returns_the_first_of_July_9999()
+    {
+        Assert.Equal(new DateTime(9999, 7, 1), DateTime.MaxValue.FirstOfHalf());
     }
 }
