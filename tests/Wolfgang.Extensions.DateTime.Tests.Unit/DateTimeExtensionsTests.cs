@@ -10,21 +10,36 @@ public class DateTimeExtensionsTests
     [Fact]
     public void TruncateMilliseconds_successfully_removes_milliseconds_from_value()
     {
-        var now = DateTime.UtcNow;
-
-        var actualResult = now.TruncateMilliseconds();
+        // A fixed value, not UtcNow: whenever UtcNow happened to land on a whole second the
+        // old form asserted that an already-truncated value truncates to itself, which a
+        // no-op implementation of TruncateMilliseconds would also satisfy.
+        var testValue = new DateTime
+            (
+                2018,
+                4,
+                23,
+                12,
+                47,
+                59,
+                0,
+                DateTimeKind.Utc
+            )
+            .AddMilliseconds(253)
+            .AddTicks(15);
 
         var expectedResult = new DateTime
-        (
-            now.Year,
-            now.Month,
-            now.Day,
-            now.Hour,
-            now.Minute,
-            now.Second,
-            0,
-            DateTimeKind.Utc
-        );
+            (
+                2018,
+                4,
+                23,
+                12,
+                47,
+                59,
+                0,
+                DateTimeKind.Utc
+            );
+
+        var actualResult = testValue.TruncateMilliseconds();
 
         Assert.Equal(expectedResult, actualResult);
     }
