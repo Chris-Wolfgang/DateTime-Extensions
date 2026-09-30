@@ -12,10 +12,9 @@ dotnet_diagnostic.MA0074.severity = none
 dotnet_diagnostic.S108.severity = none
 
 
-# S2699: Add assertion to test case — some tests verify no-throw behavior
-dotnet_diagnostic.S2699.severity = none
-
-# S6562: Provide DateTimeKind — test data doesn't need DateTimeKind
+# S6562: Provide DateTimeKind — test inputs are deliberately built without a Kind (Unspecified) so
+# the value assertions stay Kind-neutral; Kind preservation is asserted explicitly in
+# KindPreservationTests, where every method is checked for all three kinds.
 dotnet_diagnostic.S6562.severity = none
 
 # S6610: Use char overload of StartsWith — not critical in tests
