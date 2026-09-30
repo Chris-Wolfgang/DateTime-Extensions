@@ -44,6 +44,7 @@ section here by `scripts/changelog.ps1 assemble` at release time.
 - Implicit usings are disabled in every project, so each file states the `using` directives it needs on every target framework rather than inheriting a different set per framework. (#414)
 - `FirstOfWeek`, `EndOfWeek`, `TruncateMilliseconds` and `TruncateSeconds` now use constant-time tick arithmetic instead of a day-by-day walk or a full calendar decomposition; results are unchanged. (#497)
 - The build now runs `EnablePackageValidation` against the last published version, so an unintentional binary-breaking change fails before release. (#415)
+- The package's copyright is a literal year rather than `$([System.DateTime]::UtcNow.Year)`, so `AssemblyCopyrightAttribute` and the nuspec no longer carry the year the build ran and a rebuild still matches the released binary. v1.3.2 shipped `Copyright (c) 2026`; this release ships `Copyright (c) 2025`, matching `LICENSE`. (#532)
 
 ## [1.3.2] - 2026-07-12
 
