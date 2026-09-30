@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790720171069,
+  "lastUpdate": 1790777211330,
   "repoUrl": "https://github.com/Chris-Wolfgang/DateTime-Extensions",
   "entries": {
     "BenchmarkDotNet": [
@@ -2196,6 +2196,126 @@ window.BENCHMARK_DATA = {
             "value": 30.069135268529255,
             "unit": "ns",
             "range": "± 0.15127933928907533"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4b177dd0ce110acec5899b3ebbdfa55701b74d11",
+          "message": "release: v1.4.0 (#531)\n\nMINOR bump from v1.3.2. SemVer reserves MAJOR for incompatible API changes; the\npublic surface is unchanged and PackageValidation passes against the 1.3.2\nbaseline, so the trigger here is the new feature (IsTrimmable/IsAotCompatible),\nnot a break.\n\nTwo behaviour changes ship in this release and both replace wrong output with\nright output rather than changing a contract:\n\n  - FirstOfWeek/EndOfWeek(DateTime, DayOfWeek) now throw\n    ArgumentOutOfRangeException for a DayOfWeek outside Sunday..Saturday, where\n    they returned DateTime.MinValue. Only calls passing an undefined enum value\n    are affected, and they were getting a meaningless date.\n  - EndOfWeek's year-1 fix changes 21 (date, firstDayOfWeek) results.\n\nBecause the version number no longer signals them, the CHANGELOG section opens\nwith a behaviour-change callout naming both.\n\nAssemblyVersion deliberately stays 1.0.0.0. A MAJOR would have forced it to\n2.0.0.0, which is a binding break every .NET Framework consumer has to absorb\nwith a redirect - including those who never call the affected overloads. That\nis broad friction for a narrow change, and it is the same pain v1.3.1 existed\nto undo.\n\nPackageValidationBaselineVersion stays 1.3.2; it bumps in a follow-up once the\nCDN has indexed 1.4.0.\n\nVerified locally: dotnet build -c Release 0 warnings; dotnet test green across\nall 15 test assemblies; dotnet pack produced\nWolfgang.Extensions.DateTime.1.4.0.nupkg with PackageValidation passing.\n\nCo-authored-by: Claude Opus 5 <noreply@anthropic.com>",
+          "timestamp": "2026-09-30T10:00:15-04:00",
+          "tree_id": "90294cd031bc6a5a8fc5d3dd21166cf56fec9269",
+          "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/4b177dd0ce110acec5899b3ebbdfa55701b74d11"
+        },
+        "date": 1790777210002,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateMilliseconds",
+            "value": 0.00017346876362959543,
+            "unit": "ns",
+            "range": "± 0.00030045671213261546"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateSeconds",
+            "value": 0.0006538859258095423,
+            "unit": "ns",
+            "range": "± 0.001132563645856341"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfMonth",
+            "value": 0.0023447051644325256,
+            "unit": "ns",
+            "range": "± 0.002030634572853199"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfMonth",
+            "value": 28.25751809279124,
+            "unit": "ns",
+            "range": "± 0.010880025284189042"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfYear",
+            "value": 0.00002365124722321828,
+            "unit": "ns",
+            "range": "± 0.000040965161852986395"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfYear",
+            "value": 0.015590359767278036,
+            "unit": "ns",
+            "range": "± 0.012331217371219103"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_Sunday",
+            "value": 0.000016175831357638042,
+            "unit": "ns",
+            "range": "± 0.000028017361766094935"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_Sunday",
+            "value": 0.000033093616366386414,
+            "unit": "ns",
+            "range": "± 0.0000573198249527742"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_Sunday_from_Saturday",
+            "value": 0.00047431886196136475,
+            "unit": "ns",
+            "range": "± 0.0008215443679053326"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_Sunday_from_Saturday",
+            "value": 0.0000714622437953949,
+            "unit": "ns",
+            "range": "± 0.00012377623707649773"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_CurrentCulture",
+            "value": 4.689915319283803,
+            "unit": "ns",
+            "range": "± 0.05032188819594517"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_CurrentCulture",
+            "value": 6.19112382332484,
+            "unit": "ns",
+            "range": "± 0.10865059697315405"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfQuarter",
+            "value": 0.00007776357233524323,
+            "unit": "ns",
+            "range": "± 0.00011786460191365035"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfQuarter",
+            "value": 30.10585916042328,
+            "unit": "ns",
+            "range": "± 0.008688542079538512"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfHalf",
+            "value": 0.0015580399582783382,
+            "unit": "ns",
+            "range": "± 0.0026986043679605755"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfHalf",
+            "value": 29.0837618013223,
+            "unit": "ns",
+            "range": "± 0.03545358556369765"
           }
         ]
       }
