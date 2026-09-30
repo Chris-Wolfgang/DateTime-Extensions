@@ -40,8 +40,12 @@ public class AotSmokeCoverageTests
             .Select(method => method.Name)
             .Distinct(StringComparer.Ordinal)
             .Where(name => harness.IndexOf("." + name + "(", StringComparison.Ordinal) < 0)
-            .OrderBy(name => name, StringComparer.Ordinal)
             .ToList();
+
+        // Sorted with List.Sort rather than .OrderBy(name => name, ...): an OrderBy key selector
+        // only runs when the sequence is non-empty, i.e. only when this guard is FAILING, so that
+        // lambda is uncoverable while the harness is complete - and the suite is gated at 100%.
+        uncovered.Sort(StringComparer.Ordinal);
 
         Assert.True
         (
