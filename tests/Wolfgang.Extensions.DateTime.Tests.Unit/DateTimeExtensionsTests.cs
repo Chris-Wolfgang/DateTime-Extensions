@@ -8,7 +8,7 @@ public class DateTimeExtensionsTests
 {
 
     [Fact]
-    public void TruncateMilliseconds_successfully_removes_milliseconds_from_value()
+    public void TruncateMilliseconds_when_value_has_milliseconds_and_ticks_removes_everything_below_the_second()
     {
         // A fixed value, not UtcNow: whenever UtcNow happened to land on a whole second the
         // old form asserted that an already-truncated value truncates to itself, which a
@@ -47,7 +47,7 @@ public class DateTimeExtensionsTests
 
 
     [Fact]
-    public void TruncateSeconds_removes_seconds_from_value()
+    public void TruncateSeconds_when_value_is_the_current_time_removes_everything_below_the_minute()
     {
         var now = DateTime.UtcNow;
 
@@ -71,7 +71,7 @@ public class DateTimeExtensionsTests
 
 
     [Fact]
-    public void TruncateSeconds_removes_seconds_and_everything_after_seconds()
+    public void TruncateSeconds_when_value_has_seconds_milliseconds_and_ticks_removes_everything_below_the_minute()
     {
         var testValue = new DateTime
                 (
@@ -485,7 +485,7 @@ public class DateTimeExtensionsTests
     [InlineData(10, 10)]  // Oct → Q4
     [InlineData(11, 10)]
     [InlineData(12, 10)]
-    public void FirstOfQuarter_returns_the_first_day_of_the_quarter(int inputMonth, int expectedQuarterStartMonth)
+    public void FirstOfQuarter_when_called_for_any_month_returns_midnight_on_the_first_day_of_that_quarter(int inputMonth, int expectedQuarterStartMonth)
     {
         var input = new DateTime(2026, inputMonth, 15, 14, 30, 45, 123, DateTimeKind.Utc);
 
@@ -508,7 +508,7 @@ public class DateTimeExtensionsTests
     [InlineData(4,  6,  30)]   // Q2 ends Jun 30
     [InlineData(7,  9,  30)]   // Q3 ends Sep 30
     [InlineData(10, 12, 31)]   // Q4 ends Dec 31
-    public void EndOfQuarter_returns_the_last_tick_of_the_quarter(int inputMonth, int expectedEndMonth, int expectedEndDay)
+    public void EndOfQuarter_when_called_for_any_month_returns_the_last_tick_of_that_quarter(int inputMonth, int expectedEndMonth, int expectedEndDay)
     {
         var input = new DateTime(2026, inputMonth, 1, 0, 0, 0, DateTimeKind.Utc);
 
@@ -540,7 +540,7 @@ public class DateTimeExtensionsTests
 
 
     [Fact]
-    public void FirstOfQuarter_preserves_Kind()
+    public void FirstOfQuarter_when_Kind_is_Local_preserves_Kind()
     {
         var input = new DateTime(2026, 5, 15, 0, 0, 0, DateTimeKind.Local);
 
@@ -566,7 +566,7 @@ public class DateTimeExtensionsTests
     [InlineData(10, 7)]
     [InlineData(11, 7)]
     [InlineData(12, 7)]
-    public void FirstOfHalf_returns_the_first_day_of_the_half_year(int inputMonth, int expectedHalfStartMonth)
+    public void FirstOfHalf_when_called_for_any_month_returns_midnight_on_the_first_day_of_that_half(int inputMonth, int expectedHalfStartMonth)
     {
         var input = new DateTime(2026, inputMonth, 15, 14, 30, 45, 123, DateTimeKind.Utc);
 
@@ -587,7 +587,7 @@ public class DateTimeExtensionsTests
     [Theory]
     [InlineData(1, 6,  30)]   // H1 ends Jun 30
     [InlineData(7, 12, 31)]   // H2 ends Dec 31
-    public void EndOfHalf_returns_the_last_tick_of_the_half_year(int inputMonth, int expectedEndMonth, int expectedEndDay)
+    public void EndOfHalf_when_called_for_any_month_returns_the_last_tick_of_that_half(int inputMonth, int expectedEndMonth, int expectedEndDay)
     {
         var input = new DateTime(2026, inputMonth, 1, 0, 0, 0, DateTimeKind.Utc);
 
@@ -619,7 +619,7 @@ public class DateTimeExtensionsTests
 
 
     [Fact]
-    public void FirstOfHalf_preserves_Kind()
+    public void FirstOfHalf_when_Kind_is_Local_preserves_Kind()
     {
         var input = new DateTime(2026, 8, 15, 0, 0, 0, DateTimeKind.Local);
 
