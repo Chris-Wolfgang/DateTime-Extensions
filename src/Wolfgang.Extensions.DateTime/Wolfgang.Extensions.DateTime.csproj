@@ -11,7 +11,7 @@
 		     naming the rule and target. -->
 		<EnablePackageValidation>true</EnablePackageValidation>
 		<PackageValidationBaselineVersion>1.3.2</PackageValidationBaselineVersion>
-		<Version>1.3.2</Version>
+		<Version>2.0.0</Version>
 		<!-- Pin AssemblyVersion to MAJOR.0.0.0 so .NET Framework consumers
 		     don't need a binding redirect on every minor/patch bump. Only
 		     change this on a deliberate breaking API change (i.e., MAJOR
@@ -26,8 +26,14 @@
 		     binding break vs the 1.0-1.2 line that .NET Framework consumers
 		     would have needed a binding redirect to absorb. v1.3.1 restores
 		     the original AssemblyVersion=1.0.0.0 so future releases are
-		     once again binding-compatible across the 1.x line. -->
-		<AssemblyVersion>1.0.0.0</AssemblyVersion>
+		     once again binding-compatible across the 1.x line.
+
+		     v2.0.0 moves this to 2.0.0.0. That IS a binding break for .NET
+		     Framework consumers, and a deliberate one: it is the load-time
+		     signal a MAJOR is supposed to give. Unlike the v1.3.0 slip above
+		     it is intentional, announced in the CHANGELOG, and every 2.x
+		     release will share 2.0.0.0. -->
+		<AssemblyVersion>2.0.0.0</AssemblyVersion>
 		<FileVersion>$(Version).0</FileVersion>
 		<Title>$(AssemblyName)</Title>
 		<Description>A collection of extension methods for DateTime</Description>

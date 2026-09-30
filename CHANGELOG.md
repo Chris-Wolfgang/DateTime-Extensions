@@ -10,6 +10,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Unreleased changes are kept as fragments in `changelog/unreleased/` and assembled into a version
 section here by `scripts/changelog.ps1 assemble` at release time.
 
+## [2.0.0] - 2026-09-29
+
+### Breaking changes
+
+- `FirstOfWeek(DateTime, DayOfWeek)` and `EndOfWeek(DateTime, DayOfWeek)` now throw `ArgumentOutOfRangeException` for a `DayOfWeek` value outside `Sunday`..`Saturday` instead of silently walking back to `DateTime.MinValue`. (#496)
+
+### Added
+
+- The net8.0 and net10.0 assemblies are marked `IsTrimmable` and `IsAotCompatible`, so consumers publishing trimmed or native-AOT builds get the analysers and the metadata that lets the trimmer trust this library. (#415)
+
+### Fixed
+
+- `EndOfWeek(DateTime, DayOfWeek)` now returns the correct week end in the first six days of year 1 - it no longer inherits `FirstOfWeek`'s `DateTime.MinValue` clamp, which made it report a day up to six days late for 21 `(date, firstDayOfWeek)` pairs - and is idempotent over the whole representable range (#436). (#521)
+- The package no longer ships `icon.ico` as a content asset (five copies, 338 KB) that was copied into `packages.config` projects; `PackageIcon` is unchanged. (#492)
+
+### Documentation
+
+- Every public method now carries an XML-doc `<example>` showing a real call and its result, and a test project compiles every one of them so they cannot drift from the API. (#426)
+
+### Internal
+
+- Raised the production-code coverage floor (`CODECOV_MINIMUM`) from 90% to 95%, per the fleet coverage policy. Also synced `scripts/build-pr.ps1` to run ReportGenerator and DevSkim as the pinned local tools (`dotnet reportgenerator`/`dotnet devskim`) instead of unreliable global installs, so a missing tool now fails loudly locally instead of silently reporting a false pass. (#462)
+- Implicit usings are disabled in every project, so each file states the `using` directives it needs on every target framework rather than inheriting a different set per framework. (#414)
+- `FirstOfWeek`, `EndOfWeek`, `TruncateMilliseconds` and `TruncateSeconds` now use constant-time tick arithmetic instead of a day-by-day walk or a full calendar decomposition; results are unchanged. (#497)
+- The build now runs `EnablePackageValidation` against the last published version, so an unintentional binary-breaking change fails before release. (#415)
+
 ## [1.3.2] - 2026-07-12
 
 ### Fixed
@@ -166,6 +192,7 @@ section here by `scripts/changelog.ps1 assemble` at release time.
   `netcoreapp3.1`, `net8.0`, `net10.0`.
 
 [Unreleased]: https://github.com/Chris-Wolfgang/DateTime-Extensions/compare/v1.3.2...HEAD
+[2.0.0]: https://github.com/Chris-Wolfgang/DateTime-Extensions/compare/v1.3.2...v2.0.0
 [1.3.2]: https://github.com/Chris-Wolfgang/DateTime-Extensions/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/Chris-Wolfgang/DateTime-Extensions/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/Chris-Wolfgang/DateTime-Extensions/compare/v1.2.0...v1.3.0
