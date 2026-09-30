@@ -1,23 +1,41 @@
 Summary
-  Generated on: 7/12/2026 - 1:57:59 AM
-  Coverage date: 7/12/2026 - 1:57:55 AM
-  Parser: Cobertura
-  Assemblies: 1
-  Classes: 1
-  Files: 1
+  Generated on: 9/30/2026 - 5:05:45 PM
+  Coverage date: 9/30/2026 - 5:05:38 PM - 9/30/2026 - 5:05:43 PM
+  Parser: MultiReport (3x Cobertura)
+  Assemblies: 4
+  Classes: 13
+  Files: 12
   Line coverage: 100%
-  Covered lines: 59
+  Covered lines: 1049
   Uncovered lines: 0
-  Coverable lines: 59
-  Total lines: 272
-  Branch coverage: 100% (22 of 22)
-  Covered branches: 22
-  Total branches: 22
-  Method coverage: 100% (15 of 15)
-  Full method coverage: 100% (15 of 15)
-  Covered methods: 15
-  Fully covered methods: 15
-  Total methods: 15
+  Coverable lines: 1049
+  Total lines: 2820
+  Branch coverage: 68.4% (193 of 282)
+  Covered branches: 193
+  Total branches: 282
+  Method coverage: 100% (130 of 130)
+  Full method coverage: 100% (130 of 130)
+  Covered methods: 130
+  Fully covered methods: 130
+  Total methods: 130
 
-Wolfgang.Extensions.DateTime                         100%
-  Wolfgang.Extensions.DateTime.DateTimeExtensions    100%
+Wolfgang.Extensions.DateTime                                                               100%
+  Wolfgang.Extensions.DateTime.DateTimeExtensions                                          100%
+
+Wolfgang.Extensions.DateTime.Tests.DocExamples                                             100%
+  Wolfgang.Extensions.DateTime.Tests.DocExamples.DocExample                                100%
+  Wolfgang.Extensions.DateTime.Tests.DocExamples.DocExampleCompiler                        100%
+  Wolfgang.Extensions.DateTime.Tests.DocExamples.DocExampleSource                          100%
+  Wolfgang.Extensions.DateTime.Tests.DocExamples.DocExampleTests                           100%
+
+Wolfgang.Extensions.DateTime.Tests.Fuzz                                                    100%
+  Wolfgang.Extensions.DateTime.Tests.Fuzz.DateTimeProperties                               100%
+
+Wolfgang.Extensions.DateTime.Tests.Unit                                                    100%
+  Wolfgang.Extensions.DateTime.Tests.Unit.AotSmokeCoverageTests                            100%
+  Wolfgang.Extensions.DateTime.Tests.Unit.DateTimeExtensionsTests                          100%
+  Wolfgang.Extensions.DateTime.Tests.Unit.Globalization.CultureInvarianceTests             100%
+  Wolfgang.Extensions.DateTime.Tests.Unit.Globalization.CurrentCultureWeekOverloadTests    100%
+  Wolfgang.Extensions.DateTime.Tests.Unit.KindPreservationTests                            100%
+  Wolfgang.Extensions.DateTime.Tests.Unit.Performance.AllocationTests                      100%
+  Wolfgang.Extensions.DateTime.Tests.Unit.WeekCases                                        100%

@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.3.2/docfx_project/docs/getting-started.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.4.0/docfx_project/docs/getting-started.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -76,7 +76,7 @@
 <p>This guide will help you quickly get up and running with Wolfgang.Extensions.DateTime.</p>
 <h2 id="prerequisites">Prerequisites</h2>
 <ul>
-<li>.NET 8.0 SDK or later (for development; the library targets .NET Framework 4.6.2+, .NET Standard 2.0, and .NET 8.0+)</li>
+<li>.NET 10.0 SDK (for development; the library targets .NET Framework 4.6.2, .NET Standard 2.0, .NET 8.0 and .NET 10.0)</li>
 </ul>
 <h2 id="installation">Installation</h2>
 <h3 id="via-nuget-package-manager">Via NuGet Package Manager</h3>
@@ -98,6 +98,12 @@ var noSeconds = now.TruncateSeconds();              // Zeroes out seconds and mi
 var firstOfMonth = now.FirstOfMonth();  // e.g. 2026-03-01 00:00:00.000
 var endOfMonth = now.EndOfMonth();      // e.g. 2026-03-31 23:59:59.9999999
 
+// Navigate to quarter and half-year boundaries
+var firstOfQuarter = now.FirstOfQuarter();  // e.g. 2026-01-01 00:00:00.000 for a March date
+var endOfQuarter = now.EndOfQuarter();      // e.g. 2026-03-31 23:59:59.9999999
+var firstOfHalf = now.FirstOfHalf();        // e.g. 2026-01-01 00:00:00.000
+var endOfHalf = now.EndOfHalf();            // e.g. 2026-06-30 23:59:59.9999999
+
 // Navigate to year boundaries
 var firstOfYear = now.FirstOfYear();    // e.g. 2026-01-01 00:00:00.000
 var endOfYear = now.EndOfYear();        // e.g. 2026-12-31 23:59:59.9999999
@@ -115,7 +121,7 @@ var endOfWeek = now.EndOfWeek();
 </ul>
 <h2 id="common-issues">Common Issues</h2>
 <h3 id="namespace-conflicts-with-systemdatetime">Namespace conflicts with <code>System.DateTime</code></h3>
-<p>The library namespace is <code>Wolfgang.Extensions.DateTime</code>, which can conflict with <code>System.DateTime</code>. In the source code, the type is referenced as <code>System.DateTime</code> to avoid ambiguity. If you encounter conflicts, use a fully qualified name or a <code>using</code> alias.</p>
+<p>The library namespace is <code>Wolfgang.Extensions.DateTime</code>, whose last segment has the same name as the <code>System.DateTime</code> type. Consumers are unaffected: <code>using Wolfgang.Extensions.DateTime;</code> brings the extension methods into scope and <code>DateTime</code> still means <code>System.DateTime</code> in your code. Only code declared <em>inside</em> the <code>Wolfgang.Extensions.DateTime</code> namespace (the library's own source) has to write <code>System.DateTime</code> in full - see <a href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/main/docs/adr/0002-namespace-shadows-system-datetime.md">ADR-0002</a>.</p>
 <h3 id="datetimekind-is-preserved">DateTimeKind is preserved</h3>
 <p>All extension methods preserve the <code>DateTimeKind</code> of the input. If you pass a UTC DateTime, you get a UTC DateTime back.</p>
 <h2 id="additional-resources">Additional Resources</h2>
@@ -128,7 +134,7 @@ var endOfWeek = now.EndOfWeek();
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.3.2/docfx_project/docs/getting-started.md/#L1" class="edit-link">Edit this page</a>
+          <a href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.4.0/docfx_project/docs/getting-started.md/#L1" class="edit-link">Edit this page</a>
         </div>
 
         <div class="next-article d-print-none border-top" id="nextArticle"></div>

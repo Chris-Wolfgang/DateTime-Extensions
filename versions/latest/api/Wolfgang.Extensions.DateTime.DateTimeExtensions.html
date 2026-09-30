@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/Chris-Wolfgang/DateTime-Extensions/new/v1.3.2/apiSpec/new?filename=Wolfgang_Extensions_DateTime_DateTimeExtensions.md&amp;value=---%0Auid%3A%20Wolfgang.Extensions.DateTime.DateTimeExtensions%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="docfx:docurl" content="https://github.com/Chris-Wolfgang/DateTime-Extensions/new/v1.4.0/apiSpec/new?filename=Wolfgang_Extensions_DateTime_DateTimeExtensions.md&amp;value=---%0Auid%3A%20Wolfgang.Extensions.DateTime.DateTimeExtensions%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -75,11 +75,11 @@
 
 
   <h1 id="Wolfgang_Extensions_DateTime_DateTimeExtensions" data-uid="Wolfgang.Extensions.DateTime.DateTimeExtensions" class="text-break">
-Class DateTimeExtensions  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.3.2/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L10"><i class="bi bi-code-slash"></i></a>
+Class DateTimeExtensions  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.4.0/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L10"><i class="bi bi-code-slash"></i></a>
   </h1>
 
   <div class="facts text-secondary">
-    <dl><dt>Namespace</dt><dd><a class="xref" href="Wolfgang.html">Wolfgang</a>.<a class="xref" href="Wolfgang.Extensions.html">Extensions</a>.<a class="xref" href="Wolfgang.Extensions.DateTime.html">DateTime</a></dd></dl>
+    <dl><dt>Namespace</dt><dd><span class="xref">Wolfgang</span>.<span class="xref">Extensions</span>.<a class="xref" href="Wolfgang.Extensions.DateTime.html">DateTime</a></dd></dl>
   <dl><dt>Assembly</dt><dd>Wolfgang.Extensions.DateTime.dll</dd></dl>
   </div>
 
@@ -143,7 +143,7 @@ Class DateTimeExtensions  <a class="header-action link-secondary" title="View so
 
   <h3 id="Wolfgang_Extensions_DateTime_DateTimeExtensions_EndOfHalf_System_DateTime_" data-uid="Wolfgang.Extensions.DateTime.DateTimeExtensions.EndOfHalf(System.DateTime)">
   EndOfHalf(DateTime)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.3.2/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L264"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.4.0/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L374"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a new DateTime that represents the last tick of the
@@ -176,6 +176,11 @@ year 9999.</p>
 
 
 
+  <h4 class="section" id="Wolfgang_Extensions_DateTime_DateTimeExtensions_EndOfHalf_System_DateTime__examples">Examples</h4>
+  <pre><code class="lang-csharp">var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+var end = moment.EndOfHalf();
+// 2026-12-31 23:59:59.9999999</code></pre>
+
 
 
 
@@ -185,11 +190,13 @@ year 9999.</p>
 
   <h3 id="Wolfgang_Extensions_DateTime_DateTimeExtensions_EndOfMonth_System_DateTime_" data-uid="Wolfgang.Extensions.DateTime.DateTimeExtensions.EndOfMonth(System.DateTime)">
   EndOfMonth(DateTime)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.3.2/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L85"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.4.0/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L108"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Returns a new DateTime that represents the last day of the
-month specified by the DateTime passed in.</p>
+  <div class="markdown level1 summary"><p>Returns a new DateTime that represents the last tick of the
+month specified by the DateTime passed in. Clamps at
+<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.datetime.maxvalue">MaxValue</a> when the month is December
+of year 9999.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -216,6 +223,11 @@ month specified by the DateTime passed in.</p>
 
 
 
+  <h4 class="section" id="Wolfgang_Extensions_DateTime_DateTimeExtensions_EndOfMonth_System_DateTime__examples">Examples</h4>
+  <pre><code class="lang-csharp">var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+var end = moment.EndOfMonth();
+// 2026-09-30 23:59:59.9999999 - the last tick of the month, not midnight</code></pre>
+
 
 
 
@@ -225,7 +237,7 @@ month specified by the DateTime passed in.</p>
 
   <h3 id="Wolfgang_Extensions_DateTime_DateTimeExtensions_EndOfQuarter_System_DateTime_" data-uid="Wolfgang.Extensions.DateTime.DateTimeExtensions.EndOfQuarter(System.DateTime)">
   EndOfQuarter(DateTime)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.3.2/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L230"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.4.0/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L326"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a new DateTime that represents the last tick of the
@@ -258,6 +270,11 @@ year 9999.</p>
 
 
 
+  <h4 class="section" id="Wolfgang_Extensions_DateTime_DateTimeExtensions_EndOfQuarter_System_DateTime__examples">Examples</h4>
+  <pre><code class="lang-csharp">var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+var end = moment.EndOfQuarter();
+// 2026-09-30 23:59:59.9999999</code></pre>
+
 
 
 
@@ -267,12 +284,14 @@ year 9999.</p>
 
   <h3 id="Wolfgang_Extensions_DateTime_DateTimeExtensions_EndOfWeek_System_DateTime_" data-uid="Wolfgang.Extensions.DateTime.DateTimeExtensions.EndOfWeek(System.DateTime)">
   EndOfWeek(DateTime)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.3.2/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L170"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.4.0/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L241"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Returns a new DateTime that represents the last day of the
+  <div class="markdown level1 summary"><p>Returns a new DateTime that represents the last tick of the
 week specified by the DateTime passed in using the thread's
-CurrentCulture FirstDayOfWeek.</p>
+CurrentCulture FirstDayOfWeek. Clamps at
+<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.datetime.maxvalue">MaxValue</a> when the week would extend
+past the end of the representable range.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -299,6 +318,12 @@ CurrentCulture FirstDayOfWeek.</p>
 
 
 
+  <h4 class="section" id="Wolfgang_Extensions_DateTime_DateTimeExtensions_EndOfWeek_System_DateTime__examples">Examples</h4>
+  <pre><code class="lang-csharp">var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+var end = moment.EndOfWeek();
+// Culture-dependent, like FirstOfWeek(). Prefer the overload below when the
+// result has to be the same on every machine.</code></pre>
+
 
 
 
@@ -308,12 +333,13 @@ CurrentCulture FirstDayOfWeek.</p>
 
   <h3 id="Wolfgang_Extensions_DateTime_DateTimeExtensions_EndOfWeek_System_DateTime_System_DayOfWeek_" data-uid="Wolfgang.Extensions.DateTime.DateTimeExtensions.EndOfWeek(System.DateTime,System.DayOfWeek)">
   EndOfWeek(DateTime, DayOfWeek)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.3.2/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L183"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.4.0/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L273"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Returns a new DateTime that represents the last day of the
+  <div class="markdown level1 summary"><p>Returns a new DateTime that represents the last tick of the
 week specified by the DateTime passed in using the specified
-firstDayOfWeek.</p>
+firstDayOfWeek. Clamps at <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.datetime.maxvalue">MaxValue</a>
+when the week would extend past the end of the representable range.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -343,8 +369,27 @@ firstDayOfWeek.</p>
 
 
 
+  <h4 class="section" id="Wolfgang_Extensions_DateTime_DateTimeExtensions_EndOfWeek_System_DateTime_System_DayOfWeek__examples">Examples</h4>
+  <pre><code class="lang-csharp">var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+var end = moment.EndOfWeek(DayOfWeek.Monday);
+// 2026-09-27 23:59:59.9999999 - the last tick of the Sunday that ends that week</code></pre>
 
 
+  <h4 class="section" id="Wolfgang_Extensions_DateTime_DateTimeExtensions_EndOfWeek_System_DateTime_System_DayOfWeek__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Counts forward from <code class="paramref">dateTime</code> to the day before the next
+<code class="paramref">firstDayOfWeek</code> and returns that day's last tick. It does not go through
+<a class="xref" href="Wolfgang.Extensions.DateTime.DateTimeExtensions.html#Wolfgang_Extensions_DateTime_DateTimeExtensions_FirstOfWeek_System_DateTime_System_DayOfWeek_">FirstOfWeek(DateTime, DayOfWeek)</a>, so it does not inherit that method's
+<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.datetime.minvalue">MinValue</a> clamp: within the first six days of year 1 the
+result is still the correct day, and the method is idempotent over the whole
+representable range (#436, #468).</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">firstDayOfWeek</code> is not a defined <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.dayofweek">DayOfWeek</a> value.</p>
+</dd>
+  </dl>
 
 
 
@@ -352,11 +397,12 @@ firstDayOfWeek.</p>
 
   <h3 id="Wolfgang_Extensions_DateTime_DateTimeExtensions_EndOfYear_System_DateTime_" data-uid="Wolfgang.Extensions.DateTime.DateTimeExtensions.EndOfYear(System.DateTime)">
   EndOfYear(DateTime)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.3.2/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L114"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.4.0/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L151"><i class="bi bi-code-slash"></i></a>
   </h3>
 
-  <div class="markdown level1 summary"><p>Returns a new DateTime that represents the last day of the
-year specified by the DateTime passed in.</p>
+  <div class="markdown level1 summary"><p>Returns a new DateTime that represents the last tick of the
+year specified by the DateTime passed in. Clamps at
+<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.datetime.maxvalue">MaxValue</a> when the year is 9999.</p>
 </div>
   <div class="markdown level1 conceptual"></div>
 
@@ -383,6 +429,11 @@ year specified by the DateTime passed in.</p>
 
 
 
+  <h4 class="section" id="Wolfgang_Extensions_DateTime_DateTimeExtensions_EndOfYear_System_DateTime__examples">Examples</h4>
+  <pre><code class="lang-csharp">var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+var end = moment.EndOfYear();
+// 2026-12-31 23:59:59.9999999</code></pre>
+
 
 
 
@@ -392,7 +443,7 @@ year specified by the DateTime passed in.</p>
 
   <h3 id="Wolfgang_Extensions_DateTime_DateTimeExtensions_FirstOfHalf_System_DateTime_" data-uid="Wolfgang.Extensions.DateTime.DateTimeExtensions.FirstOfHalf(System.DateTime)">
   FirstOfHalf(DateTime)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.3.2/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L248"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.4.0/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L351"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a new DateTime that represents the first day of the
@@ -424,6 +475,11 @@ H1 Jan-Jun, H2 Jul-Dec.</p>
 
 
 
+  <h4 class="section" id="Wolfgang_Extensions_DateTime_DateTimeExtensions_FirstOfHalf_System_DateTime__examples">Examples</h4>
+  <pre><code class="lang-csharp">var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+var first = moment.FirstOfHalf();
+// 2026-07-01 00:00:00.0000000 - September is in the second half</code></pre>
+
 
 
 
@@ -433,7 +489,7 @@ H1 Jan-Jun, H2 Jul-Dec.</p>
 
   <h3 id="Wolfgang_Extensions_DateTime_DateTimeExtensions_FirstOfMonth_System_DateTime_" data-uid="Wolfgang.Extensions.DateTime.DateTimeExtensions.FirstOfMonth(System.DateTime)">
   FirstOfMonth(DateTime)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.3.2/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L74"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.4.0/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L88"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a new DateTime that represents the first day of the
@@ -464,6 +520,11 @@ month specified by the DateTime passed in.</p>
 
 
 
+  <h4 class="section" id="Wolfgang_Extensions_DateTime_DateTimeExtensions_FirstOfMonth_System_DateTime__examples">Examples</h4>
+  <pre><code class="lang-csharp">var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+var first = moment.FirstOfMonth();
+// 2026-09-01 00:00:00.0000000</code></pre>
+
 
 
 
@@ -473,7 +534,7 @@ month specified by the DateTime passed in.</p>
 
   <h3 id="Wolfgang_Extensions_DateTime_DateTimeExtensions_FirstOfQuarter_System_DateTime_" data-uid="Wolfgang.Extensions.DateTime.DateTimeExtensions.FirstOfQuarter(System.DateTime)">
   FirstOfQuarter(DateTime)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.3.2/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L214"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.4.0/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L303"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a new DateTime that represents the first day of the
@@ -505,6 +566,11 @@ Q1 Jan-Mar, Q2 Apr-Jun, Q3 Jul-Sep, Q4 Oct-Dec.</p>
 
 
 
+  <h4 class="section" id="Wolfgang_Extensions_DateTime_DateTimeExtensions_FirstOfQuarter_System_DateTime__examples">Examples</h4>
+  <pre><code class="lang-csharp">var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+var first = moment.FirstOfQuarter();
+// 2026-07-01 00:00:00.0000000 - September is in Q3</code></pre>
+
 
 
 
@@ -514,7 +580,7 @@ Q1 Jan-Mar, Q2 Apr-Jun, Q3 Jul-Sep, Q4 Oct-Dec.</p>
 
   <h3 id="Wolfgang_Extensions_DateTime_DateTimeExtensions_FirstOfWeek_System_DateTime_" data-uid="Wolfgang.Extensions.DateTime.DateTimeExtensions.FirstOfWeek(System.DateTime)">
   FirstOfWeek(DateTime)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.3.2/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L132"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.4.0/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L178"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a new DateTime that represents the first day of the
@@ -546,6 +612,13 @@ CurrentCulture FirstDayOfWeek.</p>
 
 
 
+  <h4 class="section" id="Wolfgang_Extensions_DateTime_DateTimeExtensions_FirstOfWeek_System_DateTime__examples">Examples</h4>
+  <pre><code class="lang-csharp">var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+var first = moment.FirstOfWeek();
+// The current culture decides which day starts the week, so this value is
+// machine-dependent. Under an invariant culture the week starts on Sunday
+// and the result is 2026-09-20. Use the overload below to be explicit.</code></pre>
+
 
 
 
@@ -555,7 +628,7 @@ CurrentCulture FirstDayOfWeek.</p>
 
   <h3 id="Wolfgang_Extensions_DateTime_DateTimeExtensions_FirstOfWeek_System_DateTime_System_DayOfWeek_" data-uid="Wolfgang.Extensions.DateTime.DateTimeExtensions.FirstOfWeek(System.DateTime,System.DayOfWeek)">
   FirstOfWeek(DateTime, DayOfWeek)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.3.2/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L145"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.4.0/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L209"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a new DateTime that represents the first day of the
@@ -574,7 +647,7 @@ firstDayOfWeek</p>
     <dd><p>The value to process.</p>
 </dd>
     <dt><code>firstDayOfWeek</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.dayofweek">DayOfWeek</a></dt>
-    <dd><p>Specifies the first day of the week.</p>
+    <dd><p>Specifies the first day of the week. Use the parameterless overload to pick up <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.globalization.cultureinfo.currentculture">CurrentCulture</a>'s value automatically.</p>
 </dd>
   </dl>
 
@@ -590,8 +663,27 @@ firstDayOfWeek</p>
 
 
 
+  <h4 class="section" id="Wolfgang_Extensions_DateTime_DateTimeExtensions_FirstOfWeek_System_DateTime_System_DayOfWeek__examples">Examples</h4>
+  <pre><code class="lang-csharp">var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+var first = moment.FirstOfWeek(DayOfWeek.Monday);
+// 2026-09-21 00:00:00.0000000 - the Monday before Thursday 24 September</code></pre>
 
 
+  <h4 class="section" id="Wolfgang_Extensions_DateTime_DateTimeExtensions_FirstOfWeek_System_DateTime_System_DayOfWeek__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Within the first six days of year 1 - <code>0001-01-01</code> through <code>0001-01-06</code> - walking
+back to <code class="paramref">firstDayOfWeek</code> can underflow the representable range. Rather
+than throw, this method clamps to <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.datetime.minvalue">MinValue</a>, which is itself
+a Monday and so is not guaranteed to fall on <code class="paramref">firstDayOfWeek</code>. The
+clamp is confined to this method: <a class="xref" href="Wolfgang.Extensions.DateTime.DateTimeExtensions.html#Wolfgang_Extensions_DateTime_DateTimeExtensions_EndOfWeek_System_DateTime_System_DayOfWeek_">EndOfWeek(DateTime, DayOfWeek)</a>
+counts forward from the instant and is unaffected.</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentoutofrangeexception">ArgumentOutOfRangeException</a></dt>
+    <dd><p><code class="paramref">firstDayOfWeek</code> is not a defined <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.dayofweek">DayOfWeek</a> value.</p>
+</dd>
+  </dl>
 
 
 
@@ -599,7 +691,7 @@ firstDayOfWeek</p>
 
   <h3 id="Wolfgang_Extensions_DateTime_DateTimeExtensions_FirstOfYear_System_DateTime_" data-uid="Wolfgang.Extensions.DateTime.DateTimeExtensions.FirstOfYear(System.DateTime)">
   FirstOfYear(DateTime)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.3.2/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L103"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.4.0/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L132"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Returns a new DateTime that represents the first day of the
@@ -630,6 +722,11 @@ year specified by the DateTime passed in.</p>
 
 
 
+  <h4 class="section" id="Wolfgang_Extensions_DateTime_DateTimeExtensions_FirstOfYear_System_DateTime__examples">Examples</h4>
+  <pre><code class="lang-csharp">var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+var first = moment.FirstOfYear();
+// 2026-01-01 00:00:00.0000000</code></pre>
+
 
 
 
@@ -639,7 +736,7 @@ year specified by the DateTime passed in.</p>
 
   <h3 id="Wolfgang_Extensions_DateTime_DateTimeExtensions_TruncateMilliseconds_System_DateTime_" data-uid="Wolfgang.Extensions.DateTime.DateTimeExtensions.TruncateMilliseconds(System.DateTime)">
   TruncateMilliseconds(DateTime)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.3.2/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L33"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.4.0/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L53"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Remove the milliseconds and everything after the milliseconds</p>
@@ -669,6 +766,11 @@ year specified by the DateTime passed in.</p>
 
 
 
+  <h4 class="section" id="Wolfgang_Extensions_DateTime_DateTimeExtensions_TruncateMilliseconds_System_DateTime__examples">Examples</h4>
+  <pre><code class="lang-csharp">var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+var truncated = moment.TruncateMilliseconds();
+// 2026-09-24 14:30:45.0000000</code></pre>
+
 
 
 
@@ -678,7 +780,7 @@ year specified by the DateTime passed in.</p>
 
   <h3 id="Wolfgang_Extensions_DateTime_DateTimeExtensions_TruncateSeconds_System_DateTime_" data-uid="Wolfgang.Extensions.DateTime.DateTimeExtensions.TruncateSeconds(System.DateTime)">
   TruncateSeconds(DateTime)
-  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.3.2/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L53"><i class="bi bi-code-slash"></i></a>
+  <a class="header-action link-secondary" title="View source" href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.4.0/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L70"><i class="bi bi-code-slash"></i></a>
   </h3>
 
   <div class="markdown level1 summary"><p>Remove the seconds and everything after the seconds</p>
@@ -708,6 +810,11 @@ year specified by the DateTime passed in.</p>
 
 
 
+  <h4 class="section" id="Wolfgang_Extensions_DateTime_DateTimeExtensions_TruncateSeconds_System_DateTime__examples">Examples</h4>
+  <pre><code class="lang-csharp">var moment = new DateTime(2026, 9, 24, 14, 30, 45, 678);
+var truncated = moment.TruncateSeconds();
+// 2026-09-24 14:30:00.0000000</code></pre>
+
 
 
 
@@ -717,7 +824,7 @@ year specified by the DateTime passed in.</p>
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.3.2/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L10" class="edit-link">Edit this page</a>
+          <a href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.4.0/src/Wolfgang.Extensions.DateTime/DateTimeExtensions.cs/#L10" class="edit-link">Edit this page</a>
         </div>
 
 

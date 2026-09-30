@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<coverage version="1.0" date="2026-09-30_17-05-45" tag="">
+  <assembly name="Wolfgang.Extensions.DateTime">
+    <class name="Wolfgang.Extensions.DateTime.DateTimeExtensions" coveredlines="46" coverablelines="46" totallines="382" coveredbranches="20" totalbranches="20" coveredcodeelements="16" fullcoveredcodeelements="16" totalcodeelements="16" />
+  </assembly>
+  <assembly name="Wolfgang.Extensions.DateTime.Tests.DocExamples">
+    <class name="Wolfgang.Extensions.DateTime.Tests.DocExamples.DocExample" coveredlines="21" coverablelines="21" totallines="284" coveredbranches="0" totalbranches="0" coveredcodeelements="8" fullcoveredcodeelements="8" totalcodeelements="8" />
+    <class name="Wolfgang.Extensions.DateTime.Tests.DocExamples.DocExampleCompiler" coveredlines="43" coverablelines="43" totallines="132" coveredbranches="4" totalbranches="4" coveredcodeelements="3" fullcoveredcodeelements="3" totalcodeelements="3" />
+    <class name="Wolfgang.Extensions.DateTime.Tests.DocExamples.DocExampleSource" coveredlines="65" coverablelines="65" totallines="284" coveredbranches="34" totalbranches="36" coveredcodeelements="8" fullcoveredcodeelements="8" totalcodeelements="8" />
+    <class name="Wolfgang.Extensions.DateTime.Tests.DocExamples.DocExampleTests" coveredlines="92" coverablelines="92" totallines="245" coveredbranches="0" totalbranches="0" coveredcodeelements="13" fullcoveredcodeelements="13" totalcodeelements="13" />
+  </assembly>
+  <assembly name="Wolfgang.Extensions.DateTime.Tests.Fuzz">
+    <class name="Wolfgang.Extensions.DateTime.Tests.Fuzz.DateTimeProperties" coveredlines="272" coverablelines="272" totallines="430" coveredbranches="115" totalbranches="202" coveredcodeelements="15" fullcoveredcodeelements="15" totalcodeelements="15" />
+  </assembly>
+  <assembly name="Wolfgang.Extensions.DateTime.Tests.Unit">
+    <class name="Wolfgang.Extensions.DateTime.Tests.Unit.AotSmokeCoverageTests" coveredlines="34" coverablelines="34" totallines="112" coveredbranches="4" totalbranches="4" coveredcodeelements="3" fullcoveredcodeelements="3" totalcodeelements="3" />
+    <class name="Wolfgang.Extensions.DateTime.Tests.Unit.DateTimeExtensionsTests" coveredlines="244" coverablelines="244" totallines="639" coveredbranches="0" totalbranches="0" coveredcodeelements="38" fullcoveredcodeelements="38" totalcodeelements="38" />
+    <class name="Wolfgang.Extensions.DateTime.Tests.Unit.Globalization.CultureInvarianceTests" coveredlines="85" coverablelines="85" totallines="221" coveredbranches="8" totalbranches="8" coveredcodeelements="10" fullcoveredcodeelements="10" totalcodeelements="10" />
+    <class name="Wolfgang.Extensions.DateTime.Tests.Unit.Globalization.CurrentCultureWeekOverloadTests" coveredlines="15" coverablelines="15" totallines="76" coveredbranches="0" totalbranches="0" coveredcodeelements="5" fullcoveredcodeelements="5" totalcodeelements="5" />
+    <class name="Wolfgang.Extensions.DateTime.Tests.Unit.KindPreservationTests" coveredlines="41" coverablelines="41" totallines="103" coveredbranches="4" totalbranches="4" coveredcodeelements="5" fullcoveredcodeelements="5" totalcodeelements="5" />
+    <class name="Wolfgang.Extensions.DateTime.Tests.Unit.Performance.AllocationTests" coveredlines="65" coverablelines="65" totallines="147" coveredbranches="4" totalbranches="4" coveredcodeelements="3" fullcoveredcodeelements="3" totalcodeelements="3" />
+    <class name="Wolfgang.Extensions.DateTime.Tests.Unit.WeekCases" coveredlines="26" coverablelines="26" totallines="49" coveredbranches="0" totalbranches="0" coveredcodeelements="3" fullcoveredcodeelements="3" totalcodeelements="3" />
+  </assembly>
+</coverage>

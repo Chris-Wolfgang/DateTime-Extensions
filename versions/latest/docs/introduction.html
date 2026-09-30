@@ -16,7 +16,7 @@
       <meta name="docfx:rel" content="../">
       
       
-      <meta name="docfx:docurl" content="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.3.2/docfx_project/docs/introduction.md/#L1">
+      <meta name="docfx:docurl" content="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.4.0/docfx_project/docs/introduction.md/#L1">
       <meta name="loc:inThisArticle" content="In this article">
       <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
       <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
@@ -75,12 +75,14 @@
 
 <p>Welcome to Wolfgang.Extensions.DateTime!</p>
 <h2 id="overview">Overview</h2>
-<p>Wolfgang.Extensions.DateTime is a .NET library providing extension methods for the <code>System.DateTime</code> type. It adds convenient methods for truncating time precision and navigating to date boundaries (week, month, year).</p>
+<p>Wolfgang.Extensions.DateTime is a .NET library providing extension methods for the <code>System.DateTime</code> type. It adds convenient methods for truncating time precision and navigating to date boundaries (week, month, quarter, half-year, year).</p>
 <h2 id="key-features">Key Features</h2>
 <ul>
 <li><strong>TruncateMilliseconds</strong> — removes milliseconds, returning a DateTime precise to the second</li>
 <li><strong>TruncateSeconds</strong> — removes seconds and milliseconds, returning a DateTime precise to the minute</li>
 <li><strong>FirstOfMonth / EndOfMonth</strong> — navigates to the first or last instant of the month</li>
+<li><strong>FirstOfQuarter / EndOfQuarter</strong> — navigates to the first or last instant of the calendar quarter</li>
+<li><strong>FirstOfHalf / EndOfHalf</strong> — navigates to the first or last instant of the calendar half-year</li>
 <li><strong>FirstOfYear / EndOfYear</strong> — navigates to the first or last instant of the year</li>
 <li><strong>FirstOfWeek / EndOfWeek</strong> — navigates to week boundaries, with culture-aware or explicit <code>DayOfWeek</code> overloads</li>
 <li>All methods preserve <code>DateTimeKind</code> (Local, Utc, Unspecified)</li>
@@ -97,7 +99,7 @@
 </article>
 
         <div class="contribution d-print-none">
-          <a href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.3.2/docfx_project/docs/introduction.md/#L1" class="edit-link">Edit this page</a>
+          <a href="https://github.com/Chris-Wolfgang/DateTime-Extensions/blob/v1.4.0/docfx_project/docs/introduction.md/#L1" class="edit-link">Edit this page</a>
         </div>
 
         <div class="next-article d-print-none border-top" id="nextArticle"></div>
