@@ -47,20 +47,6 @@ public class DateTimeExtensionsTests
 
 
     [Fact]
-    public void TruncateMilliseconds_returns_0_milliseconds()
-    {
-        var now = DateTime.UtcNow;
-
-
-        var actualResult = now.TruncateMilliseconds();
-
-
-        Assert.Equal(0, actualResult.Millisecond);
-    }
-
-
-
-    [Fact]
     public void TruncateSeconds_removes_seconds_from_value()
     {
         var now = DateTime.UtcNow;
@@ -80,34 +66,6 @@ public class DateTimeExtensionsTests
         );
 
         Assert.Equal(expectedResult, actualResult);
-    }
-
-
-
-    [Fact]
-    public void TruncateSeconds_returns_0_milliseconds()
-    {
-        var now = DateTime.UtcNow;
-
-
-        var actualResult = now.TruncateSeconds();
-
-
-        Assert.Equal(0, actualResult.Millisecond);
-    }
-
-
-
-    [Fact]
-    public void TruncateSeconds_returns_0_seconds()
-    {
-        var now = DateTime.UtcNow;
-
-
-        var actualResult = now.TruncateSeconds();
-
-
-        Assert.Equal(0, actualResult.Second);
     }
 
 
