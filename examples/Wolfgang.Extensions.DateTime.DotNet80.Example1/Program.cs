@@ -1,9 +1,7 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Wolfgang.Extensions.DateTime.DotNet8.Example1;
 
-[ExcludeFromCodeCoverage]
 internal static class Program
 {
     public static void Main()

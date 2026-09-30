@@ -47,30 +47,6 @@ public class DateTimeExtensionsTests
 
 
     [Fact]
-    public void TruncateSeconds_when_value_is_the_current_time_removes_everything_below_the_minute()
-    {
-        var now = DateTime.UtcNow;
-
-        var actualResult = now.TruncateSeconds();
-
-        var expectedResult = new DateTime
-        (
-            now.Year,
-            now.Month,
-            now.Day,
-            now.Hour,
-            now.Minute,
-            0,
-            0,
-            DateTimeKind.Utc
-        );
-
-        Assert.Equal(expectedResult, actualResult);
-    }
-
-
-
-    [Fact]
     public void TruncateSeconds_when_value_has_seconds_milliseconds_and_ticks_removes_everything_below_the_minute()
     {
         var testValue = new DateTime
@@ -626,5 +602,38 @@ public class DateTimeExtensionsTests
         var result = input.FirstOfHalf();
 
         Assert.Equal(DateTimeKind.Local, result.Kind);
+    }
+
+
+
+
+    [Fact]
+    public void FirstOfMonth_when_DateTime_MaxValue_returns_the_first_of_December_9999()
+    {
+        Assert.Equal(new DateTime(9999, 12, 1), DateTime.MaxValue.FirstOfMonth());
+    }
+
+
+
+    [Fact]
+    public void FirstOfYear_when_DateTime_MaxValue_returns_the_first_of_year_9999()
+    {
+        Assert.Equal(new DateTime(9999, 1, 1), DateTime.MaxValue.FirstOfYear());
+    }
+
+
+
+    [Fact]
+    public void FirstOfQuarter_when_DateTime_MaxValue_returns_the_first_of_October_9999()
+    {
+        Assert.Equal(new DateTime(9999, 10, 1), DateTime.MaxValue.FirstOfQuarter());
+    }
+
+
+
+    [Fact]
+    public void FirstOfHalf_when_DateTime_MaxValue_returns_the_first_of_July_9999()
+    {
+        Assert.Equal(new DateTime(9999, 7, 1), DateTime.MaxValue.FirstOfHalf());
     }
 }
