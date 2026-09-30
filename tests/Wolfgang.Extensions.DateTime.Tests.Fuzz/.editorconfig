@@ -1,0 +1,17 @@
+# Scoped to the fuzz suite. tests/.editorconfig holds what every test project shares; this file
+# adds only what is true of property-based tests. Not root=true, so the settings above still apply.
+
+[*.cs]
+
+# S2699: "Add at least one assertion to this test case."
+#
+# Every test in this project is a property: it hands a predicate to CsCheck's Sample, which
+# evaluates it over many generated inputs and fails the test when it returns false. The assertion
+# IS the returned bool, so there is no Assert.* call in the method body for the rule's heuristic
+# to find. All 10 tests here trip it; no test outside this project does.
+#
+# Scoped here rather than restored tree-wide on purpose. #534 removed the repo-wide suppression
+# precisely so an assertion-free test in the unit or doc-example suites is caught, and that stays
+# true - this narrows the exclusion to the one project where the rule cannot be satisfied without
+# bolting a redundant Assert.True(true) onto a sampler that already fails the test itself.
+dotnet_diagnostic.S2699.severity = none
