@@ -244,13 +244,46 @@ jobs:
 
             # Only projects that really run tests: an AOT smoke executable or a fixture under
             # tests/ has nothing for the adapter to execute and would trip the zero-tests guard.
-            # IsTestProject comes from Microsoft.NET.Test.Sdk's props (imported per TFM).
-            $isTestProject = $false
-            foreach ($fw in $frameworks) {
-              $probe = if ([string]::IsNullOrWhiteSpace($fw)) { @() } else { @("-p:TargetFramework=$fw") }
-              $value = dotnet msbuild $testProj.FullName -nologo -p:Configuration=Release @probe -getProperty:IsTestProject 2>$null
-              if ("$value".Trim() -ieq 'true') { $isTestProject = $true; break }
+            #
+            # The csproj is the source of truth whenever it states the property, because the
+            # MSBuild probe below cannot be trusted to answer. The v1.4.0 release run skipped
+            # EVERY suite here: each probe failed fast in CI (~0.26s, against ~1.1s for a real
+            # evaluation), its stderr went to $null, and the empty output read as "not a test
+            # project". Only the zero-tests guard further down stopped an untested package from
+            # being published. A probe that cannot answer must never mean "no".
+            $declared = $null
+            try {
+              $xml = [xml](Get-Content -LiteralPath $testProj.FullName -Raw)
+              $node = $xml.SelectSingleNode("//*[local-name()='IsTestProject']")
+              if ($node) { $declared = "$($node.InnerText)".Trim() }
+            } catch {
+              Write-Warning "Could not parse $($testProj.Name) as XML: $($_.Exception.Message)"
             }
+
+            if ($declared) {
+              $isTestProject = ($declared -ieq 'true')
+              Write-Host "IsTestProject declared in $($testProj.Name): $declared"
+            } else {
+              # Not declared anywhere in the file - fall back to MSBuild, which imports
+              # Microsoft.NET.Test.Sdk's props per TFM.
+              $isTestProject = $false
+              $probeAnswered = $false
+              foreach ($fw in $frameworks) {
+                $probe = if ([string]::IsNullOrWhiteSpace($fw)) { @() } else { @("-p:TargetFramework=$fw") }
+                $value = dotnet msbuild $testProj.FullName -nologo -p:Configuration=Release @probe -getProperty:IsTestProject 2>&1
+                if ($LASTEXITCODE -eq 0) {
+                  $probeAnswered = $true
+                  if ("$value".Trim() -ieq 'true') { $isTestProject = $true; break }
+                } else {
+                  Write-Warning "IsTestProject probe failed for $($testProj.Name) [$fw]: $value"
+                }
+              }
+              if (-not $probeAnswered) {
+                Write-Error "❌ Could not determine whether $($testProj.Name) is a test project - every MSBuild probe failed. Declare <IsTestProject> in the csproj; a failed probe must not silently skip a suite."
+                exit 1
+              }
+            }
+
             if (-not $isTestProject) {
               Write-Host "⊘ Skipping $($testProj.Name): not a test project (IsTestProject != true)" -ForegroundColor Yellow
               Write-Host ""
