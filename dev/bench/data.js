@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790777211330,
+  "lastUpdate": 1790792760866,
   "repoUrl": "https://github.com/Chris-Wolfgang/DateTime-Extensions",
   "entries": {
     "BenchmarkDotNet": [
@@ -2316,6 +2316,126 @@ window.BENCHMARK_DATA = {
             "value": 29.0837618013223,
             "unit": "ns",
             "range": "± 0.03545358556369765"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "462e1e379a608b9ea2f672304881c04fee2162c2",
+          "message": "chore: bump PackageValidationBaselineVersion to 1.4.0 (#571)\n\nv1.4.0 is published and indexed on the flatcontainer CDN, so ApiCompat can now\ncompare future changes against it rather than against 1.3.2.\n\nDeliberately not part of the release PR: dotnet pack downloads the baseline, so\nbumping it before the CDN had 1.4.0 would have failed with NU1102.\n\nVerified by packing against the new baseline - it resolves and produces\nWolfgang.Extensions.DateTime.1.4.0.nupkg with no NU1102 and no PackageValidation\nerrors, which is the check that would have failed had this been opened early.\n\nRefs #530.\n\nCo-authored-by: Claude Opus 5 <noreply@anthropic.com>",
+          "timestamp": "2026-09-30T14:19:57-04:00",
+          "tree_id": "5fcddd2a53980555f8639483d38702f64330a583",
+          "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/462e1e379a608b9ea2f672304881c04fee2162c2"
+        },
+        "date": 1790792757978,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateMilliseconds",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateSeconds",
+            "value": 0.011590518057346344,
+            "unit": "ns",
+            "range": "± 0.011395540072431633"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfMonth",
+            "value": 0.0006536307434240977,
+            "unit": "ns",
+            "range": "± 0.0002749775121431012"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfMonth",
+            "value": 23.1565539141496,
+            "unit": "ns",
+            "range": "± 0.06566872867870381"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfYear",
+            "value": 0.008063958957791328,
+            "unit": "ns",
+            "range": "± 0.01287155137869208"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfYear",
+            "value": 0.000017442430059115093,
+            "unit": "ns",
+            "range": "± 0.000030211175069853955"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_Sunday",
+            "value": 0.01010383851826191,
+            "unit": "ns",
+            "range": "± 0.011024148569617741"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_Sunday",
+            "value": 0.0000861678272485733,
+            "unit": "ns",
+            "range": "± 0.0001492470547723469"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_Sunday_from_Saturday",
+            "value": 0.0005628466606140137,
+            "unit": "ns",
+            "range": "± 0.0004647769869997458"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_Sunday_from_Saturday",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_CurrentCulture",
+            "value": 3.8339936658740044,
+            "unit": "ns",
+            "range": "± 0.005024679074166538"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_CurrentCulture",
+            "value": 5.122082156439622,
+            "unit": "ns",
+            "range": "± 0.010659505500773128"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfQuarter",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfQuarter",
+            "value": 25.581644038359325,
+            "unit": "ns",
+            "range": "± 0.012304002321321679"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfHalf",
+            "value": 0.000363697608311971,
+            "unit": "ns",
+            "range": "± 0.0005050956399007107"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfHalf",
+            "value": 23.22637664278348,
+            "unit": "ns",
+            "range": "± 0.007973010814878273"
           }
         ]
       }
