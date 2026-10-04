@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790638544751,
+  "lastUpdate": 1791101105774,
   "repoUrl": "https://github.com/Chris-Wolfgang/DateTime-Extensions",
   "entries": {
     "Mutation score": [
@@ -48,6 +48,33 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/4df090c8d4f7c61190f96632d791336e8078470b"
         },
         "date": 1790638538644,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Mutation score",
+            "value": 100,
+            "unit": "%"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang",
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "462e1e379a608b9ea2f672304881c04fee2162c2",
+          "message": "chore: bump PackageValidationBaselineVersion to 1.4.0 (#571)\n\nv1.4.0 is published and indexed on the flatcontainer CDN, so ApiCompat can now\ncompare future changes against it rather than against 1.3.2.\n\nDeliberately not part of the release PR: dotnet pack downloads the baseline, so\nbumping it before the CDN had 1.4.0 would have failed with NU1102.\n\nVerified by packing against the new baseline - it resolves and produces\nWolfgang.Extensions.DateTime.1.4.0.nupkg with no NU1102 and no PackageValidation\nerrors, which is the check that would have failed had this been opened early.\n\nRefs #530.\n\nCo-authored-by: Claude Opus 5 <noreply@anthropic.com>",
+          "timestamp": "2026-09-30T18:19:57Z",
+          "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/462e1e379a608b9ea2f672304881c04fee2162c2"
+        },
+        "date": 1791101103432,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
