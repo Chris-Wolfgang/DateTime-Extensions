@@ -1215,12 +1215,19 @@ jobs:
           if (Get-ChildItem -Path TestResults -Recurse -Filter coverage.cobertura.xml -ErrorAction SilentlyContinue) {
             echo "has-coverage=true" >> $env:GITHUB_OUTPUT
             Write-Host "✅ Coverage files found"
-          } else {
-            # Do NOT skip - see Stage 1's identical guard. By this point at least one test
-            # project ran; absence of any coverage file means collection broke for every
-            # project, not that there was nothing to cover.
-            Write-Host "::error::No coverage files produced on this stage. Check that the test projects still reference coverlet.collector."
+          } elseif ((Test-Path (Join-Path $env:RUNNER_TEMP 'stage2-ran-test-assemblies.txt')) -and
+                    @(Get-Content (Join-Path $env:RUNNER_TEMP 'stage2-ran-test-assemblies.txt') | Where-Object { $_.Trim() }).Count -gt 0) {
+            # Do NOT skip - see Stage 1's identical guard. Tests ran and collected coverage
+            # (the ledger is not empty), so absence of any coverage file means collection broke
+            # for every project, not that there was nothing to cover.
+            Write-Host "::error::Tests ran but produced no coverage files - the coverage gate cannot be evaluated. Check that the test projects still reference coverlet.collector. Test assemblies that ran:"
+            Get-Content (Join-Path $env:RUNNER_TEMP 'stage2-ran-test-assemblies.txt')
             exit 1
+          } else {
+            # Nothing collected coverage on this stage: e.g. every project is a skipped
+            # *.Tests.Integration.* project (repo-template#701), which Stage 1 runs and gates.
+            echo "has-coverage=false" >> $env:GITHUB_OUTPUT
+            Write-Host "ℹ️  No coverage-collecting test project ran on this stage - skipping coverage report generation"
           }
         shell: pwsh
 
