@@ -28,7 +28,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
-      security-events: write   # upload the SARIF results
       id-token: write          # publish results to the OpenSSF API
       contents: read
     steps:
@@ -43,6 +42,36 @@ jobs:
           results_file: results.sarif
           results_format: sarif
           publish_results: true
+
+      # scorecard.dev refuses to accept published results from a job that has
+      # any `run:` step, so this job holds only `uses:` steps. The filter and
+      # the Code Scanning upload live in the `upload` job below.
+      - name: Upload SARIF for the upload job
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: scorecard-sarif
+          path: results.sarif
+          if-no-files-found: error
+          retention-days: 1
+
+  upload:
+    name: Filter and upload SARIF
+    needs: analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      security-events: write   # upload the SARIF results
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download SARIF
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
+        with:
+          name: scorecard-sarif
 
       # Drop Scorecard findings that are known won't-fix for this repository
       # BEFORE the SARIF reaches Code Scanning. Filtering here (rather than
