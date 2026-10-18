@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791699176446,
+  "lastUpdate": 1792303993118,
   "repoUrl": "https://github.com/Chris-Wolfgang/DateTime-Extensions",
   "entries": {
     "Mutation score": [
@@ -102,6 +102,33 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/ff402d6435945366323ef7567dffb118a6af7b25"
         },
         "date": 1791699173918,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Mutation score",
+            "value": 100,
+            "unit": "%"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang",
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "36b8e206d87c9a8687e6d170754dc3b75f80cc99",
+          "message": "ci(scorecard): move the SARIF filter and upload out of the publishing job (#593)\n\nscorecard.dev rejects publish_results from a job containing a run: step\n(\"scorecard job must only have steps with uses\"), so results never reached\nthe API and the README badge read \"invalid repo path\". The analysis job now\nholds only uses: steps and hands results.sarif to a new upload job, which runs\nthe existing filter step unchanged and uploads to Code Scanning.\n\nRefs #590\n\nCo-authored-by: Claude Sonnet 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-15T17:37:55Z",
+          "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/36b8e206d87c9a8687e6d170754dc3b75f80cc99"
+        },
+        "date": 1792303991161,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
