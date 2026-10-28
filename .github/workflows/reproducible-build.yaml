@@ -13,28 +13,23 @@ name: Reproducible Build
 # this commit"), and only the second one can regress silently. This workflow builds the
 # same commit three ways and compares SHA-256 fingerprints:
 #
-#   windows-a vs windows-b   same OS, two different checkout paths -> THE GATE, must match
-#   linux     vs windows-a   different OS -> reported, not gated. See below.
+#   windows-a vs windows-b   same OS, two different checkout paths -> gated, everything must match
+#   linux     vs windows-a   different OS -> gated on the compiled assemblies and symbols
 #
-# The .NET Framework slices (net4*) are built on Windows only, matching how the rest of
-# this repo's CI treats them (build-all-versions.yaml is windows-latest for the same
-# reason), so they are covered by the windows-a/windows-b pair rather than cross-OS.
-#
-# Why cross-OS is reported rather than gated: byte-identical assemblies across operating
-# systems are not achievable here, and the reason is in the SDK, not in this repository.
-# The generated sources every project compiles - AssemblyInfo.cs, GlobalUsings.g.cs,
-# .AssemblyAttributes.cs - are written with the platform's newline: CRLF on Windows, LF on
-# Linux. The compiler hashes every source file it compiles, that hash reaches the PDB and
-# feeds the MVID, so identical code yields a different assembly identity on each OS.
-# Measured 2026-09-24: converting one tracked source file from LF to CRLF on a single
-# machine changed the assembly hash, 71 of 74,752 bytes differing, all of them in the PE
-# timestamp, the MVID and the debug-directory entries. Gating on that would fail every PR
-# forever while saying nothing about the code.
-#
-# Nothing is given up by reporting it. The gate above is the part that catches the real
-# regressions - an absolute path leaking into an assembly, or any non-deterministic input
-# that makes two builds of one commit differ at all. The cross-OS numbers are printed so a
-# divergence that ISN'T just the identity fields is at least visible in the summary.
+# Cross-OS, the gate covers every .dll and .pdb: the per-TFM build outputs (net4* included)
+# and the same files inside the .nupkg/.snupkg. Two inputs used to differ between Linux and
+# Windows, and both are now removed:
+#  - the SDK writes its generated sources (AssemblyInfo.cs, .AssemblyAttributes.cs,
+#    GlobalUsings.g.cs) with the platform newline. The PDB hashes and embeds each one, and
+#    the PDB checksum and MVID feed the DLL. Directory.Build.targets rewrites them to LF
+#    before CoreCompile.
+#  - net4* compiled against the installed targeting pack on Windows and the
+#    Microsoft.NETFramework.ReferenceAssemblies package on Linux, different builds of the
+#    same reference assemblies. Directory.Build.props now references the package on every OS,
+#    which is also what lets the linux leg build (and pack) net4*.
+# The other package entries (XML docs, .nuspec, OPC metadata) are still written with the
+# platform newline by the compiler and NuGet; they carry no code and are reported, not gated.
+# If the cross-OS gate fails, diff the PDB documents and referenced-assembly records first.
 #
 # What is deliberately NOT asserted: byte-identical .nupkg *container* bytes. A .nupkg is
 # a zip and NuGet stamps every entry with its file mtime, so two packs of the same commit
@@ -116,8 +111,6 @@ jobs:
               throw 'No project found under src/.'
           }
 
-          $skippedNetFx = $false
-
           foreach ($project in $projects)
           {
               $match = [regex]::Match((Get-Content -LiteralPath $project.FullName -Raw), '<TargetFrameworks?>([^<]+)<')
@@ -130,13 +123,8 @@ jobs:
 
               foreach ($tfm in $tfms)
               {
-                  if ($tfm -like 'net4*' -and -not $IsWindows)
-                  {
-                      Write-Host "::notice::Skipping $tfm on this runner - the .NET Framework reference assemblies are only present on Windows."
-                      $skippedNetFx = $true
-                      continue
-                  }
-
+                  # net4* builds on every OS: Directory.Build.props references
+                  # Microsoft.NETFramework.ReferenceAssemblies for src/ projects.
                   dotnet build $project.FullName -c Release -f $tfm --nologo
                   if ($LASTEXITCODE -ne 0)
                   {
@@ -158,52 +146,42 @@ jobs:
               }
           }
 
-          # Packing needs every TFM, so a runner that had to skip net4* cannot produce a
-          # comparable package. That is the linux leg: its cross-OS value is in the
-          # per-slice assembly hashes above.
-          if ($skippedNetFx)
+          foreach ($project in $projects)
           {
-              Write-Host '::notice::Skipping pack - this runner could not build every target framework.'
-          }
-          else
-          {
-              foreach ($project in $projects)
+              dotnet pack $project.FullName -c Release -o packages --nologo
+              if ($LASTEXITCODE -ne 0)
               {
-                  dotnet pack $project.FullName -c Release -o packages --nologo
-                  if ($LASTEXITCODE -ne 0)
+                  throw "Pack failed: $($project.Name)"
+              }
+          }
+
+          $sha256 = [System.Security.Cryptography.SHA256]::Create()
+
+          foreach ($package in @(Get-ChildItem -Path (Join-Path 'packages' '*') -Include *.nupkg, *.snupkg -File | Sort-Object Name))
+          {
+              $archive = [System.IO.Compression.ZipFile]::OpenRead($package.FullName)
+
+              try
+              {
+                  foreach ($entry in @($archive.Entries | Sort-Object FullName))
                   {
-                      throw "Pack failed: $($project.Name)"
+                      $stream = $entry.Open()
+
+                      try
+                      {
+                          $hash = (($sha256.ComputeHash($stream) | ForEach-Object { $_.ToString('x2') }) -join '')
+                      }
+                      finally
+                      {
+                          $stream.Dispose()
+                      }
+
+                      $lines += "pack $($package.Name)!$($entry.FullName) $hash"
                   }
               }
-
-              $sha256 = [System.Security.Cryptography.SHA256]::Create()
-
-              foreach ($package in @(Get-ChildItem -Path (Join-Path 'packages' '*') -Include *.nupkg, *.snupkg -File | Sort-Object Name))
+              finally
               {
-                  $archive = [System.IO.Compression.ZipFile]::OpenRead($package.FullName)
-
-                  try
-                  {
-                      foreach ($entry in @($archive.Entries | Sort-Object FullName))
-                      {
-                          $stream = $entry.Open()
-
-                          try
-                          {
-                              $hash = (($sha256.ComputeHash($stream) | ForEach-Object { $_.ToString('x2') }) -join '')
-                          }
-                          finally
-                          {
-                              $stream.Dispose()
-                          }
-
-                          $lines += "pack $($package.Name)!$($entry.FullName) $hash"
-                      }
-                  }
-                  finally
-                  {
-                      $archive.Dispose()
-                  }
+                  $archive.Dispose()
               }
           }
 
@@ -270,37 +248,39 @@ jobs:
               return [pscustomobject]@{ Id = $id; Sdk = $sdk; Hashes = $hashes }
           }
 
-          function Compare-Fingerprint($left, $right, [string] $outputSetPolicy, [string] $gated)
+          # 'all' compares every key (same OS, must match exactly). 'assemblies' compares only
+          # .dll/.pdb keys - the per-TFM build outputs and the same files inside the packages -
+          # and 'other' the remaining package entries (XML docs, .nuspec, OPC metadata), which
+          # the compiler and NuGet write with the platform newline.
+          function Test-KeyInScope([string] $key, [string] $scope)
           {
-              $shared = @($left.Hashes.Keys | Where-Object { $right.Hashes.ContainsKey($_) } | Sort-Object)
-              $problems = @()
-
-              # 'strict' checks every key (same OS, must match exactly). 'buildOnly' checks
-              # only non-net4* build keys - it skips 'pack' keys entirely (Linux never packs;
-              # see the net4*-skip note above) and net4* build keys (Linux never builds them),
-              # while still catching a genuinely missing netstandard2.0/net8.0/net10.0 output.
-              # 'none' skips the set check.
-              $isChecked = {
-                  param($key)
-                  switch ($outputSetPolicy)
-                  {
-                      'strict'    { $true }
-                      'buildOnly' { $key -like 'build *' -and $key -notmatch '/net4' }
-                      default     { $false }
-                  }
+              $isAssembly = $key -match '\.(dll|pdb)$'
+              switch ($scope)
+              {
+                  'all'        { return $true }
+                  'assemblies' { return $isAssembly }
+                  'other'      { return -not $isAssembly }
               }
 
-              if ($outputSetPolicy -ne 'none')
-              {
-                  foreach ($key in @($left.Hashes.Keys | Where-Object { (& $isChecked $_) -and -not $right.Hashes.ContainsKey($_) } | Sort-Object))
-                  {
-                      $problems += "$($left.Id) produced '$key' and $($right.Id) did not."
-                  }
+              throw "Unknown scope '$scope'."
+          }
 
-                  foreach ($key in @($right.Hashes.Keys | Where-Object { (& $isChecked $_) -and -not $left.Hashes.ContainsKey($_) } | Sort-Object))
-                  {
-                      $problems += "$($right.Id) produced '$key' and $($left.Id) did not."
-                  }
+          function Compare-Fingerprint($left, $right, [string] $scope, [string] $gated)
+          {
+              $leftKeys = @($left.Hashes.Keys | Where-Object { Test-KeyInScope $_ $scope })
+              $rightKeys = @($right.Hashes.Keys | Where-Object { Test-KeyInScope $_ $scope })
+              $shared = @($leftKeys | Where-Object { $right.Hashes.ContainsKey($_) } | Sort-Object)
+              $problems = @()
+
+              # Every leg builds and packs every TFM, so the output sets must match too.
+              foreach ($key in @($leftKeys | Where-Object { -not $right.Hashes.ContainsKey($_) } | Sort-Object))
+              {
+                  $problems += "$($left.Id) produced '$key' and $($right.Id) did not."
+              }
+
+              foreach ($key in @($rightKeys | Where-Object { -not $left.Hashes.ContainsKey($_) } | Sort-Object))
+              {
+                  $problems += "$($right.Id) produced '$key' and $($left.Id) did not."
               }
 
               foreach ($key in $shared)
@@ -312,7 +292,7 @@ jobs:
               }
 
               $result = if ($problems.Count -eq 0) { 'match' } else { "$($problems.Count) difference(s)" }
-              $script:summary += "| $($left.Id) vs $($right.Id) | $($shared.Count) | $result | $gated |"
+              $script:summary += "| $($left.Id) vs $($right.Id) ($scope) | $($shared.Count) | $result | $gated |"
 
               return $problems
           }
@@ -339,8 +319,8 @@ jobs:
               }
               else
               {
-                  # THE GATE. Same OS, different checkout path: the output sets must be identical too.
-                  $failures += Compare-Fingerprint $windowsA $windowsB 'strict' 'yes'
+                  # Same OS, different checkout path: every output, and the output sets, identical.
+                  $failures += Compare-Fingerprint $windowsA $windowsB 'all' 'yes'
               }
           }
 
@@ -348,16 +328,16 @@ jobs:
           {
               if ($linux.Sdk -ne $windowsA.Sdk)
               {
-                  $notes += "SDK skew: windows-a built with $($windowsA.Sdk), linux with $($linux.Sdk). Hashes not compared."
-                  $summary += '| linux vs windows-a | 0 | SDK skew, not compared | no |'
+                  $failures += "SDK skew: windows-a built with $($windowsA.Sdk), linux with $($linux.Sdk). Hashes not compared - pin the SDK with a global.json."
+                  $summary += '| linux vs windows-a | 0 | SDK skew, not compared | yes |'
               }
               else
               {
-                  # Reported, not gated - the platform newline in the SDK's generated sources makes
-                  # byte-identical assemblies across OS unreachable. The header comment has the
-                  # measurement. 'buildOnly' still catches a build output Linux should have
-                  # produced but didn't; it just doesn't expect pack or net4* parity.
-                  $notes += Compare-Fingerprint $linux $windowsA 'buildOnly' 'no'
+                  # Cross-OS: every .dll and .pdb must be byte-identical (see the header comment
+                  # for the two inputs that used to differ). The remaining package entries carry
+                  # no code and are reported only.
+                  $failures += Compare-Fingerprint $linux $windowsA 'assemblies' 'yes'
+                  $notes += Compare-Fingerprint $linux $windowsA 'other' 'no'
               }
           }
 
@@ -365,10 +345,9 @@ jobs:
 
           if ($notes.Count -gt 0)
           {
-              @('', '### Cross-OS differences (not gated)', '',
-                'Expected: the SDK writes the generated sources it compiles with the platform newline,',
-                'which changes each assembly''s identity fields. A difference here is only worth acting',
-                'on if it is NOT confined to those - see the comment at the top of this workflow.', ''
+              @('', '### Cross-OS package-metadata differences (not gated)', '',
+                'Expected: XML docs, the .nuspec and the OPC metadata are written with the platform',
+                'newline. They carry no code; the assemblies and symbols are gated above.', ''
               ) | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
 
               foreach ($note in $notes)
@@ -391,4 +370,4 @@ jobs:
               throw "This commit did not build reproducibly: $($failures.Count) problem(s)."
           }
 
-          Write-Host 'Every output built twice on the same OS from different directories is byte-identical.'
+          Write-Host 'Every output built twice on the same OS from different directories is byte-identical, and every assembly and symbol file is byte-identical across Windows and Linux.'
