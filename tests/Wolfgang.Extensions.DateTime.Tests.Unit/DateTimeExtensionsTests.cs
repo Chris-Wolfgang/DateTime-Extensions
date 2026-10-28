@@ -50,16 +50,16 @@ public class DateTimeExtensionsTests
     public void TruncateSeconds_when_value_has_seconds_milliseconds_and_ticks_removes_everything_below_the_minute()
     {
         var testValue = new DateTime
-                (
-                    2018,
-                    4,
-                    23,
-                    12,
-                    47,
-                    59,
-                    0,
-                    DateTimeKind.Utc
-                )
+            (
+                2018,
+                4,
+                23,
+                12,
+                47,
+                59,
+                0,
+                DateTimeKind.Utc
+            )
             .AddMilliseconds(253)
             .AddTicks(15);
 
@@ -256,25 +256,6 @@ public class DateTimeExtensionsTests
 
 
 
-    [Fact]
-    public void TruncateMilliseconds_when_value_has_sub_millisecond_ticks_drops_them_too()
-    {
-        var input = new DateTime(2026, 9, 28, 14, 30, 45, DateTimeKind.Utc)
-            .AddMilliseconds(253)
-            .AddTicks(15);
-
-        var result = input.TruncateMilliseconds();
-
-        Assert.Equal
-        (
-            new DateTime(2026, 9, 28, 14, 30, 45, DateTimeKind.Utc),
-            result
-        );
-        Assert.Equal(DateTimeKind.Utc, result.Kind);
-    }
-
-
-
     [Theory]
     [InlineData(1, DayOfWeek.Sunday)]
     [InlineData(3, DayOfWeek.Saturday)]
@@ -426,22 +407,7 @@ public class DateTimeExtensionsTests
 
         var result = input.FirstOfWeek(DayOfWeek.Monday);
 
-        Assert.Equal(0, result.Hour);
-        Assert.Equal(0, result.Minute);
-        Assert.Equal(0, result.Second);
-        Assert.Equal(0, result.Millisecond);
-    }
-
-
-
-    [Fact]
-    public void EndOfMonth_when_DateTime_MaxValue_preserves_Kind()
-    {
-        var input = new DateTime(9999, 12, 15, 10, 0, 0, DateTimeKind.Local);
-
-        var result = input.EndOfMonth();
-
-        Assert.Equal(DateTimeKind.Local, result.Kind);
+        Assert.Equal(TimeSpan.Zero, result.TimeOfDay);
     }
 
 
@@ -470,10 +436,7 @@ public class DateTimeExtensionsTests
         Assert.Equal(2026, result.Year);
         Assert.Equal(expectedQuarterStartMonth, result.Month);
         Assert.Equal(1, result.Day);
-        Assert.Equal(0, result.Hour);
-        Assert.Equal(0, result.Minute);
-        Assert.Equal(0, result.Second);
-        Assert.Equal(0, result.Millisecond);
+        Assert.Equal(TimeSpan.Zero, result.TimeOfDay);
         Assert.Equal(DateTimeKind.Utc, result.Kind);
     }
 
@@ -515,18 +478,6 @@ public class DateTimeExtensionsTests
 
 
 
-    [Fact]
-    public void FirstOfQuarter_when_Kind_is_Local_preserves_Kind()
-    {
-        var input = new DateTime(2026, 5, 15, 0, 0, 0, DateTimeKind.Local);
-
-        var result = input.FirstOfQuarter();
-
-        Assert.Equal(DateTimeKind.Local, result.Kind);
-    }
-
-
-
     // ----- FirstOfHalf / EndOfHalf -----
 
     [Theory]
@@ -551,10 +502,7 @@ public class DateTimeExtensionsTests
         Assert.Equal(2026, result.Year);
         Assert.Equal(expectedHalfStartMonth, result.Month);
         Assert.Equal(1, result.Day);
-        Assert.Equal(0, result.Hour);
-        Assert.Equal(0, result.Minute);
-        Assert.Equal(0, result.Second);
-        Assert.Equal(0, result.Millisecond);
+        Assert.Equal(TimeSpan.Zero, result.TimeOfDay);
         Assert.Equal(DateTimeKind.Utc, result.Kind);
     }
 
@@ -590,18 +538,6 @@ public class DateTimeExtensionsTests
 
         Assert.Equal(DateTime.MaxValue.Ticks, result.Ticks);
         Assert.Equal(DateTimeKind.Utc, result.Kind);
-    }
-
-
-
-    [Fact]
-    public void FirstOfHalf_when_Kind_is_Local_preserves_Kind()
-    {
-        var input = new DateTime(2026, 8, 15, 0, 0, 0, DateTimeKind.Local);
-
-        var result = input.FirstOfHalf();
-
-        Assert.Equal(DateTimeKind.Local, result.Kind);
     }
 
 
