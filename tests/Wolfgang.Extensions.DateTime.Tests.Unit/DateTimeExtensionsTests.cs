@@ -388,7 +388,7 @@ public class DateTimeExtensionsTests
     [Fact]
     public void EndOfWeek_when_in_the_first_week_of_year_1_is_idempotent()
     {
-        // The #436 finding: EndOfWeek(Saturday) applied to its own result used to move.
+        // EndOfWeek(Saturday) applied to its own result used to move in the first week of year 1.
         var input = new DateTime(1, 1, 1, 0, 8, 54, DateTimeKind.Unspecified);
 
         var once = input.EndOfWeek(DayOfWeek.Saturday);

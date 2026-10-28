@@ -9,15 +9,12 @@ namespace Wolfgang.Extensions.DateTime.Tests.DocExamples;
 /// <summary>
 /// Compiles every XML-doc &lt;example&gt;&lt;code&gt; block in the library's public
 /// API against the real assembly, so a renamed/removed member the docs
-/// still reference fails the build instead of drifting silently (#237).
+/// still reference fails the build instead of drifting silently (#233).
 /// </summary>
 /// <remarks>
-/// Limitation: only identifiers explicitly stubbed as typed fields on
-/// <c>DocExampleContext</c> (in <c>DocExampleCompiler</c>) resolve.
-/// If a future example introduces a new placeholder identifier, add a
-/// typed field for it there — the compile error you'd otherwise see
-/// (<c>CS0103: name does not exist in the current context</c>) is
-/// indistinguishable from a real doc-rot failure without checking.
+/// Each snippet is compiled inside an empty context class, with only <c>System</c>,
+/// <c>System.Globalization</c>, <c>System.Threading.Tasks</c> and the library namespace in
+/// scope, so an example must be self-contained to pass.
 /// </remarks>
 public sealed class DocExampleTests
 {
