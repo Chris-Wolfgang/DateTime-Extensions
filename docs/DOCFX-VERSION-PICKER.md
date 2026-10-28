@@ -197,9 +197,10 @@ cd docfx_project
 # Build src first (DocFX metadata needs the assemblies)
 dotnet build ../src/<package>/<package>.csproj -c Release
 
-# Generate API metadata + build site
-docfx metadata
-docfx build
+# Generate API metadata + build site (DocFX is a pinned local tool)
+dotnet tool restore
+dotnet docfx metadata
+dotnet docfx build
 
 # Drop a mock versions.json with the URLs the picker will navigate to.
 # Use the repo's own /<repo>/versions/<v>/ scheme so the JS's
@@ -215,7 +216,7 @@ JSON
 # so the navigation lands on real pages instead of 404s.
 
 # Serve and visit http://localhost:8081/
-docfx serve _site --port 8081
+dotnet docfx serve _site --port 8081
 ```
 
 The picker fetches `versions.json` from `/versions.json` (no repo
