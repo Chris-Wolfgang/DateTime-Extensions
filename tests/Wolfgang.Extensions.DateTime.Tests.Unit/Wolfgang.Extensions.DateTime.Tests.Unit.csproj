@@ -28,6 +28,7 @@
 		<PackageReference Include="xunit" Version="2.9.3" />
 		<PackageReference Include="xunit.assert" Version="2.9.3" />
 		<PackageReference Include="xunit.extensibility.core" Version="2.9.3" />
+		<!-- 3.x dropped net462-net471 (its oldest .NET Framework target is net472); 2.8.2 is the last runner that runs here. -->
 		<PackageReference Include="xunit.runner.visualstudio" Version="[2.8.2]">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -48,6 +49,7 @@
 		<PackageReference Include="xunit" Version="2.9.3" />
 		<PackageReference Include="xunit.assert" Version="2.9.3" />
 		<PackageReference Include="xunit.extensibility.core" Version="2.9.3" />
+		<!-- 3.x dropped net462-net471 (its oldest .NET Framework target is net472); 2.8.2 is the last runner that runs here. -->
 		<PackageReference Include="xunit.runner.visualstudio" Version="[2.8.2]">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -67,6 +69,7 @@
 		<PackageReference Include="xunit" Version="2.9.3" />
 		<PackageReference Include="xunit.assert" Version="2.9.3" />
 		<PackageReference Include="xunit.extensibility.core" Version="2.9.3" />
+		<!-- 3.x dropped net462-net471 (its oldest .NET Framework target is net472); 2.8.2 is the last runner that runs here. -->
 		<PackageReference Include="xunit.runner.visualstudio" Version="[2.8.2]">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
