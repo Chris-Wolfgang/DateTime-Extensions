@@ -16,24 +16,37 @@ means you can tie a published `.nupkg` back to a commit you have read.
 
 For any commit on `main`:
 
-- Every `.dll` and `.pdb` this repository produces is **byte-identical** when built on the same
-  operating system from a different directory, on a machine that has never built it before.
-- Every **entry inside** the `.nupkg` and `.snupkg` is byte-identical under those conditions.
+- Every `.dll` and `.pdb` this repository produces is **byte-identical** when built from a
+  different directory, on a machine that has never built it before, **on Windows or on Linux** —
+  every target framework, `net462` included. The same files inside the `.nupkg` and `.snupkg` are
+  byte-identical too.
+- On the **same** operating system, every **entry inside** the `.nupkg` and `.snupkg` is
+  byte-identical, not only the assemblies and symbols.
 
-Releases are built on Windows, so a verifier on Windows can reach byte-identity. **Across operating
-systems you cannot** — for a reason in the SDK rather than in this repository. See
-[Why a Linux rebuild does not match byte-for-byte](#why-a-linux-rebuild-does-not-match-byte-for-byte).
+The guarantee covers the assemblies and symbols — the files that carry the code — and **not the
+package files themselves**, and not the package's metadata entries across operating systems. See
+[What is not guaranteed](#what-is-not-guaranteed-and-why).
 
-These are not aspirations. `.github/workflows/reproducible-build.yaml` builds every commit three
-ways — Windows in one directory, Windows in a deliberately deeper directory, and Linux — and **fails
-the build** if the two Windows builds disagree about anything, naming the file. The Linux comparison
-is printed rather than gated, for the same reason. Measured on the current `main`: **35 of 35
-fingerprints identical** between the two Windows builds (8 assembly/PDB outputs across four target
-frameworks, 27 package entries).
+These are not aspirations. `.github/workflows/reproducible-build.yaml` builds and packs every commit
+three ways — Windows in one directory, Windows in a deliberately deeper directory, and Linux — and
+**fails the build** if the two Windows builds disagree about anything, or if any `.dll` or `.pdb`
+(built, or inside a package) differs between Linux and Windows, naming the file. The other package
+entries are compared across operating systems too, and reported rather than gated.
 
-The inputs that buy this are in `Directory.Build.props`: `ContinuousIntegrationBuild` (active
-whenever `CI=true`), which normalises the source paths embedded in the assembly and PDB, plus
-Roslyn's deterministic compilation, which is on by default.
+The inputs that buy this:
+
+- `Directory.Build.props`: `ContinuousIntegrationBuild` (active whenever `CI=true`), which
+  normalises the source paths embedded in the assembly and PDB, plus Roslyn's deterministic
+  compilation, which is on by default.
+- `Directory.Build.targets`: rewrites the sources the SDK generates for each project to LF before
+  compilation (see [why](#why-the-generated-sources-are-normalised)).
+- `Directory.Build.props`: `net4*` builds of `src/` compile against the
+  `Microsoft.NETFramework.ReferenceAssemblies` package on every operating system, instead of the
+  targeting pack installed on Windows, which is a different build of the same reference
+  assemblies.
+
+**Releases up to and including `v1.4.0` predate the last two**, so for those tags the cross-OS
+guarantee does not hold: rebuild them on Windows, as their release was.
 
 ## What is not guaranteed, and why
 
@@ -52,18 +65,18 @@ zip entry timestamps, four seconds apart.
 So a `sha256` of the package file is **not** a reproducibility check and never can be with
 `dotnet pack` as it stands. Compare the entries instead; `scripts/compare-package-entries.ps1` does.
 
-**The `.NET Framework` slices are verified on Windows only.** `net462` needs the .NET Framework
-reference assemblies, which are not present on the Linux runners, so those slices are covered by the
-two-directory Windows comparison rather than the cross-OS one. The rest of this repository's CI
-treats them the same way (`build-all-versions.yaml` is `windows-latest` for the same reason).
+**Across operating systems, the package's metadata entries differ.** The XML documentation files,
+the `.nuspec`, `_rels/.rels`, `[Content_Types].xml` and the OPC core properties are written by the
+compiler and by NuGet with the platform's newline. They carry no code, so the workflow reports them
+instead of failing on them; the `.dll` and `.pdb` entries next to them must match.
 
-### Why a Linux rebuild does not match byte-for-byte
+### Why the generated sources are normalised
 
 Every project compiles a handful of sources the SDK generates for it — `AssemblyInfo.cs`,
 `GlobalUsings.g.cs`, `.AssemblyAttributes.cs` — and the SDK writes them with **the platform's
 newline**: CRLF on Windows, LF on Linux. The compiler hashes every source file it compiles, that
-hash reaches the PDB, and the PDB feeds the assembly's MVID. So the same code, compiled on two
-operating systems, gets a different assembly *identity* while the IL is the same.
+hash reaches the PDB, and the PDB feeds the assembly's MVID. So without intervention the same code,
+compiled on two operating systems, gets a different assembly *identity* while the IL is the same.
 
 The effect is measurable on a single machine. Converting one tracked source file from LF to CRLF and
 rebuilding:
@@ -75,14 +88,15 @@ CRLF source   8166399fa1b85c911bc336c195d6359ecb8da16d47a861a6ce8c652f429c44a7
 same size (74,752 bytes), 71 differing bytes in 6 runs of 4, 7, 8, 4, 16 and 32 bytes
 ```
 
-Same signature as the cross-OS difference: the PE timestamp, the MVID and the debug-directory
-entries. This is why the Linux leg of the workflow reports rather than gates — gating on it would
-fail every pull request forever without saying anything about the code.
+Same signature as the cross-OS difference used to have: the PE timestamp, the MVID and the
+debug-directory entries.
 
 The repository's `.gitattributes` normalises tracked files to LF on every platform, so the tracked
-sources are not the problem; the generated ones are, and there is no supported switch for them. An
-MSBuild target could rewrite them before compilation, which *might* close the gap — nobody has shown
-that it is sufficient, so it is not claimed here.
+sources are not the problem; the generated ones were, and there is no supported switch for them.
+`Directory.Build.targets` therefore rewrites them to LF between generation and `CoreCompile`. Together
+with the reference-assemblies package for `net4*`, that removed every cross-OS difference in the
+`.dll` and `.pdb` files: the Linux and Windows builds of one commit now match byte-for-byte, and the
+workflow fails if they stop doing so.
 
 **The SDK version is not pinned.** There is no `global.json`, so each runner installs whatever
 `10.0.x` resolves to when it runs. Within a single workflow run the three legs agree, which is what
@@ -112,11 +126,11 @@ sdk      os      continuousIntegrationBuild
 Releases made before that asset existed do not carry it. For those, open the `Release` workflow run
 for the tag and read the `Setup .NET` step.
 
-**Use Windows.** Releases are built on Windows, and a rebuild on Linux or macOS cannot match
-byte-for-byte even with the right SDK — see
-[Why a Linux rebuild does not match byte-for-byte](#why-a-linux-rebuild-does-not-match-byte-for-byte).
-`net462` needs Windows regardless, for its reference assemblies. Verifying from Linux is still worth
-doing; just expect the four `.dll` entries to differ in their identity fields, and read
+**Pick the operating system by tag.** For releases made after the cross-OS fixes (any tag after
+`v1.4.0`), Windows and Linux both reproduce every `.dll` and `.pdb` entry byte-for-byte; on Linux,
+expect the XML documentation, `.nuspec` and OPC metadata entries to differ in their newlines only.
+For `v1.4.0` and earlier, use Windows: those releases were built before the generated sources were
+normalised, so a Linux rebuild differs in the four `.dll` entries' identity fields — read
 [What you should see](#4-what-you-should-see) for how to tell that apart from a real discrepancy.
 
 ### 2. Clone at the tag and pack
@@ -215,9 +229,10 @@ the published package:
 A compiler change looks like that: a small, bounded residue in the identity fields. Changed source
 does not — it moves IL, and the differing byte count is not 72.
 
-**A different operating system looks the same way**, and for the same underlying reason — the
-generated sources carry the platform newline, so their checksums differ and the identity fields
-follow. A Linux rebuild against a Windows-built release lands in this shape, not in a clean match.
+**A different operating system looked the same way** for releases up to `v1.4.0`, for the same
+underlying reason — the generated sources carried the platform newline, so their checksums differed
+and the identity fields followed. For later releases the `.dll` and `.pdb` entries match across
+operating systems; only the newline-bearing metadata entries listed above differ.
 
 ## Reporting a discrepancy
 
@@ -242,10 +257,10 @@ Treat a mismatch you cannot explain as a **security report** and follow
    manifest records the SDK that built it, so an older tag can still be reproduced by installing
    that SDK — but nothing in the repository pins it. Pinning it would make that automatic; it
    affects every workflow here, so it is a separate change.
-2. **Byte-identity is same-OS only**, because of the generated sources' newline
-   ([why](#why-a-linux-rebuild-does-not-match-byte-for-byte)). An MSBuild target normalising them
-   before compilation might close the gap; that is unverified, so it is not promised. `net462` is
-   additionally Windows-only, for its reference assemblies.
+2. **Cross-OS byte-identity covers assemblies and symbols only.** Package files never match
+   (zip timestamps), and across operating systems the package's metadata entries differ in their
+   newlines. Releases up to and including `v1.4.0` predate the cross-OS fixes and reproduce on
+   Windows only.
 3. **The reproducibility check is not the provenance check.** They answer different questions and
    neither substitutes for the other: reproducibility says *this source produces this binary*,
    provenance says *this binary came out of this repository's release workflow*. For the second one,
