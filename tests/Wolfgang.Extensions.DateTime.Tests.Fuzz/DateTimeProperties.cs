@@ -358,7 +358,7 @@ public sealed class DateTimeProperties
     /// An off-by-one at a boundary usually shows up here first.
     /// </summary>
     /// <remarks>
-    /// This property found #436: <c>EndOfWeek</c> used to derive its answer from
+    /// This property found a real bug: <c>EndOfWeek</c> used to derive its answer from
     /// <c>FirstOfWeek</c>'s MinValue clamp and moved when applied to its own result in the first
     /// week of year 1. It now counts forward from the instant, so there is no exception here.
     /// </remarks>
