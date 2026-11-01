@@ -79,9 +79,9 @@ if ($Check)
 {
     Write-Host "🔍 Checking code formatting (read-only mode)..." -ForegroundColor Yellow
     Write-Host ""
-    
+
     dotnet format $solutionFile --verify-no-changes --verbosity diagnostic
-    
+
     if ($LASTEXITCODE -eq 0)
     {
         Write-Host ""
@@ -99,9 +99,9 @@ else
 {
     Write-Host "✏️  Formatting code..." -ForegroundColor Yellow
     Write-Host ""
-    
+
     dotnet format $solutionFile --verbosity diagnostic
-    
+
     if ($LASTEXITCODE -eq 0)
     {
         Write-Host ""
