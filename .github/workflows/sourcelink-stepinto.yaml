@@ -17,6 +17,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: sourcelink-stepinto-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   NETCOREDBG_VERSION: '3.1.2-1054'
   CONSUMER: .github/sourcelink/consumer
