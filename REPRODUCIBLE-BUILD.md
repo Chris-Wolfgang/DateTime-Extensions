@@ -98,7 +98,7 @@ produces a different `.dll` from identical source. Use the SDK the release used 
 the release's `reproducible-build-manifest.json` asset:
 
 ```bash
-gh release download v1.3.2 --repo Chris-Wolfgang/DateTime-Extensions \
+gh release download v1.4.0 --repo Chris-Wolfgang/DateTime-Extensions \
   --pattern 'reproducible-build-manifest.json'
 pwsh -c '(Get-Content reproducible-build-manifest.json | ConvertFrom-Json).toolchain'
 ```
@@ -106,7 +106,7 @@ pwsh -c '(Get-Content reproducible-build-manifest.json | ConvertFrom-Json).toolc
 ```
 sdk      os      continuousIntegrationBuild
 ---      --      --------------------------
-10.0.400 Windows                       True
+10.0.401 Windows                       True
 ```
 
 Releases made before that asset existed do not carry it. For those, open the `Release` workflow run
@@ -125,23 +125,23 @@ doing; just expect the four `.dll` entries to differ in their identity fields, a
 embedded verbatim, and nothing will match.
 
 ```bash
-git clone --branch v1.3.2 https://github.com/Chris-Wolfgang/DateTime-Extensions.git
+git clone --branch v1.4.0 https://github.com/Chris-Wolfgang/DateTime-Extensions.git
 cd DateTime-Extensions
-CI=true dotnet pack src/Wolfgang.Extensions.DateTime/Wolfgang.Extensions.DateTime.csproj \
-  -c Release -o packages
-```
-
-**Tags that contain `scripts/third-party-notices.ps1`** (releases after `v1.3.2`) ship a generated
-`THIRD-PARTY-NOTICES.md` at the package root. The release workflow renders it between restore and
-pack, and `Directory.Build.props` only packs it when the file exists, so a plain `pack` leaves that
-entry out and cannot match. For those tags, restore, generate the notices, then pack without
-restoring again:
-
-```bash
 CI=true dotnet restore
 CI=true pwsh ./scripts/third-party-notices.ps1
 CI=true dotnet pack src/Wolfgang.Extensions.DateTime/Wolfgang.Extensions.DateTime.csproj \
   -c Release -o packages --no-restore
+```
+
+Tags that contain `scripts/third-party-notices.ps1` (every release after `v1.3.2`) ship a generated
+`THIRD-PARTY-NOTICES.md` at the package root. The release workflow renders it between restore and
+pack, and `Directory.Build.props` only packs it when the file exists, so a plain `pack` leaves that
+entry out and cannot match - hence the three steps above. For `v1.3.2` and earlier, which predate
+the script, a plain pack is the whole build:
+
+```bash
+CI=true dotnet pack src/Wolfgang.Extensions.DateTime/Wolfgang.Extensions.DateTime.csproj \
+  -c Release -o packages
 ```
 
 If the restore fails with `NU1902`/`NU1903`, that is expected on older tags and is not a build
@@ -154,11 +154,11 @@ restores clean, because `Microsoft.Build.Tasks.Git` 10.0.300 was later flagged b
 ### 3. Compare entry by entry
 
 ```bash
-curl -sLO https://api.nuget.org/v3-flatcontainer/wolfgang.extensions.datetime/1.3.2/wolfgang.extensions.datetime.1.3.2.nupkg
+curl -sLO https://api.nuget.org/v3-flatcontainer/wolfgang.extensions.datetime/1.4.0/wolfgang.extensions.datetime.1.4.0.nupkg
 
 pwsh ./scripts/compare-package-entries.ps1 \
-  -Mine ./packages/Wolfgang.Extensions.DateTime.1.3.2.nupkg \
-  -Published ./wolfgang.extensions.datetime.1.3.2.nupkg
+  -Mine ./packages/Wolfgang.Extensions.DateTime.1.4.0.nupkg \
+  -Published ./wolfgang.extensions.datetime.1.4.0.nupkg
 ```
 
 The script handles two entries specially, neither of which comes from the build:
@@ -177,7 +177,7 @@ is one directory above the clone:
 
 ```bash
 pwsh ./scripts/compare-package-entries.ps1 \
-  -Mine ./packages/Wolfgang.Extensions.DateTime.1.3.2.nupkg \
+  -Mine ./packages/Wolfgang.Extensions.DateTime.1.4.0.nupkg \
   -Manifest ../reproducible-build-manifest.json
 ```
 

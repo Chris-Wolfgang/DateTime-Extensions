@@ -63,9 +63,10 @@ Tell us in the report how you would like to be named.
 ## Verifying a release
 
 A GitHub Release carries the package, a SLSA build-provenance bundle (`*.intoto.jsonl`) and,
-normally, a CycloneDX SBOM per project (`*.bom.json`). The SBOM is best-effort: `release.yaml`
-warns and continues if CycloneDX fails, and the artifact upload does not treat a missing file as
-an error, so a release can complete without one. Its absence is not evidence of tampering.
+a CycloneDX SBOM per project (`*.bom.json`). SBOM generation is required: `release.yaml` fails the
+release if CycloneDX fails for any project, so every release made by the current workflow carries
+one. Releases up to and including `v1.3.2` predate the provenance bundle, so they carry the package
+and SBOM only.
 Nothing below needs a key from us - verification uses GitHub's own transparency log.
 
 Provenance answers where a package came from, not whether its contents follow from the source. For that - rebuilding a tag yourself and comparing - see [REPRODUCIBLE-BUILD.md](REPRODUCIBLE-BUILD.md).
@@ -73,7 +74,7 @@ Provenance answers where a package came from, not whether its contents follow fr
 **Provenance - did this package come from this repository's release workflow?**
 
 ```bash
-gh attestation verify Wolfgang.Extensions.DateTime.1.3.2.nupkg \
+gh attestation verify Wolfgang.Extensions.DateTime.1.4.0.nupkg \
     --repo Chris-Wolfgang/DateTime-Extensions \
     --signer-workflow Chris-Wolfgang/DateTime-Extensions/.github/workflows/release.yaml
 ```
@@ -86,10 +87,10 @@ If you are verifying offline, or want to check the exact bundle attached to the 
 whatever GitHub currently holds, download the `.intoto.jsonl` asset and point at it:
 
 ```bash
-gh attestation verify Wolfgang.Extensions.DateTime.1.3.2.nupkg \
+gh attestation verify Wolfgang.Extensions.DateTime.1.4.0.nupkg \
     --repo Chris-Wolfgang/DateTime-Extensions \
     --signer-workflow Chris-Wolfgang/DateTime-Extensions/.github/workflows/release.yaml \
-    --bundle DateTime-Extensions-v1.3.2.intoto.jsonl
+    --bundle DateTime-Extensions-v1.4.0.intoto.jsonl
 ```
 
 A failure here is meaningful: it means the file you hold is not the file that workflow produced.

@@ -23,9 +23,10 @@ Install-Package Wolfgang.Extensions.DateTime
 ## Quick Start
 
 ```csharp
+using System;
 using Wolfgang.Extensions.DateTime;
 
-var now = System.DateTime.Now;
+var now = DateTime.UtcNow;
 
 // Truncate to remove sub-second or sub-minute precision
 var noMilliseconds = now.TruncateMilliseconds();  // Zeroes out milliseconds

@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Unreleased changes are kept as fragments in `changelog/unreleased/` and assembled into a version
 section here by `scripts/changelog.ps1 assemble` at release time.
 
-## [1.4.0] - 2026-09-29
+## [1.4.0] - 2026-09-30
 
 > **Behaviour change - read before upgrading.** Two methods now return different results for
 > inputs that previously produced a value. The public API surface is unchanged and
@@ -149,10 +149,6 @@ section here by `scripts/changelog.ps1 assemble` at release time.
 - `TEMPLATE-PLACEHOLDERS.md` and `TEMPLATE-REPO-PLACEHOLDERS-EXPLANATION.md`
   template scaffolding files (also from initial setup, no longer needed).
 
-### Fixed
-
-### Security
-
 ## [1.2.0] - 2026-04-27
 
 ### Fixed
@@ -201,7 +197,7 @@ section here by `scripts/changelog.ps1 assemble` at release time.
 - Multi-framework targeting: `net462`, `netstandard2.0`,
   `netcoreapp3.1`, `net8.0`, `net10.0`.
 
-[Unreleased]: https://github.com/Chris-Wolfgang/DateTime-Extensions/compare/v1.3.2...HEAD
+[Unreleased]: https://github.com/Chris-Wolfgang/DateTime-Extensions/compare/v1.4.0...HEAD
 [1.4.0]: https://github.com/Chris-Wolfgang/DateTime-Extensions/compare/v1.3.2...v1.4.0
 [1.3.2]: https://github.com/Chris-Wolfgang/DateTime-Extensions/compare/v1.3.1...v1.3.2
 [1.3.1]: https://github.com/Chris-Wolfgang/DateTime-Extensions/compare/v1.3.0...v1.3.1
