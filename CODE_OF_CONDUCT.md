@@ -1,6 +1,6 @@
 # Contributor Covenant Code of Conduct
 
-## TL;DR 
+## TL;DR
 
 `Be excellent to one another`
 

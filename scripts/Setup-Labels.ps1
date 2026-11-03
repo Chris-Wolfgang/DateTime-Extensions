@@ -6,7 +6,7 @@
 .DESCRIPTION
     This script uses the GitHub CLI (gh) to create labels used by Dependabot and
     other workflows. Run this locally once after creating a new repo from the template.
-    
+
     Labels created (existing ones are updated to the canonical colour and description):
     - bug, needs-triage        — applied by the bug-report issue form
     - enhancement, feature-request — applied by the feature-request issue form
