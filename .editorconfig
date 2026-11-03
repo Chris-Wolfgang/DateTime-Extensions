@@ -35,9 +35,6 @@ indent_size = 2
 # C# files
 [*.cs]
 
-# SA0001 - Disable XML documentation file requirement
-dotnet_diagnostic.SA0001.severity = none
-
 # .NET Code Analysis Rules
 # Enable .NET analyzers with conservative defaults
 dotnet_analyzer_diagnostic.severity = suggestion
@@ -170,19 +167,6 @@ dotnet_diagnostic.S3927.severity = warning       # Serialization event handlers 
 dotnet_diagnostic.S4049.severity = suggestion    # Properties should be preferred
 dotnet_diagnostic.S4056.severity = suggestion    # Overloads with a "CultureInfo" or an "IFormatProvider" parameter should be used
 dotnet_diagnostic.S4136.severity = warning       # Method overloads should be grouped together
-
-# SecurityCodeScan Rules
-dotnet_diagnostic.SCS0005.severity = warning     # Weak random number generator
-dotnet_diagnostic.SCS0006.severity = warning     # Weak hash algorithm
-dotnet_diagnostic.SCS0015.severity = warning     # Hardcoded password
-dotnet_diagnostic.SCS0016.severity = warning     # Controller method is vulnerable to CSRF
-dotnet_diagnostic.SCS0017.severity = warning     # Request validation disabled
-dotnet_diagnostic.SCS0018.severity = warning     # Path traversal
-dotnet_diagnostic.SCS0019.severity = warning     # OutputCache conflict
-dotnet_diagnostic.SCS0020.severity = warning     # SQL injection via EF raw query
-dotnet_diagnostic.SCS0026.severity = warning     # SQL injection via EF FromSqlRaw
-dotnet_diagnostic.SCS0029.severity = warning     # Cross-Site Scripting (XSS)
-dotnet_diagnostic.SCS0031.severity = warning     # SQL injection via EF ExecuteSqlRaw
 
 # Performance-critical rules for library code
 dotnet_diagnostic.CA1062.severity = warning       # Validate arguments of public methods
@@ -331,29 +315,10 @@ dotnet_naming_style.pascal_case.capitalization = pascal_case
 dotnet_naming_style.begins_with_i.required_prefix = I
 dotnet_naming_style.begins_with_i.capitalization = pascal_case
 
-# Disable file header requirements
-dotnet_diagnostic.SA1633.severity = none
-dotnet_diagnostic.SA1634.severity = none
-dotnet_diagnostic.SA1635.severity = none
-dotnet_diagnostic.SA1636.severity = none
-dotnet_diagnostic.SA1637.severity = none
-dotnet_diagnostic.SA1638.severity = none
-dotnet_diagnostic.SA1639.severity = none
-dotnet_diagnostic.SA1640.severity = none
-dotnet_diagnostic.SA1641.severity = none
+# No file header requirement
 file_header_template = unset
 
-# Disable overly strict formatting rules globally
-dotnet_diagnostic.SA1505.severity = none
-dotnet_diagnostic.SA1508.severity = none
-dotnet_diagnostic.SA1110.severity = none
-dotnet_diagnostic.SA1009.severity = none
-dotnet_diagnostic.SA1111.severity = none
-dotnet_diagnostic.SA1500.severity = none
-dotnet_diagnostic.SA1101.severity = none
-
 # Naming - error by default (strict)
-dotnet_diagnostic.SA1300.severity = error
 dotnet_diagnostic.IDE1006.severity = error
 dotnet_diagnostic.CA1707.severity = error
 
@@ -384,7 +349,6 @@ dotnet_diagnostic.RS0037.severity = warning  # PublicApiAnalyzers: public API en
 # Test projects - relaxed naming, no doc requirements
 [tests/**/*.cs]
 # Allow Test_Method_Names_With_Underscores
-dotnet_diagnostic.SA1300.severity = none
 dotnet_diagnostic.IDE1006.severity = none
 dotnet_diagnostic.CA1707.severity = none
 
@@ -426,13 +390,9 @@ dotnet_diagnostic.S6966.severity = none          # Async versions not available 
 # .NET Analyzer - Relax in tests
 dotnet_diagnostic.CA2007.severity = none         # ConfigureAwait not needed in tests
 
-# SecurityCodeScan - Relax in tests (but keep serious ones)
-dotnet_diagnostic.SCS0005.severity = suggestion  # Weak random OK for test data
-
 # Benchmark projects - relaxed naming, no doc requirements
 [benchmarks/**/*.cs]
 # Allow Benchmark_Method_Names
-dotnet_diagnostic.SA1300.severity = none
 dotnet_diagnostic.IDE1006.severity = none
 dotnet_diagnostic.CA1707.severity = none
 
@@ -468,7 +428,6 @@ dotnet_diagnostic.VSTHRD200.severity = none
 # Example projects - relaxed naming, docs encouraged
 [examples/**/*.cs]
 # Allow Example_Method_Names
-dotnet_diagnostic.SA1300.severity = none
 dotnet_diagnostic.IDE1006.severity = none
 dotnet_diagnostic.CA1707.severity = none
 
@@ -495,3 +454,12 @@ dotnet_diagnostic.S3216.severity = none
 dotnet_diagnostic.S3776.severity = none
 dotnet_diagnostic.S6966.severity = none
 dotnet_diagnostic.VSTHRD200.severity = none
+
+# Unit and Fuzz tests keep `using` directives INSIDE the file-scoped namespace: outside it, a
+# bare `DateTime` in namespace Wolfgang.Extensions.DateTime.Tests.* binds to the
+# Wolfgang.Extensions.DateTime namespace instead of System.DateTime (CS0118; see ADR-0002).
+[tests/Wolfgang.Extensions.DateTime.Tests.Unit/**.cs]
+csharp_using_directive_placement = inside_namespace:silent
+
+[tests/Wolfgang.Extensions.DateTime.Tests.Fuzz/**.cs]
+csharp_using_directive_placement = inside_namespace:silent
