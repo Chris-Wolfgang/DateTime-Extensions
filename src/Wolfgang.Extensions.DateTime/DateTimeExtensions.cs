@@ -258,7 +258,7 @@ public static class DateTimeExtensions
     /// <see cref="FirstOfWeek(System.DateTime, DayOfWeek)"/>, so it does not inherit that method's
     /// <see cref="System.DateTime.MinValue"/> clamp: within the first six days of year 1 the
     /// result is still the correct day, and the method is idempotent over the whole
-    /// representable range (#436, #468).
+    /// representable range.
     /// </remarks>
     /// <exception cref="ArgumentOutOfRangeException">
     /// <paramref name="firstDayOfWeek"/> is not a defined <see cref="DayOfWeek"/> value.

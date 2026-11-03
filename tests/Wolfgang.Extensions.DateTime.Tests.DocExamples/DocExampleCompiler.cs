@@ -17,10 +17,8 @@ namespace Wolfgang.Extensions.DateTime.Tests.DocExamples;
 public static class DocExampleCompiler
 {
     /// <summary>
-    /// Only the identifiers the examples actually reference need a typed
-    /// field here (see docs/adr or the source XML docs for the full set).
-    /// Only their TYPES matter — the harness class is compiled, never
-    /// instantiated or run.
+    /// The usings and the empty context class every snippet is compiled inside. The harness is
+    /// compiled, never instantiated or run.
     /// </summary>
     private const string HarnessPreamble = """
         using System;
