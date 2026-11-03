@@ -53,11 +53,13 @@ public static class DocExampleCompiler
         var wrapperSource = BuildWrapperSource(example);
         var tree = CSharpSyntaxTree.ParseText(wrapperSource, path: "wrapper.cs");
 
-        var compilation = CSharpCompilation.Create(
+        var compilation = CSharpCompilation.Create
+        (
             assemblyName: "DocExampleCompilation",
             syntaxTrees: [tree],
             references: BuildReferences(),
-            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+        );
 
         return
         [

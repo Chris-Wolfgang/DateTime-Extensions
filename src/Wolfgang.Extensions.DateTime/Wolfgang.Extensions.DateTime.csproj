@@ -33,7 +33,7 @@
 		<Description>A collection of extension methods for DateTime</Description>
 		<PackageProjectUrl>https://github.com/Chris-Wolfgang/DateTime-Extensions</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/Chris-Wolfgang/DateTime-Extensions.git</RepositoryUrl>
-		<PackageTags>dotnet;extensions;datetime;date;time;truncate;firstofmonth;endofmonth;firstofweek;endofweek;firstofyear;endofyear</PackageTags>
+		<PackageTags>dotnet;extensions;datetime;date;time;truncate;firstofmonth;endofmonth;firstofweek;endofweek;firstofquarter;endofquarter;firstofhalf;endofhalf;quarter;half;firstofyear;endofyear</PackageTags>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageIcon>icon.png</PackageIcon>

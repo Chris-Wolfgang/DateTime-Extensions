@@ -179,8 +179,10 @@ public static class DocExampleSource
             dir = dir.Parent;
         }
 
-        throw new DirectoryNotFoundException(
-            $"Could not locate src/{LibraryDirectoryName}/ by walking up from '{startDirectory}'.");
+        throw new DirectoryNotFoundException
+        (
+            $"Could not locate src/{LibraryDirectoryName}/ by walking up from '{startDirectory}'."
+        );
     }
 
 
