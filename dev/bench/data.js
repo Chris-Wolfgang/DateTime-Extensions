@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790792760866,
+  "lastUpdate": 1793715356236,
   "repoUrl": "https://github.com/Chris-Wolfgang/DateTime-Extensions",
   "entries": {
     "BenchmarkDotNet": [
@@ -2436,6 +2436,126 @@ window.BENCHMARK_DATA = {
             "value": 23.22637664278348,
             "unit": "ns",
             "range": "± 0.007973010814878273"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "41fc88294f519dd34a0dc256653e9e267ca99edc",
+          "message": "chore: style and solution hygiene (#603) (#615)\n\n- DocExamples: blank line between usings and namespace; Allman-style\n  multi-line argument lists for CSharpCompilation.Create and the\n  DirectoryNotFoundException throw.\n- slnx: list every tracked root/.github/.config/.githooks/docs/scripts\n  solution item consistently (adds the semgrep/zizmor requirements,\n  third-party-notices.ps1, upgrade.ps1, scripts/templates, docs/migrations,\n  coverlet.runsettings, stryker-config.json, .globalconfig, .gitleaks.toml,\n  .template-version, license-audit and sourcelink files).\n- Remove benchmarks/.gitkeep and docs/.gitkeep (both directories have\n  real content).\n- PackageTags: add the quarter / half-year methods.\n- Unit csproj: explain the xunit.runner.visualstudio [2.8.2] pin on\n  net462-net471.\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-11-03T09:10:21-05:00",
+          "tree_id": "9cdf119ae64039b8283124e289671cfa9c00e423",
+          "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/41fc88294f519dd34a0dc256653e9e267ca99edc"
+        },
+        "date": 1793715353802,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateMilliseconds",
+            "value": 0.0029866949965556464,
+            "unit": "ns",
+            "range": "± 0.004837349648961405"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateSeconds",
+            "value": 0.014164173354705175,
+            "unit": "ns",
+            "range": "± 0.019564694741337676"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfMonth",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfMonth",
+            "value": 18.805877526601154,
+            "unit": "ns",
+            "range": "± 0.02844803679261341"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfYear",
+            "value": 0.0013643745332956314,
+            "unit": "ns",
+            "range": "± 0.0016083856695523948"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfYear",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_Sunday",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_Sunday",
+            "value": 0.0023278631269931793,
+            "unit": "ns",
+            "range": "± 0.0018985300969707266"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_Sunday_from_Saturday",
+            "value": 0.016735414663950603,
+            "unit": "ns",
+            "range": "± 0.011073507603713797"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_Sunday_from_Saturday",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_CurrentCulture",
+            "value": 2.5881668080886207,
+            "unit": "ns",
+            "range": "± 0.005194628639032805"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_CurrentCulture",
+            "value": 3.6653015837073326,
+            "unit": "ns",
+            "range": "± 0.014585937862335122"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfQuarter",
+            "value": 0.003096808989842733,
+            "unit": "ns",
+            "range": "± 0.003020236154758897"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfQuarter",
+            "value": 21.029417673746746,
+            "unit": "ns",
+            "range": "± 0.02053518558191239"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfHalf",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfHalf",
+            "value": 19.296682208776474,
+            "unit": "ns",
+            "range": "± 0.3849250074522227"
           }
         ]
       }
