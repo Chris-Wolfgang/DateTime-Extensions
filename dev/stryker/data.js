@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792303993118,
+  "lastUpdate": 1794141173903,
   "repoUrl": "https://github.com/Chris-Wolfgang/DateTime-Extensions",
   "entries": {
     "Mutation score": [
@@ -129,6 +129,33 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/36b8e206d87c9a8687e6d170754dc3b75f80cc99"
         },
         "date": 1792303991161,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Mutation score",
+            "value": 100,
+            "unit": "%"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang",
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "fc4330e0c4ce020cbe64ff9f378920bbbe686425",
+          "message": "ci: stop two transient runner problems failing the build (#635)\n\n* ci: stop two transient runner problems failing the build\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* ci: stop two transient runner problems failing the build\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* ci: stop two transient runner problems failing the build\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* ci: stop two transient runner problems failing the build\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* ci: stop two transient runner problems failing the build\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-11-07T13:12:54Z",
+          "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/fc4330e0c4ce020cbe64ff9f378920bbbe686425"
+        },
+        "date": 1794141172156,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
