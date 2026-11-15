@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794141173903,
+  "lastUpdate": 1794748337834,
   "repoUrl": "https://github.com/Chris-Wolfgang/DateTime-Extensions",
   "entries": {
     "Mutation score": [
@@ -160,6 +160,33 @@ window.BENCHMARK_DATA = {
         "benches": [
           {
             "name": "Mutation score",
+            "value": 100,
+            "unit": "%"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang",
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "53f5e6f6ad3a62afdd2cda0578474acd1ef53e31",
+          "message": "security(semgrep): override OpenTelemetry to 1.45.2 (GHSA-mf5v-w3w3-f6cg) (#648)\n\nRaise the OpenTelemetry override floor to 1.45.2 and recompile semgrep.txt,\nupgrading only the OpenTelemetry family. Also put the mcp override back on\n1.30.0: Dependabot #631 moved it to 2.3.0, which the lock never picked up but\nany recompile would, and semgrep cannot import mcp 2.x.\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-11-14T12:46:17Z",
+          "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/53f5e6f6ad3a62afdd2cda0578474acd1ef53e31"
+        },
+        "date": 1794748336189,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Mutation score (tests/Wolfgang.Extensions.DateTime.Tests.Unit)",
             "value": 100,
             "unit": "%"
           }
