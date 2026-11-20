@@ -203,7 +203,9 @@ You do not have to take our word for what is in a published package.
   operating systems is not reachable - the document explains why).
   [REPRODUCIBLE-BUILD.md](REPRODUCIBLE-BUILD.md) has the step-by-step
   procedure for checking a released package against its tag, including which differences are
-  expected and which are worth reporting.
+  expected and which are worth reporting. Each release also attaches `SHA256SUMS.txt` (the hash of
+  every `.dll` and `.pdb` it built) and `BUILD-MANIFEST.txt` (the SDK and runner it built with),
+  both covered by its provenance attestation.
 - **Check where it came from.** Each release carries a SLSA build-provenance bundle you can verify
   with `gh attestation verify`. See
   [Verifying a release](SECURITY.md#verifying-a-release) in the security policy.
