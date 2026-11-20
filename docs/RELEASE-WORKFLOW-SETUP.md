@@ -63,6 +63,10 @@ request, linear history, and these status checks:
 - `Native AOT publish + run (linux-x64, net8.0)` and `(linux-x64, net10.0)`
 - `zizmor`, `actionlint`, `ReSharper InspectCode`
 
+Added by the ARM64 test-matrix standard and still to be required once each has passed on `main`
+(the owner adds them with `Add-RequiredCheck.ps1`): `Stage 4: Linux ARM64 Tests`, `Stage 5: Windows ARM64 Tests`,
+and `Native AOT publish + run (linux-arm64, net8.0)` and `(linux-arm64, net10.0)`.
+
 Deletions and force-pushes are blocked. Fleet-wide ruleset changes are made with the scripts in the
 `claude-sessions` repository, not from this one.
 
