@@ -44,9 +44,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Both AOT-annotated slices of the library. Trimming behaviour genuinely differs
+        # Every AOT-annotated slice of the library. Trimming behaviour genuinely differs
         # between runtimes, so passing on net10.0 does not vouch for net8.0 consumers.
-        tfm: [net8.0, net10.0]
+        tfm: [net8.0, net10.0, net11.0]
 
     steps:
       - name: Checkout code
@@ -107,9 +107,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Both AOT-annotated slices of the library. Trimming behaviour genuinely differs
+        # Every AOT-annotated slice of the library. Trimming behaviour genuinely differs
         # between runtimes, so passing on net10.0 does not vouch for net8.0 consumers.
-        tfm: [net8.0, net10.0]
+        tfm: [net8.0, net10.0, net11.0]
 
     steps:
       - name: Checkout code
