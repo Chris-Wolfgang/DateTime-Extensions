@@ -208,6 +208,36 @@ not independent evidence. If the question is whether *we* published what we said
 against nuget.org as in step 3, or verify the provenance attestation, which is signed
 ([SECURITY.md](SECURITY.md#verifying-a-release)).
 
+### 3c. Or compare the assemblies against `SHA256SUMS.txt`
+
+Releases made after `v1.4.0` also carry two plain-text assets, written by the same release run and
+covered by its signed provenance attestation:
+
+- `SHA256SUMS.txt`: one `<sha256>  <tfm>/<file>` line for every `.dll` and `.pdb` the release built
+  (`bin/Release/<tfm>/` of each project under `src/`), and one `<sha256>  <file>` line for each
+  `.nupkg` and `.snupkg`.
+- `BUILD-MANIFEST.txt`: the tag, commit, workflow run, SDK version, runner OS and image, and the
+  `ContinuousIntegrationBuild` and `Deterministic` values the build ran with.
+
+Check that both are the ones the release run produced, then compare your build output with the
+assembly lines. Run this from the clone after step 2 (`dotnet pack` builds first, so
+`bin/Release/<tfm>/` is filled):
+
+```bash
+TAG=vX.Y.Z   # the tag you cloned in step 2
+gh release download "$TAG" --repo Chris-Wolfgang/DateTime-Extensions \
+  --pattern 'SHA256SUMS.txt' --pattern 'BUILD-MANIFEST.txt' --dir ..
+gh attestation verify ../SHA256SUMS.txt --repo Chris-Wolfgang/DateTime-Extensions \
+  --signer-workflow Chris-Wolfgang/DateTime-Extensions/.github/workflows/release.yaml
+cd src/Wolfgang.Extensions.DateTime/bin/Release
+grep -E '\.(dll|pdb)$' ../../../../../SHA256SUMS.txt | sha256sum -c -
+```
+
+Every line should print `OK`. Ignore the `.nupkg` and `.snupkg` lines: those hash the package
+files, which are not reproducible (see [What is not guaranteed](#what-is-not-guaranteed-and-why));
+compare packages entry by entry as in step 3 or 3b instead. `BUILD-MANIFEST.txt` names the SDK to
+install in step 1.
+
 ### 4. What you should see
 
 With a matching SDK, every entry matches and the script exits 0.
