@@ -138,7 +138,7 @@ This library targets:
 
 - **.NET Framework:** 4.6.2
 - **.NET Standard:** 2.0
-- **.NET:** 8.0, 10.0
+- **.NET:** 8.0, 10.0, 11.0
 
 See the [NuGet package page](https://www.nuget.org/packages/Wolfgang.Extensions.DateTime/) for the authoritative per-TFM compatibility matrix.
 
@@ -154,7 +154,7 @@ Every pull request runs the test suite on five legs, each over the target framew
 | linux-arm64 | `ubuntu-24.04-arm` (Stage 4) | net6.0 and later |
 | windows-arm64 | `windows-11-arm` (Stage 5) | net6.0 and later (.NET Framework runs on Stage 2) |
 
-The native AOT smoke test publishes and runs a native binary on linux-x64 and linux-arm64, for net8.0 and net10.0.
+The native AOT smoke test publishes and runs a native binary on linux-x64 and linux-arm64, for net8.0, net10.0 and net11.0.
 
 ---
 
