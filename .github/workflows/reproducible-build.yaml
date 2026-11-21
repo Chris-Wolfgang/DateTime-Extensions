@@ -27,11 +27,6 @@ name: Reproducible Build
 #    Microsoft.NETFramework.ReferenceAssemblies package on Linux, different builds of the
 #    same reference assemblies. Directory.Build.props now references the package on every OS,
 #    which is also what lets the linux leg build (and pack) net4*.
-#  - the ubuntu image preinstalls an SDK 11.0.100 whose Microsoft.NETCore.App.Ref 11.0.0
-#    targeting pack is a different build from Microsoft's (176 of its reference assemblies
-#    differ from the nuget.org package and from the Windows install), so net11.0 compiled
-#    to different bytes on Linux. Setup .NET installs into runner.temp, so every leg builds
-#    with the SDK it downloads from Microsoft and never sees an image-preinstalled one.
 # The other package entries (XML docs, .nuspec, OPC metadata) are still written with the
 # platform newline by the compiler and NuGet; they carry no code and are reported, not gated.
 # If the cross-OS gate fails, diff the PDB documents and referenced-assembly records first.
@@ -91,8 +86,6 @@ jobs:
 
       - name: Setup .NET
         uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73  # v6.1.0
-        env:
-          DOTNET_INSTALL_DIR: ${{ runner.temp }}/dotnet
         with:
           dotnet-version: |
             10.0.x
