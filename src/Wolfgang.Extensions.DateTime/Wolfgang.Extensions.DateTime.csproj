@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net462;netstandard2.0;net8.0;net10.0</TargetFrameworks>
+		<TargetFrameworks>net462;netstandard2.0;net8.0;net10.0;net11.0</TargetFrameworks>
 		<ImplicitUsings>disable</ImplicitUsings>
 
 		<!-- Guards consumers against an unintentional binary break: the build compares the
@@ -57,7 +57,7 @@
 	     older frameworks have neither the analysers nor the metadata, so the condition is a
 	     statement about capability rather than the kind of per-framework policy drift the
 	     ImplicitUsings setting above deliberately avoids. -->
-	<PropertyGroup Condition="'$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == 'net10.0'">
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == 'net10.0' OR '$(TargetFramework)' == 'net11.0'">
 		<IsTrimmable>true</IsTrimmable>
 		<IsAotCompatible>true</IsAotCompatible>
 	</PropertyGroup>

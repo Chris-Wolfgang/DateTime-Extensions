@@ -31,4 +31,4 @@
 - Warnings as errors in Release builds
 
 ## Target Frameworks
-- net462, netstandard2.0, net8.0, net10.0
+- net462, netstandard2.0, net8.0, net10.0, net11.0
