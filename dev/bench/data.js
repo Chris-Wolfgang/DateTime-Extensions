@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794493115990,
+  "lastUpdate": 1795287661388,
   "repoUrl": "https://github.com/Chris-Wolfgang/DateTime-Extensions",
   "entries": {
     "BenchmarkDotNet": [
@@ -2676,6 +2676,126 @@ window.BENCHMARK_DATA = {
             "value": 28.99805600444476,
             "unit": "ns",
             "range": "± 0.0393441336977815"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com",
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b7a724ebbf8838a5429b4e24a256ab636c704f4f",
+          "message": "ci(aot-smoke): publish and run the net11.0 slice on both legs (#642) (#659)\n\n* ci(aot-smoke): publish and run the net11.0 slice on both legs (#642)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n* ci(aot-smoke): say every AOT slice, not both, in the matrix comment\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-11-21T13:54:02-05:00",
+          "tree_id": "08b67567bec54bdb58badbaff067caa0f226c130",
+          "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/b7a724ebbf8838a5429b4e24a256ab636c704f4f"
+        },
+        "date": 1795287659953,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateMilliseconds",
+            "value": 0.009129391983151436,
+            "unit": "ns",
+            "range": "± 0.0030043364788243884"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.TruncateSeconds",
+            "value": 0.000044228509068489075,
+            "unit": "ns",
+            "range": "± 0.00007660602484964391"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfMonth",
+            "value": 0.023142561316490173,
+            "unit": "ns",
+            "range": "± 0.03442974843502894"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfMonth",
+            "value": 28.31775003671646,
+            "unit": "ns",
+            "range": "± 0.09762399611597926"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfYear",
+            "value": 0,
+            "unit": "ns",
+            "range": "± 0"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfYear",
+            "value": 0.009252152095238367,
+            "unit": "ns",
+            "range": "± 0.008094338915052608"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_Sunday",
+            "value": 0.00022001440326372781,
+            "unit": "ns",
+            "range": "± 0.0003810761248497244"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_Sunday",
+            "value": 0.00454369621972243,
+            "unit": "ns",
+            "range": "± 0.004005996012904608"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_Sunday_from_Saturday",
+            "value": 0.0000798739492893219,
+            "unit": "ns",
+            "range": "± 0.00013834573837028555"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_Sunday_from_Saturday",
+            "value": 0.018961742520332336,
+            "unit": "ns",
+            "range": "± 0.014082350951085202"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfWeek_CurrentCulture",
+            "value": 4.723399557173252,
+            "unit": "ns",
+            "range": "± 0.018519650328570902"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfWeek_CurrentCulture",
+            "value": 6.103563601771991,
+            "unit": "ns",
+            "range": "± 0.02376728240991675"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfQuarter",
+            "value": 0.0014098814378182094,
+            "unit": "ns",
+            "range": "± 0.0017079712905386584"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfQuarter",
+            "value": 29.895637889703114,
+            "unit": "ns",
+            "range": "± 0.005190672568002702"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.FirstOfHalf",
+            "value": 0.0011405926197767258,
+            "unit": "ns",
+            "range": "± 0.0019755643681913793"
+          },
+          {
+            "name": "Wolfgang.Extensions.DateTime.Benchmarks.DateTimeExtensionsBenchmarks.EndOfHalf",
+            "value": 28.689905484517414,
+            "unit": "ns",
+            "range": "± 0.015810059200002884"
           }
         ]
       }
