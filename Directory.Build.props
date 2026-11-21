@@ -135,6 +135,15 @@
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
   </ItemGroup>
 
+  <PropertyGroup Condition="$(_RelativeProjectDir.StartsWith('src/')) and '$(TargetFramework)' == 'net11.0'">
+    <!-- DIAG (#642): compile net11.0 against the Microsoft.NETCore.App.Ref package from NuGet
+         instead of the SDK's installed pack. The installed 11.0.0 pack's reference assemblies
+         differ between the Linux and Windows SDK builds (176 of 176 ref DLLs, measured on
+         run 44856097004; 8.0, 9.0 and 10.0 packs are identical). Pointing the pack root at a
+         folder that does not exist makes the SDK download the targeting pack package. -->
+    <NetCoreTargetingPackRoot>$(MSBuildThisFileDirectory)obj/no-installed-targeting-packs</NetCoreTargetingPackRoot>
+  </PropertyGroup>
+
   <ItemGroup Condition="$(_RelativeProjectDir.StartsWith('src/')) and Exists('$(MSBuildProjectDirectory)/obj/THIRD-PARTY-NOTICES.md')">
     <!-- Third-party attribution: scripts/third-party-notices.ps1 renders the
          package's transitive NuGet closure to obj/THIRD-PARTY-NOTICES.md
