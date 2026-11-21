@@ -191,6 +191,25 @@ jobs:
           Set-Content -LiteralPath 'fingerprint/fingerprint.txt' -Value $lines
           Write-Host "Recorded $($lines.Count - 1) fingerprint(s)."
 
+      - name: DIAG collect net11 inputs
+        if: always()
+        shell: pwsh
+        working-directory: ${{ matrix.path }}
+        run: |
+          New-Item -ItemType Directory -Path diag -Force | Out-Null
+          dotnet --info | Out-File diag/dotnet-info.txt
+          $root = Split-Path (Get-Command dotnet).Source
+          Get-ChildItem -Recurse -File (Join-Path $root 'packs/Microsoft.NETCore.App.Ref') | ForEach-Object { "$((Get-FileHash $_.FullName -Algorithm SHA256).Hash) $($_.FullName.Substring($root.Length))" } | Out-File diag/refpack-hashes.txt
+          Get-ChildItem -Recurse -File (Join-Path $root 'sdk') -Filter *.dll | Where-Object { $_.Name -like 'Microsoft.CodeAnalysis*' -or $_.Name -like 'csc.dll' } | ForEach-Object { "$((Get-FileHash $_.FullName -Algorithm SHA256).Hash) $($_.FullName.Substring($root.Length))" } | Out-File diag/roslyn-hashes.txt
+          Copy-Item -Recurse src/Wolfgang.Extensions.DateTime/obj/Release/net11.0 diag/obj11
+          Copy-Item -Recurse src/Wolfgang.Extensions.DateTime/bin/Release/net11.0 diag/bin11
+          Copy-Item -Recurse src/Wolfgang.Extensions.DateTime/bin/Release/net10.0 diag/bin10
+      - name: DIAG upload
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
+        with:
+          name: diag-${{ matrix.id }}
+          path: ${{ matrix.path }}/diag
       - name: Upload the fingerprint
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7.0.2
         with:
