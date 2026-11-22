@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794748337834,
+  "lastUpdate": 1795355448291,
   "repoUrl": "https://github.com/Chris-Wolfgang/DateTime-Extensions",
   "entries": {
     "Mutation score": [
@@ -183,6 +183,33 @@ window.BENCHMARK_DATA = {
           "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/53f5e6f6ad3a62afdd2cda0578474acd1ef53e31"
         },
         "date": 1794748336189,
+        "tool": "customBiggerIsBetter",
+        "benches": [
+          {
+            "name": "Mutation score (tests/Wolfgang.Extensions.DateTime.Tests.Unit)",
+            "value": 100,
+            "unit": "%"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Chris Wolfgang",
+            "username": "Chris-Wolfgang",
+            "email": "210299580+Chris-Wolfgang@users.noreply.github.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "3682b0624d3634173fd3d864be10f576861b8044",
+          "message": "docs: explain SHA256SUMS.txt and BUILD-MANIFEST.txt for verifiers (#636) (#656)\n\nREPRODUCIBLE-BUILD.md gains step 3c: download both assets, verify them\nwith gh attestation verify, and check the build output with\nsha256sum -c. README's Verify the build section names both assets.\n\nCo-authored-by: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-11-21T20:06:26Z",
+          "url": "https://github.com/Chris-Wolfgang/DateTime-Extensions/commit/3682b0624d3634173fd3d864be10f576861b8044"
+        },
+        "date": 1795355446335,
         "tool": "customBiggerIsBetter",
         "benches": [
           {
