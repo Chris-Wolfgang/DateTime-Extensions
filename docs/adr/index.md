@@ -9,6 +9,7 @@ reviewed alongside the change rather than reconstructed afterwards. Start from
 
 | ADR | Decision | Status | Date |
 |---|---|---|---|
+| [ADR-0000](0000-record-architecture-decisions.md) | Record architecture decisions | Accepted | 2026-11-20 |
 | [ADR-0001](0001-pin-assemblyversion-to-major.md) | Pin AssemblyVersion to MAJOR.0.0.0 | Accepted | 2026-05-27 |
 | [ADR-0002](0002-namespace-shadows-system-datetime.md) | Accept that the namespace shadows System.DateTime, and qualify in src | Accepted | 2026-05-27 |
 | [ADR-0003](0003-disable-implicit-usings.md) | Disable implicit usings in every project | Accepted | 2026-09-23 |
