@@ -32,6 +32,7 @@
   <Folder Name="/.root/docs/adr/">
     <File Path="docs/adr/index.md" />
     <File Path="docs/adr/TEMPLATE.md" />
+    <File Path="docs/adr/0000-record-architecture-decisions.md" />
     <File Path="docs/adr/0001-pin-assemblyversion-to-major.md" />
     <File Path="docs/adr/0002-namespace-shadows-system-datetime.md" />
     <File Path="docs/adr/0003-disable-implicit-usings.md" />
