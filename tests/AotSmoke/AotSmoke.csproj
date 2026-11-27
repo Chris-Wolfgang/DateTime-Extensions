@@ -14,8 +14,17 @@
 		<!-- These two must stay in the project file. Passed on the command line they become
 		     global properties and flow into the referenced library, which multi-targets
 		     net462 and then fails with NETSDK1124 ("Trimming assemblies requires .NET Core
-		     3.0 or higher"). The publish command in aot-smoke.yaml therefore passes neither. -->
-		<PublishAot>true</PublishAot>
+		     3.0 or higher"). The per-TFM publish command in the "Native AOT publish + run"
+		     jobs therefore passes neither.
+
+		     PublishAot is set only in the per-framework (inner) evaluation. Those jobs always
+		     publish with an explicit framework, so they still get a native binary. The
+		     canonical AOT smoke workflow finds projects by evaluating PublishAot WITHOUT a framework
+		     and publishes them without -f, which a project with three target frameworks cannot
+		     do. Leaving the outer evaluation empty keeps this harness out of the canonical job,
+		     which runs tests/*.Tests.Aot instead. This bridge ends when tests/AotSmoke is
+		     deleted (Tests.Aot conversion plan, 2026-11-20). -->
+		<PublishAot Condition="'$(TargetFramework)' != ''">true</PublishAot>
 		<PublishTrimmed>true</PublishTrimmed>
 		<IsPackable>false</IsPackable>
 		<IsTestProject>false</IsTestProject>
