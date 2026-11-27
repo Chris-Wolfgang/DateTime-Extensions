@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!--
+	  Native AOT test run (standards/aot-smoke.md; Tests.Aot conversion plan, 2026-11-20).
+
+	  Runs the SAME unit tests as Wolfgang.Extensions.DateTime.Tests.Unit, compiled as a
+	  Native AOT executable with xUnit v3. The 2.x project stays as it is for every TFM; this
+	  one exists only to prove the library under trimming + AOT, which a JIT test run cannot.
+	  net10.0 only, as decided for this repository on 2026-11-20.
+
+	  The test sources are linked, not copied: fix a test in Tests.Unit and it is fixed here.
+	  xUnit v3's in-process console runner makes this project its own executable (no
+	  Microsoft.NET.Test.Sdk), and with PublishAot that executable is a native binary.
+	-->
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<IsPackable>false</IsPackable>
+		<!-- Not a dotnet-test project: build-pr.ps1 and the pr.yaml test stages run `dotnet test`
+		     only on IsTestProject / Microsoft.NET.Test.Sdk projects. This one is published and
+		     executed by the canonical aot-smoke.yaml. -->
+		<IsTestProject>false</IsTestProject>
+		<!-- Also set by the *.Tests.Aot block in Directory.Build.props. Repeated here because
+		     pull-request CI builds with main's Directory.Build.props; drop the duplicates once
+		     the block has merged. -->
+		<PublishAot>true</PublishAot>
+		<PublishTrimmed>true</PublishTrimmed>
+		<IsAotCompatible>true</IsAotCompatible>
+		<TrimmerSingleWarn>false</TrimmerSingleWarn>
+		<!-- The culture tests use real cultures (CultureInfo.GetCultureInfo), and the parameterless
+		     FirstOfWeek/EndOfWeek read the current culture, so ICU is required: InvariantGlobalization
+		     must stay OFF for this project. -->
+		<InvariantGlobalization>false</InvariantGlobalization>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- The AOT (source-generated) edition of xUnit.net v3: test discovery, theory data and
+		     attribute configuration are resolved at build time, so no reflection is needed at run
+		     time. The plain `xunit.v3` package is reflection-based and cannot run under Native AOT. -->
+		<PackageReference Include="xunit.v3.aot" Version="4.0.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Wolfgang.Extensions.DateTime\Wolfgang.Extensions.DateTime.csproj" />
+	</ItemGroup>
+
+	<!-- The unit tests themselves, linked from the 2.x project. AotSmokeCoverageTests is left out:
+	     it reads tests/AotSmoke/Program.cs from the source tree, which a published binary run from
+	     the runner's temp directory cannot find, and it goes away with tests/AotSmoke. -->
+	<ItemGroup>
+		<Compile Include="..\Wolfgang.Extensions.DateTime.Tests.Unit\**\*.cs"
+		         Exclude="..\Wolfgang.Extensions.DateTime.Tests.Unit\obj\**;..\Wolfgang.Extensions.DateTime.Tests.Unit\bin\**;..\Wolfgang.Extensions.DateTime.Tests.Unit\AotSmokeCoverageTests.cs"
+		         Link="Unit\%(RecursiveDir)%(Filename)%(Extension)" />
+	</ItemGroup>
+
+</Project>
